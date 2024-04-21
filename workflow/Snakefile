@@ -1,0 +1,29 @@
+#!/usr/bin/env python
+
+import os
+import sys
+import math
+import pandas as pd
+from Bio import SeqIO
+
+# Base container image for running jobs
+container: "docker://condaforge/mambaforge:23.11.0-0"
+configfile: workflow.source_path('config/config.yaml')
+
+include: "rules/common.smk"
+
+samples = read_sample_sheet(config['samples'])
+
+
+localrules:
+    get_read_count,
+    generate_context_fa
+
+rule all:
+    input:
+        get_final_output()
+        
+include: "rules/star.smk"
+include: "rules/bwa.smk"
+include: "rules/bowtie.smk"
+include: "rules/requantify.smk"

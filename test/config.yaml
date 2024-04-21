@@ -1,0 +1,3 @@
+use-singularity: false
+use-conda: true
+jobs: 2

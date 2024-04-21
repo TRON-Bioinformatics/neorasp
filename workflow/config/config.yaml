@@ -1,0 +1,20 @@
+samples: "example_data/sample_table.tsv"
+
+aligner: star
+
+trimming:
+  activate: True
+
+portcullis:
+  activate: False
+
+ref:
+  genome_lib: ""
+
+hisat:
+  index: ""
+
+
+
+
+

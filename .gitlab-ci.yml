@@ -1,0 +1,29 @@
+stages:          # List of stages for jobs, and their order of execution
+  - test
+
+test_requant_star:       # This job runs in the build stage, which runs first.
+  stage: test
+  image: condaforge/mambaforge:23.3.1-0
+  script:
+    - echo "Testing requant with STAR..."
+    - mamba env create -f environment.yml
+    - source /opt/conda/bin/activate Easyquant
+    - snakemake --workflow-profile test -p
+
+test_requant_bowtie:       # This job runs in the build stage, which runs first.
+  stage: test
+  image: condaforge/mambaforge:23.3.1-0
+  script:
+    - echo "Testing requant with bowtie..."
+    - mamba env create -f environment.yml
+    - source /opt/conda/bin/activate Easyquant
+    - snakemake --workflow-profile test -p --config aligner=bowtie
+
+test_requant_bwa:       # This job runs in the build stage, which runs first.
+  stage: test
+  image: condaforge/mambaforge:23.3.1-0
+  script:
+    - echo "Testing requant with bwa..."
+    - mamba env create -f environment.yml
+    - source /opt/conda/bin/activate Easyquant
+    - snakemake --workflow-profile test -p --config aligner=bwa

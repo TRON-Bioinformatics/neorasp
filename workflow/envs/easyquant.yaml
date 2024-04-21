@@ -1,0 +1,9 @@
+name: easyquant
+channels:
+  - bioconda
+  - conda-forge
+dependencies:
+  - pysam
+  - pip
+  - pip:
+    - bp_quant==0.5.2

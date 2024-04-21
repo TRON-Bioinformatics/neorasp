@@ -1,0 +1,11 @@
+name: Easyquant
+channels:
+  - bioconda
+  - conda-forge
+dependencies:
+  - snakemake-minimal>=8.4.3
+  - pip
+  - pandas
+  - pip:
+    - biopython
+    - snakemake-executor-plugin-slurm

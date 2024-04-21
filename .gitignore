@@ -1,0 +1,21 @@
+.Rproj.user
+.Rhistory
+.RData
+.Ruserdata
+
+# ignore example output
+example_out*
+
+# ignore *.pyc fiels
+*.pyc
+
+*.Rproj
+
+# ignore snakemake
+workflow/.snakemake
+workflow/results
+.snakemake
+.cache/
+.conda/
+.condarc
+results/

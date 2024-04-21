@@ -1,0 +1,10 @@
+executor: slurm
+jobs: 100
+local-cores: 8
+conda-frontend: conda
+latency-wait: 60
+default-resources:
+  mem_mb: 4096
+  threads: 4
+  runtime: 3600
+  account: "'$USER'"
