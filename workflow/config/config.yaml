@@ -8,8 +8,9 @@ trimming:
 portcullis:
   activate: False
 
-ref:
-  genome_lib: ""
+annotation:
+  genome: 
+  gtf: 
 
 hisat:
   index: ""

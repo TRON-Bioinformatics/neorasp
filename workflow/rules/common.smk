@@ -1,6 +1,9 @@
 #!/usr/bin/env python
 
 def get_final_output():
+    """
+    Gather final results
+    """
     final_files = []
     for sample in samples.itertuples():
         final_files.extend(
@@ -22,7 +25,9 @@ def read_sample_sheet(file):
 
 
 def get_fq(wildcards):
-
+    """
+    Get FASTQ files from sample sheets
+    """
     fq1 = []
     fq2 = []
     
@@ -32,27 +37,15 @@ def get_fq(wildcards):
     
     return {"fq1": fq1, "fq2": fq2}
 
-
 def get_index(wildcards):
     context_seq = config.get("hisat", None).get("index")
     return context_seq
 
 def get_genome_fasta(wildcards):
-    context_seq = config.get("genome", None)
+    context_seq = config.get("annotation").get("genome", None)
     return context_seq
 
 
 def get_genome_annotation(wildcards):
-    context_seq = config.get("genome", None)
+    context_seq = config.get("annotation").get("gtf", None)
     return context_seq
-
-
-
-def get_aligner_sam(wildcards):
-    aligner = config["aligner"]
-    if aligner in ["star", "STAR"]:
-        return f"results/star/{wildcards.sample}/{wildcards.sample}.cram"
-    elif aligner in ["hisat2", "HISAT2"]:
-        return f"results/hisat2/{wildcards.sample}/{wildcards.sample}.cram"
-    else:
-        raise snakemake.WorkflowError("Not a valid aligner selctected. Can not find correct alignment...")
