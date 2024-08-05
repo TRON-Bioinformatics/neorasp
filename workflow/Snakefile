@@ -1,29 +1,21 @@
-#!/usr/bin/env python
-
 import os
 import sys
 import math
 import pandas as pd
-from Bio import SeqIO
 
 # Base container image for running jobs
-container: "docker://condaforge/mambaforge:23.11.0-0"
-configfile: workflow.source_path('config/config.yaml')
+configfile: workflow.source_path('../config/config.yaml')
 
 include: "rules/common.smk"
+include: "rules/import_tronmake_expression.smk"
+include: "rules/junctions.smk"
 
-samples = read_sample_sheet(config['samples'])
+samples = tronmake_expression.read_sample_sheet(config['sample_sheet'])
 
-
-localrules:
-    get_read_count,
-    generate_context_fa
 
 rule all:
     input:
         get_final_output()
+    default_target: True
+    localrule: True
         
-include: "rules/star.smk"
-include: "rules/bwa.smk"
-include: "rules/bowtie.smk"
-include: "rules/requantify.smk"

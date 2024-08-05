@@ -1,6 +1,10 @@
-library(tidyverse)
-library(FRASER)
-library(splice2neo)
+suppressMessages({
+  options(stringsAsFactors = F)
+  library(FRASER)
+  library(tidyverse)
+  library(argparse)
+  library(splice2neo)
+})
 
 saveFdsAsCountTable <- function(fds, min_read=5) {
     # junction info
@@ -13,44 +17,58 @@ saveFdsAsCountTable <- function(fds, min_read=5) {
     count_dt <- tibble(raw_count = as.vector(counts(fds)))
     psi5 <- tibble(psi5 = as.vector(fds@assays@data$psi5))
     psi3 <- tibble(psi3 = as.vector(fds@assays@data$psi3))
+    jaccard <- tibble(intron_jaccard = as.vector(fds@assays@data$jaccard))
     count_csv <- tibble(junction_dt) %>%
         bind_cols(count_dt) %>%
         bind_cols(psi5) %>%
         bind_cols(psi3) %>%
-        filter(raw_count >= min_read)
+        bind_cols(jaccard) %>%
+        dplyr::filter(raw_count >= min_read)
     return(count_csv)
 }
 
-register(MulticoreParam(snakemake@threads))
-# Limit number of threads for DelayedArray operations
-setAutoBPPARAM(MulticoreParam(snakemake@threads))
+parser <- ArgumentParser(description='Run FRASER PSI')
 
-sample <- snakemake@wildcards[['sample']]
-bam <- snakemake@input[['bam']]
+parser$add_argument('--bam', '-b', help='BAM file')
+parser$add_argument('--output_table', '-o', help= 'Output table after conversion')
+parser$add_argument('--threads', '-t', help= 'Number of threads')
+parser$add_argument('--strandedness', '-s', help= '0(None), 1(FR), 2(True-Seq/RF)')
+parser$add_argument('--min_expression', help= 'Minimum number of reads to call expression')
+parser$add_argument('--mapq', help= 'Discard reads with smaller MAPQ for PSI calculation')
+
+
+
+xargs<- parser$parse_args()
+
+
+register(MulticoreParam(xargs$threads))
 
 sample_sheet <-
-    tibble(sampleID = sample, bamFile = bam, gene = NA, pairedEnd = TRUE )
+    tibble(sampleID = "sample1", bamFile = xargs$bam, gene = NA, pairedEnd = TRUE )
 # Generate FRASER setting object
 settings <- 
     FraserDataSet(
         colData = as.data.table(sample_sheet), 
-         workingDir=snakemake@params[['working_dir']])
+         workingDir=dirname(xargs$output_table))
 
-settings@bamParam@mapqFilter <- as.integer(snakemake@params[['mapq_filter']])
+settings@bamParam@mapqFilter <- as.integer(xargs$mapq)
 # Strand specific analysis 
-strandSpecific(settings) <- as.integer(1)
+strandSpecific(settings) <- as.integer(xargs$strandedness)
 # Count reads in BAM files with minimal read filtering
 fds <- 
-    countRNAData(settings,
+    countRNAData(
+        settings,
         recount = TRUE,
-        minExpressionInOneSample = snakemake@params[['min_read']],
-        keepNonStandardChromosomes = FALSE)
+        minExpressionInOneSample = as.integer(xargs$min_expression),
+        keepNonStandardChromosomes = FALSE,
+        NcpuPerSample = as.integer(xargs$threads)
+    )
 # Calculate PSI values for splice junctions
 fds <- calculatePSIValues(fds)
 # Extract 5 and 3 PSI value for each junction
 fds <- 
-    saveFdsAsCountTable(fds, min_read = snakemake@params[['min_read']]) %>%
+    saveFdsAsCountTable(fds, min_read = as.integer(xargs$min_expression)) %>%
+    dplyr::mutate(End = End + 1) %>%
     dplyr::mutate(junc_id = splice2neo::generate_junction_id(Chromosome, Start, End, Strand))
 # Write output
-fds %>% write_tsv(snakemake@output[['psi_table']])
-
+fds %>% write_tsv(xargs$output_table)

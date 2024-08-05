@@ -1,0 +1,9 @@
+- name: salmon_bam
+  tags:
+    - integrationtest
+  command: >
+    snakemake --software-deployment-method conda --conda-frontend mamba  -j 1 --configfile tests/expression.yaml --config quant_mode=salmon_bam
+  files:
+    - path: "results/SRR5134767/star/Aligned.sortedByCoord.out.bam"
+    - path: "results/detected_junction.tsv"
+    - path: "results/expression.RDS"

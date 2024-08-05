@@ -1,0 +1,8 @@
+name: snakemake
+dependencies:
+  - bioconda::snakemake=8.10.7
+  - conda-forge::make=4.3
+  - conda-forge::git=2.45.1
+  - pip
+  - pip:
+    - snakemake-storage-plugin-http
