@@ -1,66 +1,132 @@
 rule fraser:
     input:
-        bam = "results/hisat2/{sample}/{sample}.sorted.bam",
-        gtf = get_genome_annotation
+        bam = rules.tronmake_expression_star.output.alignment,
+        gtf = os.path.join(config['index_dir'], 'ref_annot.gtf'),
+        strand = rules.tronmake_expression_determine_strandedness.output.strand
     params:
         working_dir = 
             lambda wildcards, output: os.path.dirname(output.psi_table),
         min_read = config['fraser'].get('min_read', 5),
-        mapq_filter = config['fraser'].get('mapq_filter', 60),
+        mapq_filter = config['fraser'].get('mapq_filter', 255),
+        exe = workflow.source_path('../scripts/fraser.R')
+    log:  "results/{sample}/log/fraser.log"
     output:
-        psi_table = "results/fraser/{sample}/{sample}_junctions.tsv"
-    threads: 8
-    script:
-        '../scripts/fraser.R'
+        psi_table = "results/{sample}/fraser/junctions_psi.tsv"
+    threads: 4
+    shell:
+        'source {input.strand}; '
+        'Rscript --vanilla {params.exe} '
+        '--bam {input.bam} '
+        '--threads {threads} '
+        '--output_table {output.psi_table} '
+        '--strandedness ${{featurecounts}} '
+        '--min_expression {params.min_read} '
+        '--mapq {params.mapq_filter} 2>&1 | tee {log}'
 
-rule regtools:
-    """Rule to run Regtools junctions extract/annotate
-
-    Rule to run Regtools junctions subcommand for each sample.
-    Regtools extract the expressed splice junctions from the 
-    STAR alignment and annotates them with the provided GTF annotation.
-    This rule extracts all splice junctions found in the sample and
-    not just the junctions in proximity of a variant.
-
+rule parse_junctions:
     input:
-        bam (string): Alignment (BAM sorted by coord.)
-        bai (string): Index of sorted BAM file
-        gtf (string): Reference annotation file (GTF)
-        fasta (string): Genome fasta file
+        star_sj = rules.tronmake_expression_star.output.sj,
+        fraser_psi = rules.fraser.output.psi_table
     output:
-        observedJunctions (string): Regtools splice junction table
-
-    """
-    input:
-        bam = "results/alignment/{sample}/{sample}.cram",
-        gtf = get_genome_annotation,
-        fasta =  get_genome_fasta
+        parsed_sj_tmp = "results/{sample}/fetchdata/parsed_sj.tsv.tmp"
     params:
-        anchor_length = config['regtools'].get('anchor', 8),
-        strandness = config['regtools'].get('strandness', 0)
-    conda:
-        '../envs/regtools.yaml'
-    log:
-        "logs/regtools/{sample}.log"
-    output:
-        observed_junctions =
-            'results/regtools/{sample}/{sample}_expressed_junctions.annot.tdt'
+        exe = workflow.source_path('../scripts/parse_junctions.R'),
+        read_support = config['fraser'].get('min_read', 5)
+    log: "results/{sample}/log/sj_parsing.log"
     threads: 1
     shell:
-        'regtools junctions extract -a {params.anchor_length} -s {params.strandness} {input.bam} | '
-        'regtools junctions annotate -o {output.observed_junctions} - {input.fasta} {input.gtf} &> {log}'
+        'Rscript --vanilla {params.exe} '
+        '--sj {input.star_sj} '
+        '--fraser {input.fraser_psi} '
+        '--read_support {params.read_support} '
+        '--output {output.parsed_sj_tmp} 2>&1 | tee {log}'
+
+rule filter_mapability:
+    input:
+        parsed_sj = rules.parse_junctions.output.parsed_sj_tmp,
+        encode_regions = os.path.join(config['index_dir'], 'mapability', 'encode_blacklist.bed'),
+        ucsc_regions =   os.path.join(config['index_dir'], 'mapability', 'ucsc_unusal.bed')
+    output:
+        parsed_sj = "results/{sample}/fetchdata/parsed_sj.tsv",
+        failed_sj = "results/{sample}/fetchdata/parsed_sj_problematic_mapability.tsv"
+    threads: 1
+    params:
+        exe =  workflow.source_path('../scripts/filter_mapability.R')
+    shell:
+        'Rscript --vanilla {params.exe} '
+         '--juncs {input.parsed_sj} '
+         '--encode_blacklist {input.encode_regions} '
+         '--ucsc_unusual {input.ucsc_regions} '
+         '--output {output.parsed_sj} '
+         '--removed_output {output.failed_sj} 2>&1 | tee {log} '
+
+rule add_context_sequence:
+    input:
+        parsed_sj = rules.filter_mapability.output.parsed_sj,
+        transcripts = os.path.join(config['index_dir'], 'ref_transcripts.RDS'),
+        tx2gene = os.path.join(config['index_dir'], 'tx2gene.tsv'),
+        gene2hgnc = os.path.join(config['index_dir'], 'hgnc_ensembl_id_gencode46.gz'),
+        gene_exclusion = os.path.join(config['index_dir'], 'exclusion_pattern.tsv')
+    output:
+        annotated_sj = "results/{sample}/fetchdata/annotated_sj.tsv",
+        annotated_sj_problematic = "results/{sample}/fetchdata/annotated_sj_problematic_gene.tsv"
+    params:
+        exe = workflow.source_path('../scripts/add_tx.R')
+    shell:
+        'Rscript --vanilla {params.exe} '
+        '--juncs {input.parsed_sj} '
+        '--transcripts {input.transcripts} '
+        '--tx2gene {input.tx2gene} '
+        '--gene_exclusion {input.gene_exclusion} '
+        '--gene2hgnc {input.gene2hgnc} '
+        '--output {output.annotated_sj} '
+        '--removed_output {output.annotated_sj_problematic} 2>&1 | tee {log}'
+
+rule add_transcript_expression:
+    input:
+        annotated_sj = rules.add_context_sequence.output.annotated_sj,
+        transcript_expression = rules.tronmake_expression_salmon_quant_bam.output.quant
+    output:
+        annotated_sj_expression = "results/{sample}/fetchdata/annotated_sj_expression.tsv"
+    params:
+        exe = workflow.source_path('../scripts/add_tpm.R')
+    threads: 1
+    shell:
+        'Rscript --vanilla {params.exe} '
+        '--sj {input.annotated_sj} '
+        '--txp {input.transcript_expression} '
+        '--output {output.annotated_sj_expression} 2>&1 | tee {log}'
 
 
-"""
-rule targeted_assembly:
-    pass
+#use rule sj_aggregate from tronmake_expression as single_sj_aggregate with:
+#    input:
+#        "results/{sample}/star/SJ.out.tab"
+#    output:
+#        junction_table = "results/{sample}/star/detected_junction.tsv",
+#        expression_table = "results/{sample}/star/splice_junction_counts.tsv"
+#
+#use rule tximport from tronmake_expression as single_tximport with:
+#    output:
+#        rds = "results/{sample}/expression.RDS",
+#        isoform_tpm = "results/{sample}/transcript_abundance.tsv",
+#        isoform_counts = "results/{sample}/transcript_counts.tsv",
+#        gene_tpm = "results/{sample}/gene_abundance.tsv",
+#        gene_counts = "results/{sample}/gene_counts.tsv",
+#
+#rule ctat_splicing:
+#    input:
+#        sj_out = "results/{sample}/star/SJ.out.tab",
+#        chim_junc = "results/{sample}/star/Chimeric.out.junction"
+#    output:
+#        introns = "results/{sample}/ctat_splicing/{sample}.introns",
+#        cancer_introns = "results/{sample}/ctat_splicing/{sample}.cancer.introns"
+#    params:
+#        prefix = lambda wildcards, output: output.introns.rstrip(".introns"),
+#        genome_lib = config['ctat'].get('genome_lib')
+#    shell:
+#        'python STAR_to_cancer_introns.py '
+#        '--ctat_genome_lib {params.genome_lib} '
+#        '--SJ_tab_file {input.sj_out} '
+#        '--chimJ_file {input.chim_junc} '
+#        '--output_prefix {params.prefix } 2>&1 | tee {log}'
 
-rule splice2neo:
-    pass
-
-rule add_gene_expression:
-    pass
-
-rule requant:
-    pass
-""

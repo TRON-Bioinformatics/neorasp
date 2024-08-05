@@ -1,0 +1,10 @@
+sample_sheet: 'tests/pep/samples.tsv'
+sra_mode: false
+index_dir: XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX'
+quant_mode: 'salmon_bam'
+interleaved_input: false
+bam_input: false
+fastq_screen_conf: ''
+fraser:
+  min_read: 5
+  mapq_filter: 255

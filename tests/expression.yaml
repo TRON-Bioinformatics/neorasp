@@ -1,0 +1,8 @@
+sra_mode: false
+sample_sheet: 'tests/pep/samples.tsv'
+index_dir: 'tests/resources/GRCh38v45_minigenome'
+# Allowed values are: salmon, salmon_bam, rsem, star and kallisto
+quant_mode: 'kallisto'
+fastq_screen_conf: ''
+interleaved_input: false
+bam_input: false

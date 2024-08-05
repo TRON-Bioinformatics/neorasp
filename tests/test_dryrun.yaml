@@ -1,0 +1,25 @@
+- name: dryrun_kallisto
+  tags:
+    - dryrun
+  command: >
+    snakemake --software-deployment-method conda -j 1 -n --configfile tests/expression.yaml --config quant_mode=kallisto
+- name: dryrun_salmon
+  tags:
+    - dryrun
+  command: >
+    snakemake --software-deployment-method conda -j 1 -n --configfile tests/expression.yaml --config quant_mode=salmon
+- name: dryrun_salmon_bam
+  tags:
+    - dryrun
+  command: >
+    snakemake --software-deployment-method conda -j 1 -n --configfile tests/expression.yaml --config quant_mode=salmon_bam
+- name: dryrun_rsem
+  tags:
+    - dryrun
+  command: >
+    snakemake --software-deployment-method conda -j 1 -n --configfile tests/expression.yaml --config quant_mode=rsem
+- name: dryrun_star
+  tags:
+    - dryrun
+  command: >
+    snakemake --software-deployment-method conda -j 1 -n --configfile tests/expression.yaml --config quant_mode=star
