@@ -1,0 +1,14 @@
+name: R
+channels:
+  - bioconda
+  - conda-forge
+  - nodefaults
+dependencies:
+  - r-base=4.3.3
+  - cmake
+  - r-xml
+  - freetype
+  - pkg-config
+  - fontconfig
+  - libtiff
+  - libdeflate

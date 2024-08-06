@@ -1,9 +1,9 @@
 '''
-This script is used to import the fastq2vcf workflow rules.
+This script is used to import the TronMake RNA-expression workflow rules.
 
-The pipeline path has to be adapted, otherwise it is not found in the fastq2vcf directory
+The pipeline path has to be adapted, otherwise it is not found in the TronMake directory
 Unfortunately, if a single param is edited, all other params are set empty, so all parameters
-from fastq2vcf have to be mirrored to this file. 
+from TronMake RNA-expression have to be mirrored to this file. 
 '''
 
 
@@ -17,4 +17,11 @@ module tronmake_expression:
 
 use rule * from tronmake_expression as tronmake_expression_*
 
-
+use rule salmon_quant_bam from tronmake_expression as tronmake_expression_salmon_quant_bam with:
+    params:
+        libtype = 'A',
+        extra = f'--seqBias --gcBias --geneMap {os.path.join(config['index_dir'], 'ref_annot.gtf')}',
+        outdir = lambda wildcards, output: os.path.dirname(output.quant)
+    output:
+        quant = 'results/{sample}/salmon_bam/quant.sf',
+        quant_gene = 'results/{sample}/salmon_bam/quant.genes.sf'

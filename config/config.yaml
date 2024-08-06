@@ -8,3 +8,6 @@ fastq_screen_conf: ''
 fraser:
   min_read: 5
   mapq_filter: 255
+requantify:
+  interval_mode: true
+  allow_mismatches: false

@@ -1,6 +1,8 @@
 suppressMessages({
   options(stringsAsFactors = F)
-  library(tidyverse)
+  library(readr)
+  library(magrittr)
+  library(dplyr)
   library(argparse)
   library(rtracklayer)
   
@@ -54,13 +56,13 @@ parser$add_argument('--removed_output', help= 'Output file for filtered junction
 
 xargs<- parser$parse_args()
 
-df <- read_tsv(xargs$sj)
+df <- readr::read_tsv(xargs$sj)
 
 df <- df %>% 
   filter_genomic_regions(., xargs$encode_blacklist, xargs$ucsc_unusual)
 
 df_failed <- df %>%
-  filter(!is.na(encode_blacklist_classification) OR !is.na(ucsc_blacklist_classification))
+  dplyr::filter(!is.na(encode_blacklist_classification) OR !is.na(ucsc_blacklist_classification))
 
-df %>% write_tsv(xargs$output)
-df_failed %>% write_tsv(xargs$removed_output)
+df %>% readr::write_tsv(xargs$output)
+df_failed %>% readr::write_tsv(xargs$removed_output)
