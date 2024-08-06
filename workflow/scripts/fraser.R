@@ -1,7 +1,10 @@
 suppressMessages({
   options(stringsAsFactors = F)
   library(FRASER)
-  library(tidyverse)
+  library(readr)
+  library(magrittr)
+  library(dplyr)
+  library(tibble)
   library(argparse)
   library(splice2neo)
 })
@@ -71,4 +74,4 @@ fds <-
     dplyr::mutate(End = End + 1) %>%
     dplyr::mutate(junc_id = splice2neo::generate_junction_id(Chromosome, Start, End, Strand))
 # Write output
-fds %>% write_tsv(xargs$output_table)
+fds %>% readr::write_tsv(xargs$output_table)

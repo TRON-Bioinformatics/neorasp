@@ -13,6 +13,7 @@ rule fraser:
     output:
         psi_table = "results/{sample}/fraser/junctions_psi.tsv"
     threads: 4
+    conda: '../envs/fraser.yaml'
     shell:
         'source {input.strand}; '
         'Rscript --vanilla {params.exe} '
@@ -34,6 +35,7 @@ rule parse_junctions:
         read_support = config['fraser'].get('min_read', 5)
     log: "results/{sample}/log/sj_parsing.log"
     threads: 1
+    conda: '../envs/R.yaml'
     shell:
         'Rscript --vanilla {params.exe} '
         '--sj {input.star_sj} '
@@ -52,6 +54,8 @@ rule filter_mapability:
     threads: 1
     params:
         exe =  workflow.source_path('../scripts/filter_mapability.R')
+    conda: '../envs/R.yaml'
+    log:  "results/{sample}/log/mapability_filter.log"
     shell:
         'Rscript --vanilla {params.exe} '
          '--juncs {input.parsed_sj} '
@@ -72,6 +76,8 @@ rule add_context_sequence:
         annotated_sj_problematic = "results/{sample}/fetchdata/annotated_sj_problematic_gene.tsv"
     params:
         exe = workflow.source_path('../scripts/add_tx.R')
+    conda: '../envs/R.yaml'
+    log:  "results/{sample}/log/add_cts.log"
     shell:
         'Rscript --vanilla {params.exe} '
         '--juncs {input.parsed_sj} '
@@ -85,33 +91,22 @@ rule add_context_sequence:
 rule add_transcript_expression:
     input:
         annotated_sj = rules.add_context_sequence.output.annotated_sj,
-        transcript_expression = rules.tronmake_expression_salmon_quant_bam.output.quant
+        transcript_expression =  'results/{sample}/salmon_bam/quant.sf',
+        gene_expression = 'results/{sample}/salmon_bam/quant.genes.sf'
     output:
         annotated_sj_expression = "results/{sample}/fetchdata/annotated_sj_expression.tsv"
     params:
         exe = workflow.source_path('../scripts/add_tpm.R')
     threads: 1
+    conda: '../envs/R.yaml'
+    log:  "results/{sample}/log/add_expression_estimates.log"
     shell:
         'Rscript --vanilla {params.exe} '
         '--sj {input.annotated_sj} '
         '--txp {input.transcript_expression} '
+        '--gxp {input.gene_expression} '
         '--output {output.annotated_sj_expression} 2>&1 | tee {log}'
 
-
-#use rule sj_aggregate from tronmake_expression as single_sj_aggregate with:
-#    input:
-#        "results/{sample}/star/SJ.out.tab"
-#    output:
-#        junction_table = "results/{sample}/star/detected_junction.tsv",
-#        expression_table = "results/{sample}/star/splice_junction_counts.tsv"
-#
-#use rule tximport from tronmake_expression as single_tximport with:
-#    output:
-#        rds = "results/{sample}/expression.RDS",
-#        isoform_tpm = "results/{sample}/transcript_abundance.tsv",
-#        isoform_counts = "results/{sample}/transcript_counts.tsv",
-#        gene_tpm = "results/{sample}/gene_abundance.tsv",
-#        gene_counts = "results/{sample}/gene_counts.tsv",
 #
 #rule ctat_splicing:
 #    input:

@@ -21,6 +21,12 @@ def get_final_output():
                 "results/{sample}/fetchdata/annotated_sj_expression.tsv", sample=sample.sample_name
             )
         )
+        # results/{sample}/fetchdata/easyquant/quantification.tsv
+        final_files.extend(
+            expand(
+                "results/{sample}/fetchdata/easyquant/quantification.tsv", sample=sample.sample_name
+            )
+        )
     return final_files
 
 #rule add_junction_tag:

@@ -11,6 +11,7 @@ parser <- ArgumentParser(description='Annotate junctions with transcript express
 
 parser$add_argument('--sj', help='junctions')
 parser$add_argument('--txp', help='transcript expression from salmon')
+parser$add_argument('--gxp', help='gene expression from salmon')
 parser$add_argument('--output', help= 'Output file')
 
 xargs<- parser$parse_args()
@@ -22,8 +23,14 @@ tx <- readr::read_tsv(xargs$txp) %>%
   dplyr::rename(tx_id = Name, transcript_expression_tpm=TPM) %>%
   dplyr::select(tx_id, transcript_expression_tpm)
 
+gene <- read_tsv(xargs$gxp) %>%
+  dplyr::rename(gene_id = Name, gene_expression_tpm=TPM) %>%
+  dplyr::select(gene_id, gene_expression_tpm)
+
+
 df <- df %>%
-  dplyr::left_join(tx)
+  dplyr::left_join(tx) %>%
+  dplyr::left_join(gene)
 
 df %>% 
   readr::write_tsv(xargs$output)
