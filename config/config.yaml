@@ -6,8 +6,10 @@ interleaved_input: false
 bam_input: false
 fastq_screen_conf: ''
 fraser:
-  min_read: 5
+  min_read: 2
   mapq_filter: 255
+star:
+  min_read: 2
 requantify:
   interval_mode: true
   allow_mismatches: false
