@@ -1,6 +1,6 @@
 rule prepare_requant:
     input:
-        sj = rules.add_context_sequence.output.annotated_sj
+        sj = rules.add_transcript_expression.output.sj_expression
     output:
         easyquant_table = "results/{sample}/fetchdata/easyquant/context_seq.tsv",
         genes_of_interest = "results/{sample}/fetchdata/easyquant/genes_of_interest.txt"
@@ -96,22 +96,24 @@ rule bowtie_align:
     params:
         index_prefix = lambda wildcards, input: input.bowtie_index[0].rstrip(".1.bt2")
     output:
-        sam = pipe("results/{sample}/fetchdata/easyquant/alignment/bowtie_Aligned.out.sam.FIFO")
-    threads: 4
+        sam = temp("results/{sample}/fetchdata/easyquant/alignment/bowtie_Aligned.out.sam")
+    threads: 1
     conda: '../envs/easyquant.yaml'
     log:  "results/{sample}/log/bowtie_align.log"
     shell:
         "bowtie2 "
         "-p {threads} "
         "-x {params.index_prefix} "
+        "-k 200 --end-to-end "
+        "--no-discordant "
+        "--dpad 0 --gbar 99999999 --mp 1,1 --np 1 --score-min L,0,-0.01 "
         "-1 {input.r1} -2 {input.r2} "
-        "-a --end-to-end "
-        "-S {output.sam} "
-        "2>&1 | tee {log}"
+        "> {output.sam} "
+        "2> {log}"
 
 rule requantify:
     input:
-        sam = rules.bowtie_align.output.sam,
+        sam = "results/{sample}/fetchdata/easyquant/alignment/bowtie_Aligned.out.sam",
         context_seq = rules.prepare_requant.output.easyquant_table
     params:
         requant_dir = lambda wildcards, output: os.path.dirname(output.quant),
@@ -134,3 +136,20 @@ rule requantify:
         "{params.interval} "
         "{params.mismatches} "
         "2>&1 | tee {log}"
+
+rule add_quant_counts:
+    input:
+        sj = rules.add_transcript_expression.output.sj_expression,
+        quantification = rules.requantify.output.quant
+    output:
+        requantified_sj = "results/{sample}/fetchdata/requantified_sj.tsv"
+    params:
+        exe = workflow.source_path('../scripts/quant.R'),
+        requant_dir = lambda wildcards, input: os.path.dirname(input.quantification)
+    threads: 1
+    conda: '../envs/R.yaml'
+    shell:
+        'Rscript --vanilla {params.exe} '
+        '--sj {input.sj} '
+        '--requant {params.requant_dir} '
+        '--output {output.requantified_sj} 2>&1 | tee {log} '

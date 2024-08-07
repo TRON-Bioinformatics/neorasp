@@ -24,7 +24,7 @@ df %>%
   splice2neo::transform_for_requant() %>% 
   readr::write_tsv(xargs$output)
 
-genes <- df %>% dplyr::pull(gene) %>% unique()
+genes <- df %>% dplyr::pull(gene_id) %>% unique()
 
 genes <- paste(genes, collapse="|")
 

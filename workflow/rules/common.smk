@@ -6,26 +6,21 @@ def get_final_output():
     """
     final_files = []
     for sample in samples.itertuples():
+        # Re-quantified novel junctions
         final_files.extend(
             expand(
-                "results/{sample}/star/Aligned.sortedByCoord.out.bam", sample=sample.sample_name
+                "results/{sample}/fetchdata/requantified_sj.tsv", sample=sample.sample_name
             )
         )
         final_files.extend(
-            expand(
-                "results/{sample}/salmon_bam/quant.sf", sample=sample.sample_name
-            )
+            collect("results/{sample}/qualimap", sample =  samples['sample_name'].unique())
+        )
+        # BigWig of STAR alignment
+        final_files.extend(
+            collect("results/{sample}/star/Signal.Unique.str1.bw", sample =  samples['sample_name'].unique())
         )
         final_files.extend(
-            expand(
-                "results/{sample}/fetchdata/annotated_sj_expression.tsv", sample=sample.sample_name
-            )
-        )
-        # results/{sample}/fetchdata/easyquant/quantification.tsv
-        final_files.extend(
-            expand(
-                "results/{sample}/fetchdata/easyquant/quantification.tsv", sample=sample.sample_name
-            )
+            collect("results/{sample}/star/Signal.Unique.str2.bw", sample =  samples['sample_name'].unique())
         )
     return final_files
 
