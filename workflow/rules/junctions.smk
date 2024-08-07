@@ -1,6 +1,18 @@
+rule samtools_index:
+    input:
+        rules.tronmake_expression_star.output.alignment,
+    output:
+        "results/{sample}/star/Aligned.sortedByCoord.out.bam.bai"
+    params:
+        extra="",  # optional params string
+    threads: 1  # This value - 1 will be sent to -@
+    wrapper:
+        "v3.14.0/bio/samtools/index"
+
 rule fraser:
     input:
         bam = rules.tronmake_expression_star.output.alignment,
+        bai = rules.samtools_index.output,
         gtf = os.path.join(config['index_dir'], 'ref_annot.gtf'),
         strand = rules.tronmake_expression_determine_strandedness.output.strand
     params:
@@ -27,9 +39,10 @@ rule fraser:
 rule parse_junctions:
     input:
         star_sj = rules.tronmake_expression_star.output.sj,
-        fraser_psi = rules.fraser.output.psi_table
+        fraser_psi = rules.fraser.output.psi_table,
+        canonical_junctions = os.path.join(config['index_dir'], 'canonical_junctions.tsv')
     output:
-        parsed_sj_tmp = "results/{sample}/fetchdata/parsed_sj.tsv.tmp"
+        parsed_sj_tmp = temp("results/{sample}/fetchdata/parsed_sj.tsv.tmp")
     params:
         exe = workflow.source_path('../scripts/parse_junctions.R'),
         read_support = config['fraser'].get('min_read', 5)
@@ -39,6 +52,7 @@ rule parse_junctions:
     shell:
         'Rscript --vanilla {params.exe} '
         '--sj {input.star_sj} '
+        '--canonical_junctions {input.canonical_junctions} '
         '--fraser {input.fraser_psi} '
         '--read_support {params.read_support} '
         '--output {output.parsed_sj_tmp} 2>&1 | tee {log}'
@@ -49,8 +63,8 @@ rule filter_mapability:
         encode_regions = os.path.join(config['index_dir'], 'mapability', 'encode_blacklist.bed'),
         ucsc_regions =   os.path.join(config['index_dir'], 'mapability', 'ucsc_unusal.bed')
     output:
-        parsed_sj = "results/{sample}/fetchdata/parsed_sj.tsv",
-        failed_sj = "results/{sample}/fetchdata/parsed_sj_problematic_mapability.tsv"
+        parsed_sj = temp("results/{sample}/fetchdata/parsed_sj.tsv"),
+        failed_sj = "results/{sample}/fetchdata/sj_problematic_mapability.tsv"
     threads: 1
     params:
         exe =  workflow.source_path('../scripts/filter_mapability.R')
@@ -58,7 +72,7 @@ rule filter_mapability:
     log:  "results/{sample}/log/mapability_filter.log"
     shell:
         'Rscript --vanilla {params.exe} '
-         '--juncs {input.parsed_sj} '
+         '--sj {input.parsed_sj} '
          '--encode_blacklist {input.encode_regions} '
          '--ucsc_unusual {input.ucsc_regions} '
          '--output {output.parsed_sj} '
@@ -68,12 +82,13 @@ rule add_context_sequence:
     input:
         parsed_sj = rules.filter_mapability.output.parsed_sj,
         transcripts = os.path.join(config['index_dir'], 'ref_transcripts.RDS'),
+        genome = os.path.join(config['index_dir'], 'hg38.analysisSet.2bit'),
         tx2gene = os.path.join(config['index_dir'], 'tx2gene.tsv'),
         gene2hgnc = os.path.join(config['index_dir'], 'hgnc_ensembl_id_gencode46.gz'),
         gene_exclusion = os.path.join(config['index_dir'], 'exclusion_pattern.tsv')
     output:
-        annotated_sj = "results/{sample}/fetchdata/annotated_sj.tsv",
-        annotated_sj_problematic = "results/{sample}/fetchdata/annotated_sj_problematic_gene.tsv"
+        annotated_sj = temp("results/{sample}/fetchdata/annotated_sj.tsv"),
+        annotated_sj_problematic = "results/{sample}/fetchdata/sj_problematic_gene_no_transcript_overlap.tsv"
     params:
         exe = workflow.source_path('../scripts/add_tx.R')
     conda: '../envs/R.yaml'
@@ -82,6 +97,7 @@ rule add_context_sequence:
         'Rscript --vanilla {params.exe} '
         '--juncs {input.parsed_sj} '
         '--transcripts {input.transcripts} '
+        '--genome {input.genome} '
         '--tx2gene {input.tx2gene} '
         '--gene_exclusion {input.gene_exclusion} '
         '--gene2hgnc {input.gene2hgnc} '
@@ -94,7 +110,7 @@ rule add_transcript_expression:
         transcript_expression =  'results/{sample}/salmon_bam/quant.sf',
         gene_expression = 'results/{sample}/salmon_bam/quant.genes.sf'
     output:
-        annotated_sj_expression = "results/{sample}/fetchdata/annotated_sj_expression.tsv"
+        sj_expression = temp("results/{sample}/fetchdata/annotated_sj_expression.tsv")
     params:
         exe = workflow.source_path('../scripts/add_tpm.R')
     threads: 1
@@ -105,7 +121,7 @@ rule add_transcript_expression:
         '--sj {input.annotated_sj} '
         '--txp {input.transcript_expression} '
         '--gxp {input.gene_expression} '
-        '--output {output.annotated_sj_expression} 2>&1 | tee {log}'
+        '--output {output.sj_expression} 2>&1 | tee {log}'
 
 #
 #rule ctat_splicing:

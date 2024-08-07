@@ -6,7 +6,6 @@ suppressMessages({
   library(dplyr)
   library(tibble)
   library(argparse)
-  library(splice2neo)
 })
 
 saveFdsAsCountTable <- function(fds, min_read=5) {
@@ -72,6 +71,6 @@ fds <- calculatePSIValues(fds)
 fds <- 
     saveFdsAsCountTable(fds, min_read = as.integer(xargs$min_expression)) %>%
     dplyr::mutate(End = End + 1) %>%
-    dplyr::mutate(junc_id = splice2neo::generate_junction_id(Chromosome, Start, End, Strand))
+    dplyr::mutate(junc_id = stringr::str_c(Chromosome, ":", Start,"-", End,":", Strand))
 # Write output
 fds %>% readr::write_tsv(xargs$output_table)
