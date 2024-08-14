@@ -97,7 +97,7 @@ rule bowtie_align:
         index_prefix = lambda wildcards, input: input.bowtie_index[0].rstrip(".1.bt2")
     output:
         sam = temp("results/{sample}/fetchdata/easyquant/alignment/bowtie_Aligned.out.sam")
-    threads: 1
+    threads: 4
     conda: '../envs/easyquant.yaml'
     log:  "results/{sample}/log/bowtie_align.log"
     shell:
@@ -146,6 +146,7 @@ rule add_quant_counts:
     params:
         exe = workflow.source_path('../scripts/quant.R'),
         requant_dir = lambda wildcards, input: os.path.dirname(input.quantification)
+    log:  "results/{sample}/log/add_requantification_counts.log"
     threads: 1
     conda: '../envs/R.yaml'
     shell:

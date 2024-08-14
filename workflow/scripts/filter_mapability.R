@@ -56,7 +56,7 @@ parser$add_argument('--removed_output', help= 'Output file for filtered junction
 
 xargs<- parser$parse_args()
 
-df <- readr::read_tsv(xargs$sj)
+df <- readr::read_tsv(xargs$sj, show_col_types = FALSE)
 
 df <- df %>% 
   filter_genomic_regions(., xargs$encode_blacklist, xargs$ucsc_unusual)
@@ -64,5 +64,7 @@ df <- df %>%
 df_failed <- df %>%
   dplyr::filter(!is.na(encode_blacklist_classification) | !is.na(ucsc_blacklist_classification))
 
-df %>% readr::write_tsv(xargs$output)
+df %>%
+  dplyr::filter(is.na(encode_blacklist_classification) & is.na(ucsc_blacklist_classification)) %>%
+  readr::write_tsv(xargs$output)
 df_failed %>% readr::write_tsv(xargs$removed_output)

@@ -19,7 +19,7 @@ parser$add_argument('--output', help= 'Output directory')
 xargs<- parser$parse_args()
 
 df_fraser <-
-    read_tsv(xargs$fraser,  col_types = cols(Start = col_integer(), End = col_integer(), Strand=col_character())) %>%
+    read_tsv(xargs$fraser,  col_types = cols(Start = col_integer(), End = col_integer(), Strand=col_character()), show_col_types = FALSE) %>%
     dplyr::rename(junction_start = Start, 
                   junction_end = End,
                   strand = Strand,
@@ -39,7 +39,7 @@ df_fraser <- df_fraser %>%
     )
   ) %>% tidyr::separate_rows(junc_id, sep=";")
 
-canonical_junctions <- readr::read_tsv(xargs$canonical_junctions)
+canonical_junctions <- readr::read_tsv(xargs$canonical_junctions, show_col_types = FALSE)
 
 df_star <- splice2neo::parse_star_sj(path = xargs$sj) %>%
   dplyr::mutate(is_canonical = junc_id %in% canonical_junctions$junc_id) %>%
@@ -47,8 +47,7 @@ df_star <- splice2neo::parse_star_sj(path = xargs$sj) %>%
 
 # Filter out junctions with a supporting read count less than the provided cutoff
 df_star <- df_star %>%
-  dplyr::mutate(number_supporting_reads = as.numeric(uniquely_mapping_reads) + as.numeric(multi_mapping_reads)) %>%
-  dplyr::filter(number_supporting_reads >= as.numeric(xargs$read_support)) %>%
+  dplyr::filter(as.numeric(uniquely_mapping_reads) >= as.numeric(xargs$read_support)) %>%
   dplyr::filter(chromosome %in% paste0('chr', c(1:22, 'X', 'Y'))) %>% 
   dplyr::left_join(df_fraser %>% dplyr::select(junc_id, intron_jaccard, psi5, psi3) %>% distinct())
 

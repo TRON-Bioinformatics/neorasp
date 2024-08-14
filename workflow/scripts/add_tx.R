@@ -11,7 +11,7 @@ suppressMessages({
 
 gene_exclusion <- function(df, exclusion_pattern) {
   #stopifnot("hgnc" %in% colnames(df), "Column HGNC is missing")
-  exclusion_pattern <- readr::read_tsv(exclusion_pattern)
+  exclusion_pattern <- readr::read_tsv(exclusion_pattern, show_col_types = FALSE)
   
   df <- df %>%
     fuzzyjoin::regex_left_join(exclusion_pattern,
@@ -38,12 +38,12 @@ xargs<- parser$parse_args()
 transcripts <- base::readRDS(xargs$transcripts)
 bsg <- rtracklayer::TwoBitFile(xargs$genome)
 
-df <- readr::read_tsv(xargs$juncs)
+df <- readr::read_tsv(xargs$juncs, show_col_types = FALSE)
 # Read transcript to gene mapping
-tx2gene <- readr::read_tsv(xargs$tx2gene) %>%
+tx2gene <- readr::read_tsv(xargs$tx2gene, show_col_types = FALSE) %>%
   dplyr::rename(tx_id = TXNAME, gene_id = GENEID)
 # Read gene to HGNC mapping
-gene2hgnc <- readr::read_tsv(xargs$gene2hgnc) %>%
+gene2hgnc <- readr::read_tsv(xargs$gene2hgnc, show_col_types = FALSE) %>%
   dplyr::select(`Gene stable ID version`, `Gene name`) %>%
   dplyr::rename(gene_id = `Gene stable ID version`, hgnc = `Gene name`) %>%
   dplyr::distinct()
@@ -58,7 +58,7 @@ df_without_tx <- df %>%
 
 df <- df %>%
   splice2neo::choose_tx()
-df$tx_id
+
 # Select likely transcripts and annotate with ENSEMBL gene id and HGNC symbol
 df <- df %>%
   dplyr::left_join(tx2gene) %>%

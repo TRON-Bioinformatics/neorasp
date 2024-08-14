@@ -17,7 +17,7 @@ parser$add_argument('--output_genes', help= 'Genes of interest for requant')
 xargs<- parser$parse_args()
 
 
-df <- readr::read_tsv(xargs$sj)
+df <- readr::read_tsv(xargs$sj, show_col_types = FALSE)
 
 # Filter only for consensus calls and remove intergenic calls
 df %>%
