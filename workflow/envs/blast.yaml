@@ -1,0 +1,13 @@
+name: blast
+channels:
+  - bioconda
+  - conda-forge
+dependencies:
+  - python=3.10
+  - blast=2.16.0
+  - pip
+  - pip:
+    - logzero
+    - biopython
+    - pandas
+    - xxhash

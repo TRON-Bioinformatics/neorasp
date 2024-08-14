@@ -1,3 +1,3 @@
 [submodule "workflow/tronmake-rna-expression"]
 	path = workflow/tronmake-rna-expression
-	url = url = ../tronmake-rna-expression.git
+	url = ../tronmake-rna-expression.git

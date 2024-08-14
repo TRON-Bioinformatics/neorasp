@@ -13,8 +13,7 @@ rule fraser:
     input:
         bam = rules.tronmake_expression_star.output.alignment,
         bai = rules.samtools_index.output,
-        gtf = os.path.join(config['index_dir'], 'ref_annot.gtf'),
-        strand = rules.tronmake_expression_determine_strandedness.output.strand
+        gtf = os.path.join(config['index_dir'], 'ref_annot.gtf')
     params:
         working_dir = 
             lambda wildcards, output: os.path.dirname(output.psi_table),
@@ -27,12 +26,11 @@ rule fraser:
     threads: 4
     conda: '../envs/fraser.yaml'
     shell:
-        'source {input.strand}; '
         'Rscript --vanilla {params.exe} '
         '--bam {input.bam} '
         '--threads {threads} '
         '--output_table {output.psi_table} '
-        '--strandedness ${{featurecounts}} '
+        '--strandedness 0 '
         '--min_expression {params.min_read} '
         '--mapq {params.mapq_filter} 2>&1 | tee {log}'
 
