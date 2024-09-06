@@ -25,9 +25,13 @@ use rule salmon_quant_bam from tronmake_expression as tronmake_expression_salmon
     output:
         quant = 'results/{sample}/salmon_bam/quant.sf',
         quant_gene = 'results/{sample}/salmon_bam/quant.genes.sf'
+    resources:
+        mem_mb = 15000
 
 use rule qualimap from tronmake_expression as tronmake_expression_qualimap with:
     params:
         java_opts="-Xmx8192M -Djava.awt.headless=true"
+    resources:
+        mem_mb = 10000
 
         
