@@ -21,7 +21,7 @@ regions and genes. Remaining junction candidates are then re-quantified using ea
 
 ## Components
 
-1. Adapter and quality trimming ([`fastp`](https://www.bioinformatics.babraham.ac.uk/projects/trim_galore/))
+1. Adapter and quality trimming ([`fastp`](https://github.com/OpenGene/fastp))
 
 2. Detection and PSI calculation: [`STAR`](https://github.com/alexdobin/STAR) -> [`fraser`](https://github.com/deweylab/RSEM) -> **SJ QUANTIFICATION**
 
@@ -32,7 +32,7 @@ regions and genes. Remaining junction candidates are then re-quantified using ea
     * Removing junctions located in UCSC & ENCODE problematic regions.
     * Removing junctions from IG, TCR, BCR and HLA regions.
 
-5. Targeted re-quantification of splice junctions ([`easyquant`](https://www.bioinformatics.babraham.ac.uk/projects/trim_galore/)).
+5. Targeted re-quantification of splice junctions ([`easyquant`](https://github.com/TRON-Bioinformatics/easyquant)).
 
 6. Identification of false-positive re-quantification results.
 
