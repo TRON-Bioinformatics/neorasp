@@ -1,10 +1,95 @@
-executor: slurm
-jobs: 100
-local-cores: 8
-conda-frontend: conda
-latency-wait: 60
+jobs: 16
+local-cores: 16
+conda-frontend: mamba
+latency-wait: 120
+keep-going: True
+printshellcmds: True
+rerun-incomplete: True
 default-resources:
   mem_mb: 4096
   threads: 4
   runtime: 3600
-  account: "'$USER'"
+
+set-threads:
+  tronmake_expression_salmon_quant_bam: 4
+  tronmake_expression_qualimap: 2
+  tronmake_expression_star: 18
+  tronmake_expression_fastp: 2
+  tronmake_expression_bedGraphToBigWig_forward: 1
+  tronmake_expression_bedGraphToBigWig_reverse: 1
+  tronmake_expression_get_fastq_SRA: 2
+  samtools_index: 1
+  fraser: 4
+  parse_junctions: 1
+  filter_mapability: 1
+  add_context_sequence: 1
+  add_transcript_expression: 1
+  prepare_requant: 1
+  generate_context_fa: 1
+  bowtie_index: 4
+  bowtie_align: 8
+  requantify: 1
+  add_quant_counts: 1
+  find_cts_matching_wt: 8
+
+set-resources:
+  tronmake_expression_salmon_quant_bam:
+    mem_mb: 16000
+    runtime: "1h"
+  tronmake_expression_qualimap:
+    mem_mb: 10000
+    runtime: "1h"
+  tronmake_expression_star:
+    mem_mb: 48000
+    runtime: "8h"
+  tronmake_expression_fastp:
+    mem_mb: 8000
+    runtime: "1h"
+  tronmake_expression_bedGraphToBigWig_forward:
+    mem_mb: 4096
+    runtime: "1h"
+  tronmake_expression_bedGraphToBigWig_reverse:
+    mem_mb: 4096
+    runtime: "1h"
+  tronmake_expression_get_fastq_SRA:
+    mem_mb: 8000
+    runtime: "2h"
+  samtools_index:
+    mem_mb: 4096
+    runtime: "1h"
+  fraser:
+    mem_mb: 16000
+    runtime: "1h"
+  parse_junctions:
+    mem_mb: 8000
+    runtime: "1h"
+  filter_mapability:
+    mem_mb: 8000
+    runtime: "1h"
+  add_context_sequence:
+    mem_mb: 16000
+    runtime: "4h"
+  add_transcript_expression:
+    mem_mb: 4000
+    runtime: "1h"
+  prepare_requant:
+    mem_mb: 4000
+    runtime: "1h"
+  generate_context_fa:
+    mem_mb: 4000
+    runtime: "1h"
+  bowtie_index:
+    mem_mb: 8000
+    runtime: "1h"
+  bowtie_align:
+    mem_mb: 16000
+    runtime: "4h"
+  requantify:
+    mem_mb: 8000
+    runtime: "4h"
+  add_quant_counts:
+    mem_mb: 4000
+    runtime: "1h"
+  find_cts_matching_wt:
+    mem_mb: 16000
+    runtime: "4h"

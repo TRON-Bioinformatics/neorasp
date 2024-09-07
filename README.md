@@ -19,6 +19,26 @@ Next, junctions are filtered for novelty. To exclude false-positve junction call
 regions and genes. Remaining junction candidates are then re-quantified using easyquant.
 
 
+## Components
+
+1. Adapter and quality trimming ([`fastp`](https://www.bioinformatics.babraham.ac.uk/projects/trim_galore/))
+
+2. Detection and PSI calculation: [`STAR`](https://github.com/alexdobin/STAR) -> [`fraser`](https://github.com/deweylab/RSEM) -> **SJ QUANTIFICATION**
+
+3. Expression quantification: [`Salmon`](https://salmon.readthedocs.io/en/latest/) -> **GENE and TRANSCRIPT QUANTIFICATION**
+
+4. Filtering: 
+    * Removing canonical junctions from GENCODE, ENCODE, CHESS3 and GTEx long read GTFs
+    * Removing junctions located in UCSC & ENCODE problematic regions.
+    * Removing junctions from IG, TCR, BCR and HLA regions.
+
+5. Targeted re-quantification of splice junctions ([`easyquant`](https://www.bioinformatics.babraham.ac.uk/projects/trim_galore/)).
+
+6. Identification of false-positive re-quantification results.
+
+
+
+
 ## How to run it
 
 Download the project and run as follows:
