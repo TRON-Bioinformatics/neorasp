@@ -7,6 +7,8 @@ rule prepare_requant:
     params:
         exe = workflow.source_path('../scripts/prepare_quant.R')
     threads: 1
+    resources:
+        mem_mb = 8000
     conda: '../envs/R.yaml'
     log:  "results/{sample}/log/prepare_requantification.log"
     shell:
@@ -54,6 +56,8 @@ rule generate_context_fa:
     output:
         context_fa = "results/{sample}/fetchdata/easyquant/context.fa"
     threads: 1
+    resources:
+        mem_mb = 4000
     conda: '../envs/easyquant.yaml'
     log:  "results/{sample}/log/bpquant_csv2fasta.log"
     shell:
@@ -69,6 +73,8 @@ rule bowtie_index:
     params:
         prefix = lambda wildcards, output: os.path.dirname(output.bowtie_index[0]) + "/bowtie"
     threads: 4
+    resources:
+        mem_mb = 8000
     conda: '../envs/easyquant.yaml'
     log:  "results/{sample}/log/bowtie_index.log"
     output:
@@ -98,6 +104,8 @@ rule bowtie_align:
     output:
         sam = temp("results/{sample}/fetchdata/easyquant/alignment/bowtie_Aligned.out.sam")
     threads: 4
+    resources:
+        mem_mb = 16000
     conda: '../envs/easyquant.yaml'
     log:  "results/{sample}/log/bowtie_align.log"
     shell:
@@ -125,6 +133,8 @@ rule requantify:
         read_info = "results/{sample}/fetchdata/easyquant/read_info.tsv.gz"
     log: "results/logs/{sample}_requantify.log"
     threads: 1
+    resources:
+        mem_mb = 8000
     conda: '../envs/easyquant.yaml'
     log:  "results/{sample}/log/requantification.log"
     shell:
@@ -148,6 +158,8 @@ rule add_quant_counts:
         requant_dir = lambda wildcards, input: os.path.dirname(input.quantification)
     log:  "results/{sample}/log/add_requantification_counts.log"
     threads: 1
+    resources:
+        mem_mb = 8000
     conda: '../envs/R.yaml'
     shell:
         'Rscript --vanilla {params.exe} '
