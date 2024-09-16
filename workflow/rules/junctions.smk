@@ -23,7 +23,9 @@ rule fraser:
     log:  "results/{sample}/log/fraser.log"
     output:
         psi_table = "results/{sample}/fraser/junctions_psi.tsv"
-    threads: 4
+    threads: 2
+    resources:
+        mem_mb = 16000
     conda: '../envs/fraser.yaml'
     shell:
         'Rscript --vanilla {params.exe} '
@@ -46,6 +48,8 @@ rule parse_junctions:
         read_support = config['fraser'].get('min_read', 5)
     log: "results/{sample}/log/sj_parsing.log"
     threads: 1
+    resources:
+        mem_mb = 8000
     conda: '../envs/R.yaml'
     shell:
         'Rscript --vanilla {params.exe} '
@@ -64,6 +68,8 @@ rule filter_mapability:
         parsed_sj = temp("results/{sample}/fetchdata/parsed_sj.tsv"),
         failed_sj = "results/{sample}/fetchdata/sj_problematic_mapability.tsv"
     threads: 1
+    resources:
+        mem_mb = 8000
     params:
         exe =  workflow.source_path('../scripts/filter_mapability.R')
     conda: '../envs/R.yaml'
@@ -87,6 +93,9 @@ rule add_context_sequence:
     output:
         annotated_sj = temp("results/{sample}/fetchdata/annotated_sj.tsv"),
         annotated_sj_problematic = "results/{sample}/fetchdata/sj_problematic_gene_no_transcript_overlap.tsv"
+    threads: 1
+    resources:
+        mem_mb = 20000
     params:
         exe = workflow.source_path('../scripts/add_tx.R')
     conda: '../envs/R.yaml'
@@ -112,6 +121,8 @@ rule add_transcript_expression:
     params:
         exe = workflow.source_path('../scripts/add_tpm.R')
     threads: 1
+    resources:
+        mem_mb = 8000
     conda: '../envs/R.yaml'
     log:  "results/{sample}/log/add_expression_estimates.log"
     shell:

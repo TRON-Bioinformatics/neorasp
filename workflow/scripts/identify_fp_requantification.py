@@ -6,6 +6,7 @@ import argparse
 import sys, os
 import subprocess
 import pandas as pd
+import numpy as np
 import xxhash
 from logzero import logger
 from Bio import SeqIO
@@ -21,22 +22,25 @@ def main():
         formatter_class=argparse.RawTextHelpFormatter, description="Add wild-type hits of novel junction sequences.\n"
     )
 
-    parser.add_argument("--input_splice", required=True, help="splice2neo annotation table")
+    parser.add_argument("--input_splice", 
+        required=True,
+        help="splice2neo annotation table")
     parser.add_argument(
         "--output",
         required=True,
-        help="splice2neo table with blast hits of target sequence",
-    )
-    parser.add_argument("--transcriptome", required=True, help="Reference transcriptome to blast against.")
-    parser.add_argument("--temp_dir", default="/tmp", help="tmp directory")
-    parser.add_argument("--mismatch", default=0, help="Number of mismatches allowed in blast alignment.")
+        help="splice2neo table with blast hits of target sequence")
+    parser.add_argument("--transcriptome",
+        required=True, help="Reference transcriptome to blast against.")
+    parser.add_argument("--temp_dir",
+        default="/tmp", help="tmp directory")
+    parser.add_argument("--mismatch",
+        default=0, help="Number of mismatches allowed in blast alignment.")
     parser.add_argument(
         "--threads",
         default=1,
         type=int,
         required=False,
-        help="number of threads to use by blast",
-    )
+        help="number of threads to use by blast")
 
     args = parser.parse_args()
 
@@ -78,9 +82,9 @@ def main():
             description='')
         fasta_entries.append(record)
     SeqIO.write(fasta_entries, faidx_output, "fasta")
-    # ~~~~~~~~~~~~~~~~~~~~~~~
-    # Run BLAST
-    # ~~~~~~~~~~~~~~~~~~~~~~~
+    # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    # Run BLAST against WT transcriptome
+    # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     logger.info("-> Running blast alignment against transcriptome...")
 
     # Path to the outfmt6 table
@@ -122,6 +126,7 @@ def main():
         "tend",
         "evalue",
         "bitscore"]
+
     with open(psl_output, 'r') as file_handle:
         blast_df = pd.read_csv(file_handle, sep='\t', names=header, index_col=False)
     blast_df = blast_df.loc[blast_df.gapopen == 0]
@@ -133,14 +138,16 @@ def main():
     # Check if junction in aligned region --> otherwise skip the alignment
     temp = temp.loc[(temp.junc_in_query > temp.qstart) & (temp.junc_in_query < temp.qend)]
     temp.to_csv(f"{out_file}.tmp", sep="\t", index=False)
-    temp['wt_match'] = temp.apply(lambda x: f'{x.wt_transcript}:{int(x.tstart)}:{int(x.tend)}:{int(x.length)}/{len(x.query_sequence)}', axis = 1)
-    temp = temp.loc[:,['cts_id', 'wt_match']].drop_duplicates().groupby('cts_id')['wt_match'].apply(';'.join).reset_index()
+    if not len(temp.index) == 0:    
+        temp['wt_match'] = temp.apply(lambda x: f'{x.wt_transcript}:{int(x.tstart)}:{int(x.tend)}:{int(x.length)}/{len(x.query_sequence)}', axis = 1)
+        temp = temp.loc[:,['cts_id', 'wt_match']].drop_duplicates().groupby('cts_id')['wt_match'].apply(';'.join).reset_index()
+        input_df = input_df.join(temp.set_index('cts_id'), on='cts_id')
+    else:
+        input_df['wt_match'] = np.nan
 
-    input_df = input_df.join(temp.set_index('cts_id'), on='cts_id')
     input_df.to_csv(out_file, sep="\t", index=False)
     sys.exit(0)
     
 
 if __name__ == "__main__":
-
     main()

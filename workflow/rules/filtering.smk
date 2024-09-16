@@ -33,6 +33,8 @@ rule find_cts_matching_wt:
         tmp_dir = lambda wildcards, output: os.path.join(os.path.dirname(output[0]), 'blast_tmp'),
         exe = workflow.source_path('../scripts/identify_fp_requantification.py')
     threads: 8
+    resources:
+        mem_mb = 8000
     conda: '../envs/blast.yaml'
     log: "results/{sample}/log/blast.log"
     shell:
