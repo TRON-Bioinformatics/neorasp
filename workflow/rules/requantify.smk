@@ -1,4 +1,6 @@
 rule prepare_requant:
+    """Prepare easyquant input
+    """
     input:
         sj = rules.add_transcript_expression.output.sj_expression
     output:
