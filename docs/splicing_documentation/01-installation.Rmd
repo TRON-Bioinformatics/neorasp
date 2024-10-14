@@ -1,0 +1,19 @@
+# Installation
+
+Clone the repository:
+
+```
+git clone --recursive https://gitlab.rlp.net/tron/tronmake-rna-splicing.git
+cd tronmake-rna-splicing
+```
+
+Create and activate the conda environment containing snakemake:
+
+```
+conda env create -p conda_env -f environment.yaml
+conda activate conda_env/
+```
+
+## Build the reference genome library
+>TODO: add information on resource download
+

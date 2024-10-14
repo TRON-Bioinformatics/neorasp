@@ -1,0 +1,24 @@
+# Output
+
+The output is contained in the results directory inside the folder specified with the option `--directory`.
+The resulting files are separated samplewise. A directory for a given sample contains the directories:
+
+* `fetchdata`: Contains tables gathered from tool predictions. Final output is located here.
+* `fraser`: Contains fraser PSI and intron jaccard estimates.
+* `log`: Contains log files of individual processes.
+* `qualimap`: Quality statistics gathered from STAR alignment.
+* `salmon_map`: Transcript and gene quantification based on STAR to transcriptome alignment.
+* `star`: The mapping results from STAR. Contains BAM files, SJ calls and BigWig files.
+
+Example output directory structure for a single patient:
+
+```
+<path/to/output/dir>/results/
+└── toy1
+    ├── fetchdata
+    ├── fraser
+    ├── log
+    ├── qualimap
+    ├── salmon_bam
+    └── star
+```

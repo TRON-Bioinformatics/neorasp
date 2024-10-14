@@ -1,0 +1,84 @@
+--- 
+title: "TronMake RNA-splicing documentation"
+author:
+  - Johannes Hausmann, TRON gGmbH
+  - Jonas Ibn-Salem, TRON gGmbH
+date: "`r Sys.Date()`"
+site: bookdown::bookdown_site
+documentclass: book
+description: |
+  This is the documentation of the TronMake RNA-splicing workflow.
+link-citations: yes
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+options(knitr.kable.NA = '')
+library(tidyverse)
+```
+
+# About TronMake RNA-splicing
+
+TronMake RNA-splicing is a workflow to identify non-canonical tumor-specific splice junction from RNA-seq.
+The workflow implements a sensitive alignment based splice junction detection and targeted re-quantification
+of candidate transcript variants. In our bioinformatics pipeline, SnakeMake is employed as the primary 
+workflow manager to orchestrate various steps. 
+
+This pipeline aligns paired FASTQ files with STAR in 2-pass mode. It then calculates PSI and Intron jaccard values with FRASER.
+Next, junctions are filtered for novelty. To exclude false-positve junction calls, we exclude alignments from problematic
+regions and genes. Remaining junction candidates are then re-quantified using easyquant.
+
+
+## Components
+
+The pipeline currently contains the following tools
+
+```{r components, echo = FALSE}
+library(readxl)
+knitr::kable(
+    read_excel("resources/tools.xlsx") %>% 
+        select(
+            'Tool', 'Link', 'License'
+        )
+)
+```
+
+## Quick start guide
+
+Clone the repository:
+
+```
+git clone --recursive https://gitlab.rlp.net/tron/tronmake-rna-splicing.git
+cd tronmake-rna-splicing
+```
+
+Create and activate the conda environment containing snakemake:
+
+```
+conda env create -p conda_env -f environment.yaml
+conda activate conda_env/
+```
+
+Run the pipeline:
+
+```
+snakemake \
+    --config sample_sheet=</path/to/input.tsv> \
+    --directory <output dir> \
+    --software-deployment-method conda \
+    --directory <output directory> \
+    [--conda-prefix </path/to/conda/env/location>] \
+    [--profile </path/to/profile/directory>]
+```
+
+## Authors & Acknowledgements 
+
+The TronMake RNA-splice pipeline was originally developed by Johannes Hausmann at [TRON - Translational Oncology at the Medical Center of the Johannes Gutenberg University Mainz gGmbH (non-profit)](https://tron-mainz.de/).
+The original intention of this pipeline was to have a robust option to quantify novel splicing in cancer RNA-seq to obtain potential neoantigen candidates.
+
+Maintenance is now lead by Johannes Hausmann. 
+
+Main developers: 
+
+- [Johannes Hausmann](mailto:johannes.hausmann@tron-mainz.de)   
+

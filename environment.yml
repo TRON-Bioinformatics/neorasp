@@ -1,4 +1,4 @@
-name: Easyquant
+name: tronmake
 channels:
   - bioconda
   - conda-forge
