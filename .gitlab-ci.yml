@@ -1,0 +1,15 @@
+.bookdown:
+  image: rocker/verse
+  stage: deploy
+  script:
+    - Rscript -e "bookdown::render_book('docs/splicing_documentation/', 'all', output_dir = '../../public')"
+  artifacts:
+    paths:
+      - public
+
+pages:
+  extends: .bookdown
+  only:
+    - main
+    - dev
+

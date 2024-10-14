@@ -104,6 +104,42 @@ rule parse_junctions:
         '--read_support {params.read_support} '
         '--output {output.parsed_sj_tmp} 2>&1 | tee {log}'
 
+rule calculate_junction_cpm:
+    """CPM calculation
+
+    Rule to normalize raw splice junction counts obtained by STAR
+    using count per million (CPM) metric. This rule normalizes
+    the uniquely mapped reads (jCPM_uniquely_mapped), multi mapped
+    reads (jCPM_multi_mapped) and total (uniquely and multi) mapped 
+    reads (jCPM_total_mapped).
+
+    input:
+        star_sj (str): Path to STAR high confidence SJ.out.tab
+
+    output:
+        star_sj_cpm (str): Path to normalised SJ counts
+
+    params:
+       exe (str): Path to python script 
+
+    """
+    input:
+        star_sj = rules.tronmake_expression_star.output.sj
+    output:
+        star_sj_cpm = "results/{sample}/fetchdata/sj_out_tab_cpm.tsv"
+    params:
+        exe = workflow.source_path('../scripts/normalize_star_cpm.py')
+    log: "results/{sample}/log/sj_cpm.log"
+    threads: 1
+    resources:
+        mem_mb = 4000
+    conda: '../envs/python.yaml'
+    shell:
+        'python {params.exe} '
+        '-i {input.star_sj} '
+        '-o {output.star_sj_cpm} 2>&1 | tee {log}'
+
+
 rule filter_mapability:
     """Mapability filter
 
@@ -206,6 +242,7 @@ rule add_transcript_expression:
         annotated_sj (str):  Path to splice junction table.
         transcript_expression (str): Path to salmon transcript level quantification.
         gene_expression (str): Path to salmon gene level quantification.
+        junction_expression (str): Path to CPM normalised splice junction counts.
     output:
         sj_expression (str): Path to splice junction table with expression estimates added.
     params:
@@ -215,7 +252,8 @@ rule add_transcript_expression:
     input:
         annotated_sj = rules.add_context_sequence.output.annotated_sj,
         transcript_expression =  'results/{sample}/salmon_bam/quant.sf',
-        gene_expression = 'results/{sample}/salmon_bam/quant.genes.sf'
+        gene_expression = 'results/{sample}/salmon_bam/quant.genes.sf',
+        junction_expression = rules.calculate_junction_cpm.output.star_sj_cpm
     output:
         sj_expression = temp("results/{sample}/fetchdata/annotated_sj_expression.tsv")
     params:
@@ -230,6 +268,7 @@ rule add_transcript_expression:
         '--sj {input.annotated_sj} '
         '--txp {input.transcript_expression} '
         '--gxp {input.gene_expression} '
+        '--jxp {input.junction_expression} '
         '--output {output.sj_expression} 2>&1 | tee {log}'
 
 #

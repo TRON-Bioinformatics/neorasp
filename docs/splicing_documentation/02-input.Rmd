@@ -1,0 +1,32 @@
+# Input
+
+The TronMake RNA-splicing pipeline accepts as input a sample sheet with FASTQ files, BAM files
+or SRA accessions
+
+The table with FASTQ files expects three tab-separated columns without a header
+
+| Sample name          | FASTQ 1                      | FASTQ 2                  |
+|----------------------|---------------------------------|------------------------------|
+| sample_1             | /path/to/sample_1.1.fastq      |    /path/to/sample_1.2.fastq   |
+| sample_2             | /path/to/sample_2.1.fastq      |    /path/to/sample_2.2.fastq   |
+
+When using (u)BAM files as input the table expects two tab-separated columns without a header.
+
+| Sample name   | BAM                                                   |
+|:--------:|:-------------------------------------------------------:|
+| sample_1 | /path/to/sample_1.bam                                   |
+| sample_2 | /path/to/sample_2.bam,/path/to/sample_2_2.bam           |
+| sample_3 | /path/to/sample_3.bam,/path/to/sample_3_2.bam           |
+
+
+
+The table with SRA accessions expects one column **without** a header.
+
+|accession |
+|:--------:|
+|SRR6298258| 
+|SRR6298259|
+|SRR6298260|
+|SRR6298261|
+|SRR6298262|
+
