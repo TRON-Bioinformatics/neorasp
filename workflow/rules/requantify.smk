@@ -102,7 +102,8 @@ rule bowtie_align:
         bowtie_index = rules.bowtie_index.output.bowtie_index
     log: "results/logs/{sample}_bowtie.txt"
     params:
-        index_prefix = lambda wildcards, input: input.bowtie_index[0].rstrip(".1.bt2")
+        index_prefix = lambda wildcards, input: input.bowtie_index[0].rstrip(".1.bt2"),
+        report_threshold = config["requantify"].get('bowtie_k_threshold', 200),
     output:
         sam = temp("results/{sample}/fetchdata/easyquant/alignment/bowtie_Aligned.out.sam")
     threads: 4
@@ -114,9 +115,12 @@ rule bowtie_align:
         "bowtie2 "
         "-p {threads} "
         "-x {params.index_prefix} "
-        "-k 200 --end-to-end "
+        "-k {params.report_theshold} "
+        "--end-to-end "
         "--no-discordant "
-        "--dpad 0 --gbar 99999999 --mp 1,1 --np 1 --score-min L,0,-0.01 "
+        "--no-mixed "
+        "--no-unal "
+        "--dpad 0 --gbar 99999999 --mp 1,1 --np 1 --score-min L,0,-0.02 "
         "-1 {input.r1} -2 {input.r2} "
         "> {output.sam} "
         "2> {log}"
