@@ -3,6 +3,8 @@ title: "TronMake RNA-splicing documentation"
 author:
   - Johannes Hausmann, TRON gGmbH
   - Jonas Ibn-Salem, TRON gGmbH
+  - Franziska Lang, TRON gGmbH
+  - Luis Kress, TRON gGmbH
 date: "`r Sys.Date()`"
 site: bookdown::bookdown_site
 documentclass: book

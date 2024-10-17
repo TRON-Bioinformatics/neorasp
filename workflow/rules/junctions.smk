@@ -87,10 +87,13 @@ rule parse_junctions:
         fraser_psi = rules.fraser.output.psi_table,
         canonical_junctions = os.path.join(config['index_dir'], 'canonical_junctions.tsv')
     output:
-        parsed_sj_tmp = temp("results/{sample}/fetchdata/parsed_sj.tsv.tmp")
+        parsed_sj_tmp = temp("results/{sample}/fetchdata/parsed_sj.tsv.tmp"),
+        removed_junction = "results/{sample}/fetchdata/sj_canonical.tsv"
     params:
         exe = workflow.source_path('../scripts/parse_junctions.R'),
-        read_support = config['fraser'].get('min_read', 5)
+        read_support = config['fraser'].get('min_read', 5),
+        working_dir = 
+            lambda wildcards, output: os.path.dirname(output.parsed_sj_tmp),
     log: "results/{sample}/log/sj_parsing.log"
     threads: 1
     resources:
@@ -102,7 +105,7 @@ rule parse_junctions:
         '--canonical_junctions {input.canonical_junctions} '
         '--fraser {input.fraser_psi} '
         '--read_support {params.read_support} '
-        '--output {output.parsed_sj_tmp} 2>&1 | tee {log}'
+        '--output {params.working_dir} 2>&1 | tee {log}'
 
 rule calculate_junction_cpm:
     """CPM calculation
@@ -175,11 +178,11 @@ rule filter_mapability:
     log:  "results/{sample}/log/mapability_filter.log"
     shell:
         'Rscript --vanilla {params.exe} '
-         '--sj {input.parsed_sj} '
-         '--encode_blacklist {input.encode_regions} '
-         '--ucsc_unusual {input.ucsc_regions} '
-         '--output {output.parsed_sj} '
-         '--removed_output {output.failed_sj} 2>&1 | tee {log} '
+        '--sj {input.parsed_sj} '
+        '--encode_blacklist {input.encode_regions} '
+        '--ucsc_unusual {input.ucsc_regions} '
+        '--output {output.parsed_sj} '
+        '--removed_output {output.failed_sj} 2>&1 | tee {log} '
 
 rule add_context_sequence:
     """Add transcript sequence

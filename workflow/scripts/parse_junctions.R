@@ -42,7 +42,13 @@ df_fraser <- df_fraser %>%
 canonical_junctions <- readr::read_tsv(xargs$canonical_junctions, show_col_types = FALSE)
 
 df_star <- splice2neo::parse_star_sj(path = xargs$sj) %>%
-  dplyr::mutate(is_canonical = junc_id %in% canonical_junctions$junc_id) %>%
+  dplyr::mutate(is_canonical = junc_id %in% canonical_junctions$junc_id) 
+
+filtered_junctions <- df_star %>%
+  dplyr::filter(is_canonical) %>%
+  dplyr::select(-c(Gene, class)) %>% dplyr::left_join(canonical_junctions)
+
+df_star <- df_star %>%
   dplyr::filter(!is_canonical) %>% dplyr::select(-c(Gene, class))
 
 # Filter out junctions with a supporting read count less than the provided cutoff
@@ -51,8 +57,8 @@ df_star <- df_star %>%
   dplyr::filter(chromosome %in% paste0('chr', c(1:22, 'X', 'Y'))) %>% 
   dplyr::left_join(df_fraser %>% dplyr::select(junc_id, intron_jaccard, psi5, psi3) %>% distinct())
 
-df_star %>% readr::write_tsv(xargs$output)
-
+df_star %>% readr::write_tsv(fs::path(xargs$output, "parsed_sj.tsv.tmp"))
+filtered_junctions %>% readr::write_tsv(fs::path(xargs$output, "sj_canonical.tsv"))
 
 
 
