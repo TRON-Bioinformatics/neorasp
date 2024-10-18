@@ -1,0 +1,5 @@
+- name: test_run
+  tags:
+    - integrationtest
+  command: >
+    snakemake --software-deployment-method conda -j 1 --configfile tests/splicing.yaml

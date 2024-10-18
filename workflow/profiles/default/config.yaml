@@ -11,13 +11,13 @@ default-resources:
   runtime: 3600
 
 set-threads:
-  tronmake_expression_salmon_quant_bam: 4
-  tronmake_expression_qualimap: 2
-  tronmake_expression_star: 18
-  tronmake_expression_fastp: 2
-  tronmake_expression_bedGraphToBigWig_forward: 1
-  tronmake_expression_bedGraphToBigWig_reverse: 1
-  tronmake_expression_get_fastq_SRA: 2
+  salmon_quant_bam: 4
+  qualimap: 2
+  star: 18
+  fastp: 2
+  bedGraphToBigWig_forward: 1
+  bedGraphToBigWig_reverse: 1
+  get_fastq_SRA: 2
   samtools_index: 1
   fraser: 4
   parse_junctions: 1
@@ -33,25 +33,25 @@ set-threads:
   find_cts_matching_wt: 8
 
 set-resources:
-  tronmake_expression_salmon_quant_bam:
+  salmon_quant_bam:
     mem_mb: 16000
     runtime: "1h"
-  tronmake_expression_qualimap:
+  qualimap:
     mem_mb: 10000
     runtime: "1h"
-  tronmake_expression_star:
+  star:
     mem_mb: 48000
     runtime: "8h"
-  tronmake_expression_fastp:
+  fastp:
     mem_mb: 8000
     runtime: "1h"
-  tronmake_expression_bedGraphToBigWig_forward:
+  bedGraphToBigWig_forward:
     mem_mb: 4096
     runtime: "1h"
-  tronmake_expression_bedGraphToBigWig_reverse:
+  bedGraphToBigWig_reverse:
     mem_mb: 4096
     runtime: "1h"
-  tronmake_expression_get_fastq_SRA:
+  get_fastq_SRA:
     mem_mb: 8000
     runtime: "2h"
   samtools_index:
