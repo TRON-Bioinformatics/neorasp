@@ -1,8 +1,0 @@
-- name: salmon
-  tags:
-    - integrationtest
-  command: >
-    snakemake --software-deployment-method conda --conda-frontend mamba  -j 1 --configfile tests/expression.yaml --config quant_mode=salmon
-  files:
-    - path: "results/expression.RDS"
-

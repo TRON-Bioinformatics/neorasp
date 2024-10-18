@@ -21,9 +21,9 @@ rule prepare_requant:
 
 rule subset_reads:
     input:
-        unmapped_fq1 = rules.tronmake_expression_star.output.unmapped_fq1,
-        unmapped_fq2 = rules.tronmake_expression_star.output.unmapped_fq2,
-        bam = rules.tronmake_expression_star.output.alignment,
+        unmapped_fq1 = rules.star.output.unmapped_fq1,
+        unmapped_fq2 = rules.star.output.unmapped_fq2,
+        bam = rules.star.output.alignment,
         genes_of_interest = rules.prepare_requant.output.genes_of_interest,
         gtf = os.path.join(config['index_dir'], 'ref_annot.gtf'),
     output:
@@ -98,7 +98,8 @@ rule bowtie_index:
 
 rule bowtie_align:
     input:
-        unpack(tronmake_expression.get_fq),
+        r1 = "results/{sample}/fastp/{sample}_R1.fastq.gz",
+        r2 = "results/{sample}/fastp/{sample}_R2.fastq.gz",
         bowtie_index = rules.bowtie_index.output.bowtie_index
     log: "results/logs/{sample}_bowtie.txt"
     params:
@@ -115,7 +116,7 @@ rule bowtie_align:
         "bowtie2 "
         "-p {threads} "
         "-x {params.index_prefix} "
-        "-k {params.report_theshold} "
+        "-k {params.report_threshold} "
         "--end-to-end "
         "--no-discordant "
         "--no-mixed "

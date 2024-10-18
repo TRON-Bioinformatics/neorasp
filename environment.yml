@@ -2,6 +2,7 @@ name: tronmake
 channels:
   - bioconda
   - conda-forge
+  - nodefaults
 dependencies:
   - snakemake-minimal>=8.4.3
   - pip

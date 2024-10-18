@@ -12,7 +12,7 @@ include: "rules/junctions.smk"
 include: "rules/requantify.smk"
 include: "rules/filtering.smk"
 
-samples = tronmake_expression.read_sample_sheet(config['sample_sheet'])
+samples = read_sample_sheet(config['sample_sheet'])
 
 rule all:
     input:

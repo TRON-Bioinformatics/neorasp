@@ -8,7 +8,7 @@ rule samtools_index:
         bai (str): Path to binary index of BAM file
     """
     input:
-        rules.tronmake_expression_star.output.alignment,
+        rules.star.output.alignment,
     output:
         "results/{sample}/star/Aligned.sortedByCoord.out.bam.bai"
     params:
@@ -38,7 +38,7 @@ rule fraser:
     """
 
     input:
-        bam = rules.tronmake_expression_star.output.alignment,
+        bam = rules.star.output.alignment,
         bai = rules.samtools_index.output,
         gtf = os.path.join(config['index_dir'], 'ref_annot.gtf')
     params:
@@ -83,7 +83,7 @@ rule parse_junctions:
 
     """
     input:
-        star_sj = rules.tronmake_expression_star.output.sj,
+        star_sj = rules.star.output.sj,
         fraser_psi = rules.fraser.output.psi_table,
         canonical_junctions = os.path.join(config['index_dir'], 'canonical_junctions.tsv')
     output:
@@ -127,7 +127,7 @@ rule calculate_junction_cpm:
 
     """
     input:
-        star_sj = rules.tronmake_expression_star.output.sj
+        star_sj = rules.star.output.sj
     output:
         star_sj_cpm = "results/{sample}/fetchdata/sj_out_tab_cpm.tsv"
     params:
@@ -210,9 +210,9 @@ rule add_context_sequence:
     input:
         parsed_sj = rules.filter_mapability.output.parsed_sj,
         transcripts = os.path.join(config['index_dir'], 'ref_transcripts.RDS'),
-        genome = os.path.join(config['index_dir'], 'hg38.analysisSet.2bit'),
+        genome = os.path.join(config['index_dir'], 'ref_genome.2bit'),
         tx2gene = os.path.join(config['index_dir'], 'tx2gene.tsv'),
-        gene2hgnc = os.path.join(config['index_dir'], 'hgnc_ensembl_id_gencode46.gz'),
+        gene2hgnc = os.path.join(config['index_dir'], 'hgnc2ensembl_id.tsv.gz'),
         gene_exclusion = os.path.join(config['index_dir'], 'exclusion_pattern.tsv')
     output:
         annotated_sj = temp("results/{sample}/fetchdata/annotated_sj.tsv"),
