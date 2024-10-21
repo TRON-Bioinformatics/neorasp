@@ -28,12 +28,21 @@ ALLOWED_CONTIGS = set(f"chr{i}" for i in range(1,23))
 ALLOWED_CONTIGS.add("chrX")
 ALLOWED_CONTIGS.add("chrY")
 
-def build_interval_trees(df, db):
-    itree = defaultdict(lambda: IntervalTree())
+def build_interval_trees(df: pd.DataFrame, db):
+    """Build exon interval tree for each transcript
+
+    Args:
+        df (_type_): _description_
+        db (_type_): _description_
+
+    Returns:
+        _type_: _description_
+    """
+    itree = {}
     transcripts = set(df['tx_id'].values)
     for tx in transcripts:
         tx_exons = [f for f in db.children(tx, featuretype="exon")]
-        if tx_exons:
+        if tx_exons and not tx in itree:
             for exon in tx_exons:
                 itree[tx][exon.start:exon.end+1] = exon
     return itree
@@ -112,12 +121,29 @@ def _pos_to_junc(chr: str, start: int, end: int, strand: str) -> list[str]:
 
 
 def _junc_to_pos(junc_id):
+    """junction_id to coordinates
+
+    Args:
+        junc_id (str): Splice junction in standardized splice junction format (splice2neo)
+
+    Returns:
+        tuple: A tuple with chromosome, start, stop and strand information
+    """
     chromosome, coord, strand = junc_id.split(':')
     start, stop = coord.split('-')
     return chromosome, int(start), int(stop), strand
     
 
 def position_in_exon(position, coord):
+    """Determine junction position in exon
+
+    Args:
+        position (int): Genomic position of splice site
+        coord (_type_): Interval object of overlapping exon
+
+    Returns:
+        str: A descriptor for the junction position in exon
+    """
     start = coord.begin
     stop = coord.end - 1
     if position > start and position < stop:
@@ -128,18 +154,23 @@ def position_in_exon(position, coord):
         return "outside"
 
 def get_wt_junction(df, itree):
-    junc_ids_total = []
+    main_wt_junc = []
+    additional_wt_junc = []
 
     for x in df.itertuples():
+        
         tx_id = x.tx_id
         junc_id = x.junc_id
         putative_event_type = x.putative_event_type
+        # Get a list of exons from Tree
         tx_exons = sorted(itree[tx_id].items())
+        
         chrom, start, stop, strand = _junc_to_pos(junc_id)
         start_canonical = ""
         stop_canonical = ""
         wt_junc_id = None
-
+        wt_juncs = []
+        # If there are no exons in transcript --> skip
         if not tx_exons:
             junc_ids_total.append(wt_junc_id)
             continue
@@ -149,42 +180,70 @@ def get_wt_junction(df, itree):
         overlap_start = sorted(itree[tx_id][start])
         try:
             overlap_start = overlap_start[0]
-            start_canonical = True if position_in_exon(start, overlap_start) == "boundary" else False
+            boundary_start = position_in_exon(start, overlap_start)
+        # Overlaps nothing --> either outside or intron
         except IndexError:
             overlap_start = None
+            boundary_start = None
         # Find exon overlapping the stop
         # If overlapping an exon get boundary position --> canonical splice site
         overlap_stop = sorted(itree[tx_id][stop])
         try:
             overlap_stop = overlap_stop[0]
-            stop_canonical = True if position_in_exon(stop, overlap_stop) == "boundary" else False
+            boundary_stop = position_in_exon(stop, overlap_stop)
         except IndexError:
             overlap_stop = None
+            boundary_stop = None
         
-        if not start_canonical  and not stop_canonical:
+        if overlap_start is None and overlap_stop is None:
+            logger.warning(f"{junc_id} overlaps no exon features in {tx_id}")
             continue
+        
+        # Use prior information of splice2neo
         
         if putative_event_type == "ASS":
             # This assumes a canonical splice site on one of the ends
             # A3SS on + and A5SS on -
-            if start_canonical:
+            if boundary_start == "boundary":
                 _, next_exon = follows(overlap_start, tx_exons)
                 wt_junc_id = _pos_to_junc(chrom, start, next_exon.begin, strand)
+                main_wt_junc.append(wt_junc_id)
+                additional_wt_junc.append(None)
             # A5SS on + and A3SS on -
-            elif stop_canonical:
+            elif boundary_stop == "boundary":
                 _, prev_exon = preceed(overlap_stop, tx_exons)
                 wt_junc_id = _pos_to_junc(chrom, prev_exon.end - 1, stop, strand)
+                main_wt_junc.append(wt_junc_id)
+                additional_wt_junc.append(None)
+        # Handle exon skipping events
         elif putative_event_type == "ES":
             # For MultiExonSkip we should do an envelop query and return all exons contained 
             # Return junctions for exon in between the exon skips
-            _, next_exon = follows(overlap_start, tx_exons)
-            _, prev_exon = preceed(overlap_stop, tx_exons)
-            wt_junc_id_1 = _pos_to_junc(chrom, start, next_exon.begin, strand)
-            wt_junc_id_2 = _pos_to_junc(chrom, prev_exon.end - 1, stop, strand)
-            wt_junc_id = ";".join(wt_junc_id_1, wt_junc_id_2)
+            in_between_exons = sorted(itree[tx_id].envelope(start,end))
+            # Simple casette exon
+            if len(in_between_exons) == 1:
+                _, next_exon = follows(overlap_start, tx_exons)
+                _, prev_exon = preceed(overlap_stop, tx_exons)
+                wt_junc_id_1 = _pos_to_junc(chrom, start, next_exon.begin, strand)
+                wt_junc_id_2 = _pos_to_junc(chrom, prev_exon.end - 1, stop, strand)
+                main_wt_junc.append(wt_junc_id_1)
+                additional_wt_junc.append(wt_junc_id_2)
+            # Multiple exon skip
+            else:
+                multi_skip_junc = []
+                exons = [overlap_start].extend(in_between_exons).append(overlap_stop)
+                for skipped_exon in range(0, in_between_exons-1):
+                    _, next_exon = follows(skipped_exon, tx_exons)
+                    multi_skip_junc.append(_pos_to_junc(chrom, skipped_exon.end - 1, next_exon.begin, strand))
+                main_wt_junc.append(multi_skip_junc[0])
+                additional_wt_junc.extend(multi_skip_junc[1:])
+
         elif putative_event_type == "exitron":
             # Exitron is located within a single exon
             wt_junc_id = None
+        elif putative_event_type == "complex":
+            wt_junc_id = None
+
         junc_ids_total.append(wt_junc_id)
     df['wt_junc_id'] = junc_ids_total
     return df
