@@ -274,21 +274,4 @@ rule add_transcript_expression:
         '--jxp {input.junction_expression} '
         '--output {output.sj_expression} 2>&1 | tee {log}'
 
-#
-#rule ctat_splicing:
-#    input:
-#        sj_out = "results/{sample}/star/SJ.out.tab",
-#        chim_junc = "results/{sample}/star/Chimeric.out.junction"
-#    output:
-#        introns = "results/{sample}/ctat_splicing/{sample}.introns",
-#        cancer_introns = "results/{sample}/ctat_splicing/{sample}.cancer.introns"
-#    params:
-#        prefix = lambda wildcards, output: output.introns.rstrip(".introns"),
-#        genome_lib = config['ctat'].get('genome_lib')
-#    shell:
-#        'python STAR_to_cancer_introns.py '
-#        '--ctat_genome_lib {params.genome_lib} '
-#        '--SJ_tab_file {input.sj_out} '
-#        '--chimJ_file {input.chim_junc} '
-#        '--output_prefix {params.prefix } 2>&1 | tee {log}'
 

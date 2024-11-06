@@ -159,7 +159,7 @@ class CpmNormalization:
             raise ValueError("Genomic start coordinate can not be greater than end coordinate. Please check the sorting of the GTF file used to align reads")
         
         if strand ==  '*':
-            junc_id.extend([f"{chr}:{start-1}-{end+1}:+",f"{chr}:{start-1}-{end+1}:-"])
+            junc_id.append(f"{chr}:{start-1}-{end+1}:+ ; {chr}:{start-1}-{end+1}:-")
         else:
             junc_id.append(f"{chr}:{start-1}-{end+1}:{strand}")
         
@@ -171,14 +171,18 @@ class CpmNormalization:
         """
         junction_df = self._read_sj_out_tab()
         junction_df = junction_df.drop(junction_df[~junction_df.chrom.isin(self.chromosomes)].index)
+
         logger.info("-> Generating junc_id")
-        junction_df['junc_id'] = junction_df.apply(lambda x: self._pos_to_junc(x.chrom, x.start, x.end, x.strandInfo) , axis=1)
+        junction_df['junc_id'] = junction_df.apply(lambda x: self._pos_to_junc(x.chrom, x.start, x.end, x.strandInfo) , axis=1, result_type="expand")
         junction_df = junction_df.explode('junc_id')
+
         logger.info("-> Obtaining splice site motif")
         junction_df['splice_site_motif'] = junction_df.apply(lambda x: self.intron_motifs[x.motifInfo].replace("/", "-") , axis=1)
+
         logger.info("-> Normalizing raw read counts to count per million values")
         junction_df = self.cpm_normalize(junction_df)
         logger.info(f"-> Writing data to file {self.output_file}")
+
         with open(self.output_file, 'w') as file_handle:
             junction_df[['junc_id', 'splice_site_motif', 'jCPM_uniquely_mapped', 'jCPM_multi_mapped', 'jCPM_total_mapped']].to_csv(file_handle, index=False, sep='\t')
 

@@ -1,1 +1,1 @@
-toy1	tests/resources/reads/toy_reads_R1.fastq.gz	tests/resources/reads/toy_reads_R2.fastq.gz
+SRR5134767	tests/resources/reads/SRR5134767_mini_1.fastq.gz	tests/resources/reads/SRR5134767_mini_2.fastq.gz

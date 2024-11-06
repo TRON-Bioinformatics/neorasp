@@ -46,7 +46,7 @@ xargs<- parser$parse_args()
 register(MulticoreParam(xargs$threads))
 
 sample_sheet <-
-    tibble(sampleID = "sample1", bamFile = xargs$bam, gene = NA, pairedEnd = TRUE )
+    tibble(sampleID = "sample1", bamFile = xargs$bam, gene = NA, pairedEnd = TRUE)
 # Generate FRASER setting object
 settings <- 
     FraserDataSet(

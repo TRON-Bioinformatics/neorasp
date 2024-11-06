@@ -1,10 +1,8 @@
 sample_sheet: 'tests/pep/samples.tsv'
 sra_mode: false
 index_dir: 'REDACTED /file:config/config.yaml'
-quant_mode: 'salmon_bam'
 interleaved_input: false
 bam_input: false
-fastq_screen_conf: ''
 fraser:
   min_read: 2
   mapq_filter: 255
@@ -13,3 +11,4 @@ star:
 requantify:
   interval_mode: true
   allow_mismatches: false
+  bowtie_k_threshold: 200

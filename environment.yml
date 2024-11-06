@@ -10,3 +10,5 @@ dependencies:
   - pip:
     - biopython
     - snakemake-executor-plugin-slurm
+    - python-magic
+    - loguru

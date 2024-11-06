@@ -26,6 +26,16 @@ def get_final_output():
         final_files.extend(
             collect("results/{sample}/fetchdata/requantified_blast_sj.tsv", sample = sample.sample_name)
         )
+        final_files.extend(
+            collect("results/{sample}/fetchdata/peptide_annotated_sj.tsv", sample = sample.sample_name)
+        )
+        final_files.extend(
+            collect("results/{sample}/fetchdata/neofox_annotation.tsv", sample = sample.sample_name)
+        )
+        #"results/{sample}/metrics/{sample}.inner_distance.txt",
+        #final_files.extend(
+        #    collect("results/{sample}/metrics/{sample}.inner_distance.txt", sample = sample.sample_name)
+        #)
     return final_files
 
 def read_sample_sheet(file):
@@ -93,7 +103,7 @@ def get_bam_input(wildcards):
     bam = fq.get('bam').item()
     return bam
 
-def determine_star_read_command(wildcards, input):
+def determine_star_read_command(wildcards, read):
     """
     Determine appropriate read command for STAR alignment.
     To ensure we are using the correct uncompression tool we read the magic byte of the file
@@ -101,10 +111,10 @@ def determine_star_read_command(wildcards, input):
     # Default is empty string --> uncompressed FASTQ files
 
     read_command = ""
-    magic_byte = magic.from_file(input.r1)
+    magic_byte = magic.from_file(read)
     if "gzip compressed data" in magic_byte:
         read_command = '--readFilesCommand zcat '
     elif "bzip2 compressed data" in magic_byte:
         read_command = '--readFilesCommand bzcat '
-    return read_cmd
+    return read_command
 

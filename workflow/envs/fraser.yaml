@@ -13,3 +13,7 @@ dependencies:
   - libtiff
   - libdeflate
   - imagemagick
+  - r-devtools
+  - gxx_linux-64
+  - r-tidyverse
+  - r-argparse
