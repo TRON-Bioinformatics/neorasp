@@ -1,6 +1,6 @@
 jobs: 16
 local-cores: 16
-conda-frontend: mamba
+conda-frontend: conda
 latency-wait: 120
 keep-going: True
 printshellcmds: True

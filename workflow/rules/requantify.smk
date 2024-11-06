@@ -19,36 +19,6 @@ rule prepare_requant:
         '--output {output.easyquant_table} '
         '--output_genes {output.genes_of_interest} 2>&1 | tee {log}'
 
-rule subset_reads:
-    input:
-        unmapped_fq1 = rules.star.output.unmapped_fq1,
-        unmapped_fq2 = rules.star.output.unmapped_fq2,
-        bam = rules.star.output.alignment,
-        genes_of_interest = rules.prepare_requant.output.genes_of_interest,
-        gtf = os.path.join(config['index_dir'], 'ref_annot.gtf'),
-    output:
-        unmapped_bam = "results/{sample}/fetchdata/easyquant/target_reads.ubam"
-    shadow: "shallow"
-    shell:
-        '''
-        genes_joined=$(cat {input.genes_of_interest})
-
-        grep -v '^##' {input.gtf} | \
-            awk '$3 == "gene"' | \
-                grep -E "gene_id "($genes_joined)"" | \
-                    awk '{{print $1 "\t" $4-1 "\t" $5 "\t" "g" "\t" 0 "\t" $7}}' | bedtools merge -s > gene_regions.bed
-        
-
-        samtools view -b -h --fetch-pairs -L gene_regions.bed {input.bam} | \
-            samtools collate -u -O | \
-                samtools fastq -1 extracted_R1.fastq -2 extracted_R2.fastq -s /dev/null -0 /dev/null
-
-        cat extracted_R1.fastq {input.unmapped_fq1} > target_reads_R1.fastq
-        cat extracted_R2.fastq {input.unmapped_fq2} > target_reads_R2.fastq
-
-        samtools import -1 target_reads_R1.fastq -2 target_reads_R2.fastq -o {output.unmapped_bam} 
-        '''
-
 rule generate_context_fa:
     """
     Convert input table to FASTA file
@@ -120,8 +90,7 @@ rule bowtie_align:
         "--end-to-end "
         "--no-discordant "
         "--no-mixed "
-        "--no-unal "
-        "--dpad 0 --gbar 99999999 --mp 1,1 --np 1 --score-min L,0,-0.02 "
+        "--dpad 0 --gbar 99999999 --mp 1,1 --np 1 --score-min L,0,-0.01 "
         "-1 {input.r1} -2 {input.r2} "
         "> {output.sam} "
         "2> {log}"
@@ -173,3 +142,27 @@ rule add_quant_counts:
         '--sj {input.sj} '
         '--requant {params.requant_dir} '
         '--output {output.requantified_sj} 2>&1 | tee {log} '
+
+rule translate_to_peptide:
+    input:
+        sj = rules.add_quant_counts.output.requantified_sj,
+        cds = os.path.join(config['index_dir'], 'ref_cds.RDS'),
+        genome = os.path.join(config['index_dir'], 'ref_genome.2bit')
+    output:
+        junctions = "results/{sample}/fetchdata/peptide_annotated_sj.tsv",
+        neofox_annotation = "results/{sample}/fetchdata/neofox_annotation.tsv"
+    params:
+        exe = workflow.source_path('../scripts/peptide.R'),
+    log:  "results/{sample}/log/add_peptide_annotation.log"
+    threads: 1
+    resources:
+        mem_mb = 8000
+    conda: '../envs/R.yaml'
+    shell:
+        'Rscript --vanilla {params.exe} '
+        '--sj {input.sj} '
+        '--sample {wildcards.sample} '
+        '--cds {input.cds} '
+        '--genome {input.genome} '
+        '--output {output.junctions} '
+        '--output_neofox {output.neofox_annotation} 2>&1 | tee {log}'

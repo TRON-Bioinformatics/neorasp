@@ -2,6 +2,21 @@
 This script is used to import the TronMake RNA-expression workflow rules.
 '''
 
+rule get_fastq_SRA:
+    output:
+        # the wildcard name must be accession, pointing to an SRA number
+        fq1 = temp("results/{accession}/sra/{accession}_1.fastq.gz"),
+        fq2 = temp("results/{accession}/sra/{accession}_2.fastq.gz")
+    params:
+        extra="--skip-technical"
+    threads: 2
+    log:
+        'results/{accession}/log/sra_download.log'
+    container:
+        'docker://quay.io/biocontainers/sra-tools:3.1.1--h4304569_0'
+    wrapper:
+        "v3.10.2/bio/sra-tools/fasterq-dump"
+
 rule deinterleave:
     """
     When fastq input is interleaved unwrap the fastq files into
@@ -28,12 +43,14 @@ rule bam2fastq:
         r1 = temp('results/{sample}/bam2fastq/{sample}_R1.fastq.gz'),
         r2 = temp('results/{sample}/bam2fastq/{sample}_R2.fastq.gz')
     threads: 4
+    params: 
+        repair_script = workflow.source_path('../scripts/repair_sam_qname.awk')
     container:
         'docker://quay.io/biocontainers/samtools:1.20--h50ea8bc_0'
     conda:
         '../envs/samtools.yaml'
     shell:
-        'samtools collate --threads 2 -u -O {input.bam} | '
+        'samtools collate --threads 2 -u -O {input.bam} | awk -f {params.repair_script} '
         'samtools fastq --threads 2 -1 {output.r1} -2 {output.r2} -0 /dev/null -s /dev/null -n'
 
 rule fastp:
@@ -47,7 +64,7 @@ rule fastp:
                    "results/{sample}/fastp/{sample}_R2.fastq.gz"],
         unpaired="results/{sample}/fastp/{sample}_singletons.fastq.gz",
         html="results/{sample}/fastp/{sample}.html",
-        json="results/{sample}}/fastp/{sample}.json"
+        json="results/{sample}/fastp/{sample}.json"
     log:
         "results/{sample}/log/fastp.log"
     params:
@@ -98,7 +115,7 @@ rule star:
         prefix = lambda wildcards, output: os.path.dirname(output.alignment),
         index = os.path.join(config['index_dir'], 'indices', 'star'),
         read_cmd =
-            lambda wildcards, input: '--readFilesCommand zcat' if input.r1.endswith('.gz') else ''
+            lambda wildcards, input: determine_star_read_command(wildcards, input.r1)
     threads: 18
     resources:
         mem_mb = 48000
@@ -173,20 +190,21 @@ rule qualimap:
     wrapper:
         "v3.10.2/bio/qualimap/rnaseq"
 
-rule get_fastq_SRA:
+rule insert_size:
+    input:
+        aln = rules.star.output.transcriptome_bam,
+        refgene = os.path.join(config['index_dir'], 'ref_annot.bed')
     output:
-        # the wildcard name must be accession, pointing to an SRA number
-        fq1 = temp("results/{accession}/sra/{accession}_1.fastq.gz"),
-        fq2 = temp("results/{accession}/sra/{accession}_2.fastq.gz")
-    params:
-        extra="--skip-technical"
-    threads: 2
+        reads_inner_distance = "results/{sample}/metrics/{sample}.inner_distance.txt",
+        freq = "results/{sample}/metrics/{sample}.inner_distance_freq.txt",
+        pdf = "results/{sample}/metrics/{sample}.inner_distance_plot.pdf",
+        plot_r = "results/{sample}/metrics/{sample}.inner_distance_plot.r",
     log:
-        'results/{accession}/log/sra_download.log'
-    container:
-        'docker://quay.io/biocontainers/sra-tools:3.1.1--h4304569_0'
+        'results/{sample}/log/insert_size.log',
+    params:
+        extra = "-k 10000000"
     wrapper:
-        "v3.10.2/bio/sra-tools/fasterq-dump"
+        "v4.7.2/bio/rseqc/inner_distance"
 
 rule salmon_quant_bam:
     """

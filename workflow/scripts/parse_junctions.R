@@ -6,6 +6,7 @@ suppressMessages({
   library(argparse)
   library(splice2neo)
   library(GenomicFeatures)
+  library(fs)
 })
 
 parser <- ArgumentParser(description='Parse junctions and annotate with splice2neo')
@@ -27,7 +28,7 @@ df_fraser <-
                   number_supporting_reads = raw_count) %>%
     dplyr::filter(chromosome %in% paste0('chr', c(1:22, 'X', 'Y')))
 
-# Annotate junctins with plus and minus strand when unstranded data and let STAR decide the strand of the junctions based on XS tag *
+# Annotate junctions with plus and minus strand when unstranded data and let STAR decide the strand of the junctions based on XS tag *
 df_fraser <- df_fraser %>%
   dplyr::select(junction_start, junction_end, strand, chromosome, intron_jaccard, psi5, psi3) %>%
   rowwise() %>%
