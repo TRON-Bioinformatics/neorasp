@@ -27,7 +27,6 @@ rule fraser:
     input:
         bam (str): Alignment (BAM sorted by coordinated)
         bai (str): Alignment index (BAM sorted by coordinated)
-        gtf (str): Reference transcript model in GTF format
 
     output:
         psi_table (str): Splice junction annotated with intron usage
@@ -41,8 +40,7 @@ rule fraser:
 
     input:
         bam = rules.star.output.alignment,
-        bai = rules.samtools_index.output,
-        gtf = os.path.join(config['index_dir'], 'ref_annot.gtf')
+        bai = rules.samtools_index.output
     params:
         working_dir = 
             lambda wildcards, output: os.path.dirname(output.psi_table),
