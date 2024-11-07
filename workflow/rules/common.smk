@@ -7,12 +7,6 @@ def get_final_output():
     """
     final_files = []
     for sample in samples.itertuples():
-        # Re-quantified novel junctions
-        final_files.extend(
-            expand(
-                "results/{sample}/fetchdata/requantified_sj.tsv", sample=sample.sample_name
-            )
-        )
         final_files.extend(
             collect("results/{sample}/qualimap", sample = sample.sample_name)
         )
@@ -24,13 +18,10 @@ def get_final_output():
             collect("results/{sample}/star/Signal.Unique.str2.bw", sample = sample.sample_name)
         )
         final_files.extend(
-            collect("results/{sample}/fetchdata/requantified_blast_sj.tsv", sample = sample.sample_name)
+            collect("results/{sample}/fetchdata/sj_final_results.tsv", sample = sample.sample_name)
         )
         final_files.extend(
-            collect("results/{sample}/fetchdata/peptide_annotated_sj.tsv", sample = sample.sample_name)
-        )
-        final_files.extend(
-            collect("results/{sample}/fetchdata/neofox_annotation.tsv", sample = sample.sample_name)
+            collect("results/{sample}/fetchdata/sj_results_neofox_annotation.tsv", sample = sample.sample_name)
         )
         #"results/{sample}/metrics/{sample}.inner_distance.txt",
         #final_files.extend(
