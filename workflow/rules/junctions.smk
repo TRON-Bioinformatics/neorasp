@@ -14,6 +14,8 @@ rule samtools_index:
     params:
         extra="",  # optional params string
     threads: 1  # This value - 1 will be sent to -@
+    container:
+        'docker://quay.io/biocontainers/samtools:1.20--h50ea8bc_0'
     wrapper:
         "v3.14.0/bio/samtools/index"
 
@@ -54,14 +56,10 @@ rule fraser:
     resources:
         mem_mb = 16000
     conda: '../envs/fraser.yaml'
-    shell:
-        'Rscript --vanilla {params.exe} '
-        '--bam {input.bam} '
-        '--threads {threads} '
-        '--output_table {output.psi_table} '
-        '--strandedness 0 '
-        '--min_expression {params.min_read} '
-        '--mapq {params.mapq_filter} 2>&1 | tee {log}'
+    container:
+        'docker://quay.io/biocontainers/bioconductor-fraser:1.99.4--r43hf17093f_0'
+    script:
+        '../scripts/fraser_new.R'
 
 rule parse_junctions:
     """Parse junctions
@@ -87,8 +85,8 @@ rule parse_junctions:
         fraser_psi = rules.fraser.output.psi_table,
         canonical_junctions = os.path.join(config['index_dir'], 'canonical_junctions.tsv')
     output:
-        parsed_sj_tmp = temp("results/{sample}/fetchdata/parsed_sj.tsv.tmp"),
-        removed_junction = "results/{sample}/fetchdata/sj_canonical.tsv"
+        parsed_sj_tmp = "results/{sample}/fetchdata/parsing/parsed_star_fraser_sj.tsv",
+        removed_junction = "results/{sample}/fetchdata/detected_sj_canonical.tsv"
     params:
         exe = workflow.source_path('../scripts/parse_junctions.R'),
         read_support = config['fraser'].get('min_read', 5),
@@ -99,6 +97,8 @@ rule parse_junctions:
     resources:
         mem_mb = 8000
     conda: '../envs/R.yaml'
+    container:
+        'docker://tronbioinformatics/splice2neo:0.6.11'
     shell:
         'Rscript --vanilla {params.exe} '
         '--sj {input.star_sj} '
@@ -129,7 +129,7 @@ rule calculate_junction_cpm:
     input:
         star_sj = rules.star.output.sj
     output:
-        star_sj_cpm = "results/{sample}/fetchdata/sj_out_tab_cpm.tsv"
+        star_sj_cpm = "results/{sample}/fetchdata/parsing/sj_out_tab_cpm.tsv"
     params:
         exe = workflow.source_path('../scripts/normalize_star_cpm.py')
     log: "results/{sample}/log/sj_cpm.log"
@@ -143,7 +143,7 @@ rule calculate_junction_cpm:
         '-o {output.star_sj_cpm} 2>&1 | tee {log}'
 
 
-rule filter_mapability:
+rule filter_mappability:
     """Mapability filter
 
     Rule to filter junctions located in problematic regions. Problematic regions
@@ -164,18 +164,20 @@ rule filter_mapability:
     """
     input:
         parsed_sj = rules.parse_junctions.output.parsed_sj_tmp,
-        encode_regions = os.path.join(config['index_dir'], 'mapability', 'encode_blacklist.bed'),
-        ucsc_regions = os.path.join(config['index_dir'], 'mapability', 'ucsc_unusal.bed')
+        encode_regions = os.path.join(config['index_dir'], 'mappability', 'encode_blacklist.bed'),
+        ucsc_regions = os.path.join(config['index_dir'], 'mappability', 'ucsc_unusal.bed')
     output:
-        parsed_sj = temp("results/{sample}/fetchdata/parsed_sj.tsv"),
-        failed_sj = "results/{sample}/fetchdata/sj_problematic_mapability.tsv"
+        parsed_sj = "results/{sample}/fetchdata/mappability/sj_passing_mappability.tsv",
+        failed_sj = "results/{sample}/fetchdata/mappability/sj_problematic_mappability.tsv"
     threads: 1
     resources:
         mem_mb = 8000
     params:
         exe =  workflow.source_path('../scripts/filter_mapability.R')
     conda: '../envs/R.yaml'
-    log:  "results/{sample}/log/mapability_filter.log"
+    container:
+        'docker://tronbioinformatics/splice2neo:0.6.11'
+    log:  "results/{sample}/log/mappability_filter.log"
     shell:
         'Rscript --vanilla {params.exe} '
         '--sj {input.parsed_sj} '
@@ -208,21 +210,23 @@ rule add_context_sequence:
 
     """
     input:
-        parsed_sj = rules.filter_mapability.output.parsed_sj,
+        parsed_sj = rules.filter_mappability.output.parsed_sj,
         transcripts = os.path.join(config['index_dir'], 'ref_transcripts.RDS'),
         genome = os.path.join(config['index_dir'], 'ref_genome.2bit'),
         tx2gene = os.path.join(config['index_dir'], 'tx2gene.tsv'),
         gene2hgnc = os.path.join(config['index_dir'], 'hgnc2ensembl_id.tsv.gz'),
         gene_exclusion = os.path.join(config['index_dir'], 'exclusion_pattern.tsv')
     output:
-        annotated_sj = temp("results/{sample}/fetchdata/annotated_sj.tsv"),
-        annotated_sj_problematic = "results/{sample}/fetchdata/sj_problematic_gene_no_transcript_overlap.tsv"
+        annotated_sj = temp("results/{sample}/fetchdata/splice2neo/sj_annotated.tsv"),
+        annotated_sj_problematic = "results/{sample}/fetchdata/splice2neo/sj_problematic_gene_no_transcript_overlap.tsv"
     threads: 1
     resources:
         mem_mb = 20000
     params:
         exe = workflow.source_path('../scripts/add_tx.R')
     conda: '../envs/R.yaml'
+    container:
+        'docker://tronbioinformatics/splice2neo:0.6.11'
     log:  "results/{sample}/log/add_cts.log"
     shell:
         'Rscript --vanilla {params.exe} '
@@ -258,13 +262,15 @@ rule add_transcript_expression:
         gene_expression = 'results/{sample}/salmon_bam/quant.genes.sf',
         junction_expression = rules.calculate_junction_cpm.output.star_sj_cpm
     output:
-        sj_expression = temp("results/{sample}/fetchdata/annotated_sj_expression.tsv")
+        sj_expression = temp("results/{sample}/fetchdata/splice2neo/sj_annotated_expression.tsv")
     params:
         exe = workflow.source_path('../scripts/add_tpm.R')
     threads: 1
     resources:
         mem_mb = 8000
     conda: '../envs/R.yaml'
+    container:
+        'docker://tronbioinformatics/splice2neo:0.6.11'
     log:  "results/{sample}/log/add_expression_estimates.log"
     shell:
         'Rscript --vanilla {params.exe} '
