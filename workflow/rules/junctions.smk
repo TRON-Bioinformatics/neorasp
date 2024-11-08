@@ -14,10 +14,12 @@ rule samtools_index:
     params:
         extra="",  # optional params string
     threads: 1  # This value - 1 will be sent to -@
+    conda:
+        '../envs/samtools.yaml'
     container:
         'docker://quay.io/biocontainers/samtools:1.20--h50ea8bc_0'
-    wrapper:
-        "v3.14.0/bio/samtools/index"
+    shell:
+        "samtools index {input.bam}"
 
 rule fraser:
     """FRASER
@@ -175,7 +177,7 @@ rule filter_mappability:
     conda: '../envs/R.yaml'
     container:
         'docker://tronbioinformatics/splice2neo:0.6.11'
-    log:  "results/{sample}/log/mappability_filter.log"
+    log: "results/{sample}/log/mappability_filter.log"
     shell:
         'Rscript --vanilla {params.exe} '
         '--sj {input.parsed_sj} '

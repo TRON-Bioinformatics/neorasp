@@ -47,10 +47,11 @@ class CpmNormalization:
     columns_sj_out = ['chrom', 'start', 'end', 'strandInfo', 'motifInfo',
                       'annotInfo', 'uniqueReads', 'mmReads', 'max_overhang']
 
-    def __init__(self, sj_out_tab, output_file) -> None:
+    def __init__(self, sj_out_tab, output_file, mapped=True) -> None:
         """Parameter initialization"""
         self.sj_out = sj_out_tab
         self.output_file = output_file
+        self.seq_depth = self.get_seq_depth(mapped=mapped)
     
     def get_seq_depth(self, mapped=False) -> int:
         """Parses a star output log file to get input read counts from the fastq origin"""
@@ -108,7 +109,7 @@ class CpmNormalization:
             return read_count
         return read_count / seq_depth * 1000000
 
-    def cpm_normalize(self, junction_df: pd.DataFrame) -> pd.DataFrame:
+    def cpm_normalize(self, junction_df: pd.DataFrame, mapped=True) -> pd.DataFrame:
         """CPM normalization
 
         Normalize counts in junction dataframe with CPM. 
@@ -120,15 +121,14 @@ class CpmNormalization:
             pd.DataFrame: Normalized splice junction counts. Normalization for
                 uniquely, multi-mapping and total read counts is appended to DataFrame.
         """
-        seq_depth = self.get_seq_depth(mapped=True)
         if seq_depth == -1:
             junction_df['jCPM_uniquely_mapped'] = np.nan
             junction_df['jCPM_multi_mapped'] = np.nan
             junction_df['jCPM_total_mapped'] = np.nan
         else:
-            junction_df['jCPM_uniquely_mapped'] = junction_df.apply(lambda x: self._calc_cpm(x.uniqueReads, seq_depth), axis=1)
-            junction_df['jCPM_multi_mapped'] = junction_df.apply(lambda x: self._calc_cpm(x.mmReads, seq_depth), axis=1)
-            junction_df['jCPM_total_mapped'] = junction_df.apply(lambda x: self._calc_cpm(x.uniqueReads + x.mmReads, seq_depth), axis=1)
+            junction_df['jCPM_uniquely_mapped'] = junction_df.apply(lambda x: self._calc_cpm(x.uniqueReads, self.seq_depth), axis=1)
+            junction_df['jCPM_multi_mapped'] = junction_df.apply(lambda x: self._calc_cpm(x.mmReads, self.seq_depth), axis=1)
+            junction_df['jCPM_total_mapped'] = junction_df.apply(lambda x: self._calc_cpm(x.uniqueReads + x.mmReads, self.seq_depth), axis=1)
         return junction_df
 
     def _pos_to_junc(self, chr: str, start: int, end: int, strand: str) -> list[str]:
@@ -173,7 +173,8 @@ class CpmNormalization:
         junction_df = junction_df.drop(junction_df[~junction_df.chrom.isin(self.chromosomes)].index)
 
         logger.info("-> Generating junc_id")
-        junction_df['junc_id'] = junction_df.apply(lambda x: self._pos_to_junc(x.chrom, x.start, x.end, x.strandInfo) , axis=1, result_type="expand")
+        junction_df['junc_id'] = junction_df.apply(lambda x: self._pos_to_junc(x.chrom, x.start, x.end, x.strandInfo), 
+            axis=1, result_type="expand")
         junction_df = junction_df.explode('junc_id')
 
         logger.info("-> Obtaining splice site motif")
@@ -196,7 +197,7 @@ def main():
     parser.add_argument('-o', '--output', dest='output', help='Specify output file', required=True)
     args = parser.parse_args()
 
-    normalize = CpmNormalization(args.input, args.output)
+    normalize = CpmNormalization(args.input, args.output, mapped=True)
     normalize.run()
 
 if __name__ == '__main__':
