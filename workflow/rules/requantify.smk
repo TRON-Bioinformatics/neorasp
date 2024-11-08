@@ -79,7 +79,7 @@ rule bowtie_align:
         bowtie_index = rules.bowtie_index.output.bowtie_index
     log: "results/logs/{sample}_bowtie.txt"
     params:
-        index_prefix = lambda wildcards, input: input.bowtie_index[0].rstrip(".1.bt2"),
+        index_prefix = lambda wildcards, input: input.bowtie_index[0].removesuffix(".1.bt2"),
         report_threshold = config["requantify"].get('bowtie_k_threshold', 200),
     output:
         sam = temp("results/{sample}/easyquant/alignment/bowtie_Aligned.out.sam")

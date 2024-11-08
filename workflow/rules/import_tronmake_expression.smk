@@ -8,14 +8,26 @@ rule get_fastq_SRA:
         fq1 = temp("results/{accession}/sra/{accession}_1.fastq.gz"),
         fq2 = temp("results/{accession}/sra/{accession}_2.fastq.gz")
     params:
-        extra="--skip-technical"
+        fq1_unzipped = lambda wildcards, output: os.path.splitext(output.fq1)[0],
+        fq2_unzipped = lambda wildcards, output: os.path.splitext(output.fq2)[1]
+        extra = "--skip-technical --split-3",
+        tmpdir = lambda wildcards, output: os.path.dirname(output.fq1),
+        mem = ""
     threads: 2
     log:
         'results/{accession}/log/sra_download.log'
     container:
         'docker://quay.io/biocontainers/sra-tools:3.1.1--h4304569_0'
-    wrapper:
-        "v3.10.2/bio/sra-tools/fasterq-dump"
+    shell:
+        'fasterq-dump '
+        '--temp {params.tmpdir} '
+        '--threads {snakemake.threads}'
+        '{params.mem} '
+        '{params.extra} '
+        '{params.tmpdir} ' 
+        '{accession} ; '
+        'gzip {params.fq1_unzipped} ; '
+        'gzip {params.fq2_unzipped} '
 
 rule deinterleave:
     """
@@ -27,6 +39,8 @@ rule deinterleave:
     output:
         r1 = temp('results/{sample}/deinterleave/{sample}_R1.fastq'),
         r2 = temp('results/{sample}/deinterleave/{sample}_R2.fastq')
+    container:
+        'docker://busybox:1.37.0-glibc'
     shell:
         "zcat {input.interleaved_fastq} | "
         "paste - - - - - - - - | "
@@ -50,7 +64,7 @@ rule bam2fastq:
     conda:
         '../envs/samtools.yaml'
     shell:
-        'samtools collate --threads 2 -u -O {input.bam} | awk -f {params.repair_script} '
+        'samtools collate --threads 2 -u -O {input.bam} | awk -f {params.repair_script} | '
         'samtools fastq --threads 2 -1 {output.r1} -2 {output.r2} -0 /dev/null -s /dev/null -n'
 
 rule fastp:
@@ -62,18 +76,29 @@ rule fastp:
     output:
         trimmed = ["results/{sample}/fastp/{sample}_R1.fastq.gz", 
                    "results/{sample}/fastp/{sample}_R2.fastq.gz"],
-        unpaired="results/{sample}/fastp/{sample}_singletons.fastq.gz",
-        html="results/{sample}/fastp/{sample}.html",
-        json="results/{sample}/fastp/{sample}.json"
+        unpaired = "results/{sample}/fastp/{sample}_singletons.fastq.gz",
+        html = "results/{sample}/fastp/{sample}.html",
+        json = "results/{sample}/fastp/{sample}.json"
     log:
         "results/{sample}/log/fastp.log"
     params:
         extra = ""
     threads: 2
+    conda:
+        '../envs/fastp.yaml'
     container:
         'docker://quay.io/biocontainers/fastp:0.23.4--h125f33a_5' 
-    wrapper:
-        "v3.10.2/bio/fastp"
+    shell:
+        'fastp '
+        '--thread {threads} '
+        '--in1 {input.sample[0]} '
+        '--in2 {input.sample[1]} '
+        '--unpaired1 {output.unpaired} '
+        '--unpaired2 {output.unpaired} '
+        '--out1 {output.trimmed[0]} '
+        '--out2 {output.trimmed[1]} '
+        '--html {output.html} '
+        '--json {output.json} '
 
 rule star:
     """
@@ -132,38 +157,30 @@ rule star:
         '{params.extra} '
         '--outFileNamePrefix {params.prefix}/ &> {log}'
 
-rule bedGraphToBigWig_forward:
+rule bedGraphToBigWig:
     """
     Bigwig with genome wide coverage
     """
     input:
-        bedGraph = rules.star.output.forward_wig,
+        bedGraph_forward = rules.star.output.forward_wig,
+        bedGraph_reverse = rules.star.output.reverse_wig,
         chromsizes = os.path.join(config['index_dir'], 'ref_genome.chrom.sizes')
     output:
-        "results/{sample}/star/Signal.Unique.str1.bw"
+        bw_forward = "results/{sample}/star/Signal.Unique.str1.bw",
+        bw_reverse = "results/{sample}/star/Signal.Unique.str2.bw"
     log:
-        "results/{sample}/log/bedgraph2bigwig_forward.log"
+        "results/{sample}/log/bedgraph2bigwig.log"
     params:
-        "" # optional params string
+        extra = "" # optional params string
     container:
-        'docker://quay.io/biocontainers/ucsc-bedgraphtobigwig:455--h2a80c09_1'
-    wrapper:
-        "v3.11.0/bio/ucsc/bedGraphToBigWig"
-
-rule bedGraphToBigWig_reverse:
-    input:
-        bedGraph = rules.star.output.reverse_wig,
-        chromsizes = os.path.join(config['index_dir'], 'ref_genome.chrom.sizes')
-    output:
-        "results/{sample}/star/Signal.Unique.str2.bw"
-    log:
-        "results/{sample}/log/bedgraph2bigwig_reverse.log"
-    params:
-        "" # optional params string
-    container:
-        'docker://quay.io/biocontainers/ucsc-bedgraphtobigwig:455--h2a80c09_1'
-    wrapper:
-        "v3.11.0/bio/ucsc/bedGraphToBigWig"
+        'docker://quay.io/biocontainers/ucsc-bedgraphtobigwig:472--h9b8f530_1'
+    conda:
+        '../envs/ucsc_bedgraph_to_bigwig.yaml'
+    shell:
+        '''
+        bedGraphToBigWig {params.extra} {input.bedGraph_forward} {input.chromsizes} {output.bw_forward} &> {log}
+        bedGraphToBigWig {params.extra} {input.bedGraph_reverse} {input.chromsizes} {output.bw_reverse} &>> {log}
+        '''
 
 rule qualimap:
     """
@@ -184,15 +201,21 @@ rule qualimap:
     resources:
         mem_mb = 8192
     params:
-        java_opts = "-Xmx8192M -Djava.awt.headless=true"
+        java_opts = 'JAVA_OPTS="-Xmx8192M -Djava.awt.headless=true"',
+        extra = ""
     container:
         'docker://quay.io/biocontainers/qualimap:2.3--hdfd78af_0'
-    wrapper:
-        "v3.10.2/bio/qualimap/rnaseq"
+    conda:
+        '../envs/qualimap.yaml'
+    shell:
+        '{params.java_opts} '
+        'qualimap rnaseq {extra} '
+        '-bam {input.bam} -gtf {input.gtf} '
+        '-outdir {snakemake.output} &> {log}'
 
 rule insert_size:
     input:
-        aln = rules.star.output.transcriptome_bam,
+        aln = rules.star.output.alignment,
         refgene = os.path.join(config['index_dir'], 'ref_annot.bed')
     output:
         reads_inner_distance = "results/{sample}/metrics/{sample}.inner_distance.txt",
@@ -202,11 +225,21 @@ rule insert_size:
     log:
         'results/{sample}/log/insert_size.log',
     params:
-        extra = "-k 10000000"
-    wrapper:
-        "v4.7.2/bio/rseqc/inner_distance"
+        extra = "-k 10000000",
+        out_prefix = lambda wildcards, ouput: output.reads_inner_distance.removesuffix('.inner_distance.txt')
+    container:
+        'docker://quay.io/biocontainers/rseqc:5.0.4--pyhdfd78af_0'
+    conda:
+        '../envs/rseqc.yaml'
+    shell:
+        "inner_distance.py " 
+        "{parmas.extra} "
+        "--input-file {input.aln} "
+        "--refgene {input.refgene} "
+        "--out-prefix {params.out_prefix} "
+        "&> {log} "
 
-rule salmon_quant_bam:
+rule salmon:
     """
     Rule to quantify RNA expression in TPM using Salmon.
     """

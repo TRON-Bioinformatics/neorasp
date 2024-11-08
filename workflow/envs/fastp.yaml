@@ -1,7 +1,6 @@
-name: star
 channels:
-  - bioconda
   - conda-forge
+  - bioconda
   - nodefaults
 dependencies:
-  - bioconda::star=2.7.11b
+  - fastp =0.23.4
