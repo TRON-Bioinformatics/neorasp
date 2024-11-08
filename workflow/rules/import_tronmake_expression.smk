@@ -9,7 +9,7 @@ rule get_fastq_SRA:
         fq2 = temp("results/{accession}/sra/{accession}_2.fastq.gz")
     params:
         fq1_unzipped = lambda wildcards, output: os.path.splitext(output.fq1)[0],
-        fq2_unzipped = lambda wildcards, output: os.path.splitext(output.fq2)[1]
+        fq2_unzipped = lambda wildcards, output: os.path.splitext(output.fq2)[1],
         extra = "--skip-technical --split-3",
         tmpdir = lambda wildcards, output: os.path.dirname(output.fq1),
         mem = ""
@@ -61,8 +61,6 @@ rule bam2fastq:
         repair_script = workflow.source_path('../scripts/repair_sam_qname.awk')
     container:
         'docker://quay.io/biocontainers/samtools:1.20--h50ea8bc_0'
-    conda:
-        '../envs/samtools.yaml'
     shell:
         'samtools collate --threads 2 -u -O {input.bam} | awk -f {params.repair_script} | '
         'samtools fastq --threads 2 -1 {output.r1} -2 {output.r2} -0 /dev/null -s /dev/null -n'
@@ -84,8 +82,6 @@ rule fastp:
     params:
         extra = ""
     threads: 2
-    conda:
-        '../envs/fastp.yaml'
     container:
         'docker://quay.io/biocontainers/fastp:0.23.4--h125f33a_5' 
     shell:
@@ -144,8 +140,6 @@ rule star:
     threads: 18
     resources:
         mem_mb = 48000
-    conda:
-        '../envs/star.yaml'
     container:
         'docker://quay.io/biocontainers/star:2.7.11b--h43eeafb_2'
     shell:
@@ -174,8 +168,6 @@ rule bedGraphToBigWig:
         extra = "" # optional params string
     container:
         'docker://quay.io/biocontainers/ucsc-bedgraphtobigwig:472--h9b8f530_1'
-    conda:
-        '../envs/ucsc_bedgraph_to_bigwig.yaml'
     shell:
         '''
         bedGraphToBigWig {params.extra} {input.bedGraph_forward} {input.chromsizes} {output.bw_forward} &> {log}
@@ -205,13 +197,11 @@ rule qualimap:
         extra = ""
     container:
         'docker://quay.io/biocontainers/qualimap:2.3--hdfd78af_0'
-    conda:
-        '../envs/qualimap.yaml'
     shell:
         '{params.java_opts} '
-        'qualimap rnaseq {extra} '
+        'qualimap rnaseq {params.extra} '
         '-bam {input.bam} -gtf {input.gtf} '
-        '-outdir {snakemake.output} &> {log}'
+        '-outdir {output} &> {log}'
 
 rule insert_size:
     input:
@@ -229,8 +219,6 @@ rule insert_size:
         out_prefix = lambda wildcards, ouput: output.reads_inner_distance.removesuffix('.inner_distance.txt')
     container:
         'docker://quay.io/biocontainers/rseqc:5.0.4--pyhdfd78af_0'
-    conda:
-        '../envs/rseqc.yaml'
     shell:
         "inner_distance.py " 
         "{parmas.extra} "
@@ -258,8 +246,6 @@ rule salmon:
     threads: 4
     log:
         'results/{sample}/log/salmon_bam_quant.log'
-    conda:
-        '../envs/salmon.yaml'
     container:
         'docker://quay.io/biocontainers/salmon:1.10.3--h6dccd9a_2'
     shell:
