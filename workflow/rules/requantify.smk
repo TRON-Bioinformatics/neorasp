@@ -11,7 +11,6 @@ rule prepare_requant:
     threads: 1
     resources:
         mem_mb = 8000
-    conda: '../envs/R.yaml'
     container:
         'docker://tronbioinformatics/splice2neo:0.6.11'
     log:  "results/{sample}/log/prepare_requantification.log"
@@ -32,7 +31,6 @@ rule generate_context_fa:
     threads: 1
     resources:
         mem_mb = 4000
-    conda: '../envs/easyquant.yaml'
     container:
         'docker://tronbioinformatics/easyquant:0.6.0'
     log:  "results/{sample}/log/bpquant_csv2fasta.log"
@@ -51,7 +49,6 @@ rule bowtie_index:
     threads: 4
     resources:
         mem_mb = 8000
-    conda: '../envs/easyquant.yaml'
     container:
         'docker://tronbioinformatics/easyquant:0.6.0'
     log:  "results/{sample}/log/bowtie_index.log"
@@ -86,7 +83,6 @@ rule bowtie_align:
     threads: 4
     resources:
         mem_mb = 16000
-    conda: '../envs/easyquant.yaml'
     container:
         'docker://tronbioinformatics/easyquant:0.6.0'
     log:  "results/{sample}/log/bowtie_align.log"
@@ -119,7 +115,6 @@ rule requantify:
     threads: 1
     resources:
         mem_mb = 8000
-    conda: '../envs/easyquant.yaml'
     container:
         'docker://tronbioinformatics/easyquant:0.6.0'
     log:  "results/{sample}/log/requantification.log"
@@ -146,7 +141,6 @@ rule add_quant_counts:
     threads: 1
     resources:
         mem_mb = 8000
-    conda: '../envs/R.yaml'
     container:
         'docker://tronbioinformatics/splice2neo:0.6.11'
     shell:
@@ -169,7 +163,6 @@ rule translate_to_peptide:
     threads: 1
     resources:
         mem_mb = 16000
-    conda: '../envs/R.yaml'
     container:
         'docker://tronbioinformatics/splice2neo:0.6.11'
     shell:

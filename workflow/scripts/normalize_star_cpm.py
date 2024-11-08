@@ -121,7 +121,7 @@ class CpmNormalization:
             pd.DataFrame: Normalized splice junction counts. Normalization for
                 uniquely, multi-mapping and total read counts is appended to DataFrame.
         """
-        if seq_depth == -1:
+        if self.seq_depth == -1:
             junction_df['jCPM_uniquely_mapped'] = np.nan
             junction_df['jCPM_multi_mapped'] = np.nan
             junction_df['jCPM_total_mapped'] = np.nan

@@ -8,14 +8,12 @@ rule samtools_index:
         bai (str): Path to binary index of BAM file
     """
     input:
-        rules.star.output.alignment,
+        bam = rules.star.output.alignment,
     output:
         "results/{sample}/star/Aligned.sortedByCoord.out.bam.bai"
     params:
         extra="",  # optional params string
     threads: 1  # This value - 1 will be sent to -@
-    conda:
-        '../envs/samtools.yaml'
     container:
         'docker://quay.io/biocontainers/samtools:1.20--h50ea8bc_0'
     shell:
@@ -55,11 +53,10 @@ rule fraser:
     threads: 2
     resources:
         mem_mb = 16000
-    conda: '../envs/fraser.yaml'
     container:
         'docker://quay.io/biocontainers/bioconductor-fraser:1.99.4--r43hf17093f_0'
     script:
-        '../scripts/fraser_new.R'
+        '../scripts/fraser.R'
 
 rule parse_junctions:
     """Parse junctions
@@ -85,27 +82,18 @@ rule parse_junctions:
         fraser_psi = rules.fraser.output.psi_table,
         canonical_junctions = os.path.join(config['index_dir'], 'canonical_junctions.tsv')
     output:
-        parsed_sj_tmp = "results/{sample}/fetchdata/parsing/parsed_star_fraser_sj.tsv",
+        parsed_sj = "results/{sample}/fetchdata/parsing/parsed_star_fraser_sj.tsv",
         removed_junction = "results/{sample}/fetchdata/detected_sj_canonical.tsv"
     params:
-        exe = workflow.source_path('../scripts/parse_junctions.R'),
         read_support = config['fraser'].get('min_read', 5),
-        working_dir = 
-            lambda wildcards, output: os.path.dirname(output.parsed_sj_tmp),
     log: "results/{sample}/log/sj_parsing.log"
     threads: 1
     resources:
         mem_mb = 8000
-    conda: '../envs/R.yaml'
     container:
         'docker://tronbioinformatics/splice2neo:0.6.11'
-    shell:
-        'Rscript --vanilla {params.exe} '
-        '--sj {input.star_sj} '
-        '--canonical_junctions {input.canonical_junctions} '
-        '--fraser {input.fraser_psi} '
-        '--read_support {params.read_support} '
-        '--output {params.working_dir} 2>&1 | tee {log}'
+    script:
+        '../scripts/parse_junctions.R'
 
 rule calculate_junction_cpm:
     """CPM calculation
@@ -142,7 +130,6 @@ rule calculate_junction_cpm:
         '-i {input.star_sj} '
         '-o {output.star_sj_cpm} 2>&1 | tee {log}'
 
-
 rule filter_mappability:
     """Mapability filter
 
@@ -163,7 +150,7 @@ rule filter_mappability:
         exe (str): Path to R wrapper script
     """
     input:
-        parsed_sj = rules.parse_junctions.output.parsed_sj_tmp,
+        parsed_sj = rules.parse_junctions.output.parsed_sj,
         encode_regions = os.path.join(config['index_dir'], 'mappability', 'encode_blacklist.bed'),
         ucsc_regions = os.path.join(config['index_dir'], 'mappability', 'ucsc_unusal.bed')
     output:
@@ -174,7 +161,6 @@ rule filter_mappability:
         mem_mb = 8000
     params:
         exe =  workflow.source_path('../scripts/filter_mapability.R')
-    conda: '../envs/R.yaml'
     container:
         'docker://tronbioinformatics/splice2neo:0.6.11'
     log: "results/{sample}/log/mappability_filter.log"
@@ -224,7 +210,6 @@ rule add_context_sequence:
         mem_mb = 20000
     params:
         exe = workflow.source_path('../scripts/add_tx.R')
-    conda: '../envs/R.yaml'
     container:
         'docker://tronbioinformatics/splice2neo:0.6.11'
     log:  "results/{sample}/log/add_cts.log"
@@ -268,7 +253,6 @@ rule add_transcript_expression:
     threads: 1
     resources:
         mem_mb = 8000
-    conda: '../envs/R.yaml'
     container:
         'docker://tronbioinformatics/splice2neo:0.6.11'
     log:  "results/{sample}/log/add_expression_estimates.log"
