@@ -17,11 +17,11 @@ parser$add_argument('--genome', help= 'Sample name')
 parser$add_argument('--output', help= 'Output')
 parser$add_argument('--output_neofox', help= 'Output for neofox')
 
-xargs<- parser$parse_args()
 
-df <- readr::read_tsv(xargs$sj, show_col_types = FALSE)
-cds <- base::readRDS(xargs$cds)
-bsg <- rtracklayer::TwoBitFile(xargs$genome)
+
+df <- readr::read_tsv(snakemake@input[['sj']], show_col_types = FALSE)
+cds <- base::readRDS(snakemake@input[['cds']])
+bsg <- rtracklayer::TwoBitFile(snakemake@input[['genome']])
 
 peptide_annot <- df %>% 
   dplyr::select(junc_id, tx_id, cts_seq, cts_junc_pos, cts_size, cts_id) %>% 
@@ -41,5 +41,5 @@ dat_for_neofox <- df %>%
     patientIdentifier = xargs$sample
   )
 
-df %>% readr::write_tsv(xargs$output)
-dat_for_neofox %>% readr::write_tsv(xargs$output_neofox)
+df %>% readr::write_tsv(snakemake@output[['junctions']])
+dat_for_neofox %>% readr::write_tsv(snakemake@output[['neofox_annotation']])

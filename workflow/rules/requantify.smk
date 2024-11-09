@@ -6,19 +6,14 @@ rule prepare_requant:
     output:
         easyquant_table = "results/{sample}/easyquant/context_seq.tsv",
         genes_of_interest = "results/{sample}/easyquant/genes_of_interest.txt"
-    params:
-        exe = workflow.source_path('../scripts/prepare_quant.R')
     threads: 1
     resources:
         mem_mb = 8000
     container:
         'docker://tronbioinformatics/splice2neo:0.6.11'
     log:  "results/{sample}/log/prepare_requantification.log"
-    shell:
-        'Rscript --vanilla {params.exe} '
-        '--sj {input.sj} '
-        '--output {output.easyquant_table} '
-        '--output_genes {output.genes_of_interest} 2>&1 | tee {log}'
+    script:
+        '../scripts/prepare_quant.R'
 
 rule generate_context_fa:
     """
@@ -135,7 +130,6 @@ rule add_quant_counts:
     output:
         requantified_sj = "results/{sample}/fetchdata/splice2neo/sj_annotated_requantified.tsv"
     params:
-        exe = workflow.source_path('../scripts/quant.R'),
         requant_dir = lambda wildcards, input: os.path.dirname(input.quantification)
     log:  "results/{sample}/log/add_requantification_counts.log"
     threads: 1
@@ -143,11 +137,8 @@ rule add_quant_counts:
         mem_mb = 8000
     container:
         'docker://tronbioinformatics/splice2neo:0.6.11'
-    shell:
-        'Rscript --vanilla {params.exe} '
-        '--sj {input.sj} '
-        '--requant {params.requant_dir} '
-        '--output {output.requantified_sj} 2>&1 | tee {log} '
+    script:
+        '../scripts/quant.R'
 
 rule translate_to_peptide:
     input:

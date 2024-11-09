@@ -159,18 +159,11 @@ rule filter_mappability:
     threads: 1
     resources:
         mem_mb = 8000
-    params:
-        exe =  workflow.source_path('../scripts/filter_mapability.R')
     container:
         'docker://tronbioinformatics/splice2neo:0.6.11'
     log: "results/{sample}/log/mappability_filter.log"
-    shell:
-        'Rscript --vanilla {params.exe} '
-        '--sj {input.parsed_sj} '
-        '--encode_blacklist {input.encode_regions} '
-        '--ucsc_unusual {input.ucsc_regions} '
-        '--output {output.parsed_sj} '
-        '--removed_output {output.failed_sj} 2>&1 | tee {log} '
+    script:
+        '../scripts/filter_mapability.R'
 
 rule add_context_sequence:
     """Add transcript sequence
@@ -209,20 +202,12 @@ rule add_context_sequence:
     resources:
         mem_mb = 20000
     params:
-        exe = workflow.source_path('../scripts/add_tx.R')
+        extra=""
     container:
         'docker://tronbioinformatics/splice2neo:0.6.11'
     log:  "results/{sample}/log/add_cts.log"
-    shell:
-        'Rscript --vanilla {params.exe} '
-        '--juncs {input.parsed_sj} '
-        '--transcripts {input.transcripts} '
-        '--genome {input.genome} '
-        '--tx2gene {input.tx2gene} '
-        '--gene_exclusion {input.gene_exclusion} '
-        '--gene2hgnc {input.gene2hgnc} '
-        '--output {output.annotated_sj} '
-        '--removed_output {output.annotated_sj_problematic} 2>&1 | tee {log}'
+    script:
+        '../scripts/add_tx.R'
 
 rule add_transcript_expression:
     """Add transcript/gene expression
@@ -256,12 +241,7 @@ rule add_transcript_expression:
     container:
         'docker://tronbioinformatics/splice2neo:0.6.11'
     log:  "results/{sample}/log/add_expression_estimates.log"
-    shell:
-        'Rscript --vanilla {params.exe} '
-        '--sj {input.annotated_sj} '
-        '--txp {input.transcript_expression} '
-        '--gxp {input.gene_expression} '
-        '--jxp {input.junction_expression} '
-        '--output {output.sj_expression} 2>&1 | tee {log}'
+    script:
+        '../scripts/add_tpm.R'
 
 

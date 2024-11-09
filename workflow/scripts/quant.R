@@ -8,24 +8,12 @@ suppressMessages({
   
 })
 
-parser <- ArgumentParser(description='Annotate junctions with easyquant requant results')
-
-parser$add_argument('--sj', help='spladder')
-parser$add_argument('--requant', help='requant')
-parser$add_argument('--output', help= 'Output directory')
-
-xargs<- parser$parse_args()
-
-
-df <- readr::read_tsv(xargs$sj, show_col_types = FALSE)
+df <- readr::read_tsv(snakemake@input[['sj']], show_col_types = FALSE)
 
 df <-
     splice2neo::map_requant(
-        path_to_easyquant_folder = xargs$requant,
+        path_to_easyquant_folder = snakemake@params[['requant_dir']],
         junc_tib = df
     )
 
-df <- df %>%
-  dplyr::mutate(junction_psi = intron_jaccard * gene_expression_tpm)
-
-df %>% readr::write_tsv(xargs$output)
+df %>% readr::write_tsv(snakemake@output[['requantified_sj']])

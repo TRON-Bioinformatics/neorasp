@@ -22,28 +22,17 @@ gene_exclusion <- function(df, exclusion_pattern) {
 
 }
 
-parser <- ArgumentParser(description='Parse junctions and annotate with splice2neo')
+transcripts <- base::readRDS(snakemake@input[['transcripts']])
+bsg <- rtracklayer::TwoBitFile(snakemake@input[['genome']])
 
-parser$add_argument('--juncs', help='junctions from STAR')
-parser$add_argument('--transcripts', help='RDS of transcripts')
-parser$add_argument('--genome', help='2Bit of genome')
-parser$add_argument('--tx2gene', help='Transcript to gene mapping')
-parser$add_argument('--gene2hgnc', help='Gene id to HGNC mapping')
-parser$add_argument('--gene_exclusion', help='Exclude genes by regex patterns (EasyFuse + custom genes)')
-parser$add_argument('--output', help= 'Output SJ')
-parser$add_argument('--removed_output', help= 'SJ in problematic genes')
+df <- readr::read_tsv(snakemake@input[['star_sj']], show_col_types = FALSE)
 
-xargs<- parser$parse_args()
-
-transcripts <- base::readRDS(xargs$transcripts)
-bsg <- rtracklayer::TwoBitFile(xargs$genome)
-
-df <- readr::read_tsv(xargs$juncs, show_col_types = FALSE)
 # Read transcript to gene mapping
-tx2gene <- readr::read_tsv(xargs$tx2gene, show_col_types = FALSE) %>%
+tx2gene <- readr::read_tsv(snakemake@input[['tx2gene']], show_col_types = FALSE) %>%
   dplyr::rename(tx_id = TXNAME, gene_id = GENEID)
+
 # Read gene to HGNC mapping
-gene2hgnc <- readr::read_tsv(xargs$gene2hgnc, show_col_types = FALSE) %>%
+gene2hgnc <- readr::read_tsv(snakemake@input[['gene2hgnc']], show_col_types = FALSE) %>%
   dplyr::select(`Gene stable ID version`, `Gene name`) %>%
   dplyr::rename(gene_id = `Gene stable ID version`, hgnc = `Gene name`) %>%
   dplyr::distinct()
@@ -64,18 +53,18 @@ df <- df %>%
   dplyr::left_join(tx2gene) %>%
   dplyr::left_join(gene2hgnc)
 
-df <- gene_exclusion(df, xargs$gene_exclusion)
+df <- gene_exclusion(df, snakemake@input[['gene_exclusion']])
 
 df %>% 
   dplyr::filter(exclude_gene | is.na(gene_id)) %>%
   dplyr::bind_rows(df_without_tx) %>%
-  readr::write_tsv(xargs$removed_output)
+  readr::write_tsv(nakemake@output[['annotated_sj_problematic']])
 
 # Merge with gene and remove genes from exclusion pattern
 
 df <- df %>%
   dplyr::filter(!exclude_gene) %>%
   dplyr::filter(!is.na(gene_id)) %>%
-  splice2neo::add_context_seq(transcripts = transcripts, size = 800, bsg = bsg)
+  splice2neo::add_context_seq(transcripts = transcripts, size = 100, bsg = bsg)
 
-df %>% readr::write_tsv(xargs$output)
+df %>% readr::write_tsv(snakemake@output[['annotated_sj']])

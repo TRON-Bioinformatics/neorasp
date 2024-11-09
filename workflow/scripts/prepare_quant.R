@@ -8,24 +8,15 @@ suppressMessages({
   
 })
 
-parser <- ArgumentParser(description='Transform SJ sequences for easyquant')
-
-parser$add_argument('--sj', help='SJ')
-parser$add_argument('--output', help= 'EasyQuant input table')
-parser$add_argument('--output_genes', help= 'Genes of interest for requant')
-
-xargs<- parser$parse_args()
-
-
-df <- readr::read_tsv(xargs$sj, show_col_types = FALSE)
+df <- readr::read_tsv(snakemake@input[['sj']], show_col_types = FALSE)
 
 # Filter only for consensus calls and remove intergenic calls
 df %>%
   splice2neo::transform_for_requant() %>% 
-  readr::write_tsv(xargs$output)
+  readr::write_tsv(snakemake@output[['easyquant_table']])
 
 genes <- df %>% dplyr::pull(gene_id) %>% unique()
 
 genes <- paste(genes, collapse="|")
 
-genes %>% readr::write_lines(xargs$output_genes)
+genes %>% readr::write_lines(snakemake@output[['genes_of_interest']])

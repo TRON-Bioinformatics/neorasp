@@ -46,25 +46,18 @@ filter_genomic_regions <- function(df, encode_blacklist, ucsc_unusal_regions){
   return(out_df)
 }
 
-parser <- ArgumentParser(description='Parse junctions and annotate with splice2neo')
-
-parser$add_argument('--sj', help='Predicted splice junctions')
-parser$add_argument('--encode_blacklist', help='Encode black list')
-parser$add_argument('--ucsc_unusual', help='UCSC problematic regions')
-parser$add_argument('--output', help= 'Output file')
-parser$add_argument('--removed_output', help= 'Output file for filtered junctions')
-
-xargs<- parser$parse_args()
-
-df <- readr::read_tsv(xargs$sj, show_col_types = FALSE)
+df <- readr::read_tsv(snakemake@input[['parsed_sj']], show_col_types = FALSE)
 
 df <- df %>% 
-  filter_genomic_regions(., xargs$encode_blacklist, xargs$ucsc_unusual)
+  filter_genomic_regions(., 
+    snakemake@input[['encode_regions']], snakemake@input[['ucsc_regions']])
 
 df_failed <- df %>%
   dplyr::filter(!is.na(encode_blacklist_classification) | !is.na(ucsc_blacklist_classification))
 
 df %>%
   dplyr::filter(is.na(encode_blacklist_classification) & is.na(ucsc_blacklist_classification)) %>%
-  readr::write_tsv(xargs$output)
-df_failed %>% readr::write_tsv(xargs$removed_output)
+  readr::write_tsv(snakemake@output[['parsed_sj']])
+
+df_failed %>%
+  readr::write_tsv(snakemake@output[['failed_sj']])
