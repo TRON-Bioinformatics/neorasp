@@ -16,6 +16,8 @@ rule samtools_index:
     threads: 1  # This value - 1 will be sent to -@
     container:
         'docker://quay.io/biocontainers/samtools:1.20--h50ea8bc_0'
+    conda:
+        '../envs/samtools.yaml'
     shell:
         "samtools index {input.bam}"
 
@@ -55,6 +57,8 @@ rule fraser:
         mem_mb = 16000
     container:
         'docker://quay.io/biocontainers/bioconductor-fraser:1.99.4--r43hf17093f_0'
+    conda:
+        '../envs/fraser.yaml'
     script:
         '../scripts/fraser.R'
 
@@ -91,7 +95,9 @@ rule parse_junctions:
     resources:
         mem_mb = 8000
     container:
-        'docker://tronbioinformatics/splice2neo:0.6.11'
+        'docker://tronbioinformatics/splice2neo:0.6.12'
+    conda:
+        '../envs/R.yaml'
     script:
         '../scripts/parse_junctions.R'
 
@@ -160,7 +166,9 @@ rule filter_mappability:
     resources:
         mem_mb = 8000
     container:
-        'docker://tronbioinformatics/splice2neo:0.6.11'
+        'docker://tronbioinformatics/splice2neo:0.6.12'
+    conda:
+        '../envs/R.yaml'
     log: "results/{sample}/log/mappability_filter.log"
     script:
         '../scripts/filter_mapability.R'
@@ -202,9 +210,11 @@ rule add_context_sequence:
     resources:
         mem_mb = 20000
     params:
-        extra=""
+        extra = ""
     container:
-        'docker://tronbioinformatics/splice2neo:0.6.11'
+        'docker://tronbioinformatics/splice2neo:0.6.12'
+    conda:
+        '../envs/R.yaml'
     log:  "results/{sample}/log/add_cts.log"
     script:
         '../scripts/add_tx.R'
@@ -239,7 +249,9 @@ rule add_transcript_expression:
     resources:
         mem_mb = 8000
     container:
-        'docker://tronbioinformatics/splice2neo:0.6.11'
+        'docker://tronbioinformatics/splice2neo:0.6.12'
+    conda:
+        '../envs/R.yaml'
     log:  "results/{sample}/log/add_expression_estimates.log"
     script:
         '../scripts/add_tpm.R'

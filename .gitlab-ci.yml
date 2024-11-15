@@ -1,15 +1,17 @@
-.bookdown:
-  image: rocker/verse
+.mkdocs:
+  image: condaforge/miniforge3:24.7.1-2
   stage: deploy
   script:
-    - Rscript -e "bookdown::render_book('docs/splicing_documentation/', 'all', output_dir = '../../public')"
+    - mamba create -n mkdocs conda-forge::mkdocs 
+    - source /opt/conda/bin/activate mkdocs
+    - pip install mkdocs-material
+    - mkdocs build -f documentation/tronmake-rna-splicing/mkdocs.yml -d ../../public
   artifacts:
     paths:
       - public
 
 pages:
-  extends: .bookdown
+  extends: .mkdocs
   only:
     - main
     - dev
-

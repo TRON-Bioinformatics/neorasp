@@ -1,0 +1,18 @@
+site_name: TronMake cancer RNA-splicing
+nav: 
+  - Home: index.md
+  - Installation: installation.md
+  - Input: input.md
+  - Usage: usage.md
+  - Cluster: cluster.md
+  - About: about.md
+  - References: references.md
+theme:
+  name: material
+  palette:
+    scheme: slate
+    primary: teal
+    accent: teal
+  icon:
+    repo: fontawesome/brands/gitlab
+repo_url: https://gitlab.rlp.net/tron/tronmake-rna-splicing

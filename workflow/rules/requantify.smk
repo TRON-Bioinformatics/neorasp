@@ -10,7 +10,9 @@ rule prepare_requant:
     resources:
         mem_mb = 8000
     container:
-        'docker://tronbioinformatics/splice2neo:0.6.11'
+        'docker://tronbioinformatics/splice2neo:0.6.12'
+    conda:
+        '../envs/R.yaml'
     log:  "results/{sample}/log/prepare_requantification.log"
     script:
         '../scripts/prepare_quant.R'
@@ -28,6 +30,8 @@ rule generate_context_fa:
         mem_mb = 4000
     container:
         'docker://tronbioinformatics/easyquant:0.6.0'
+    conda:
+        '../envs/easyquant.yaml'
     log:  "results/{sample}/log/bpquant_csv2fasta.log"
     shell:
         'bp_quant '
@@ -46,6 +50,8 @@ rule bowtie_index:
         mem_mb = 8000
     container:
         'docker://tronbioinformatics/easyquant:0.6.0'
+    conda:
+        '../envs/easyquant.yaml'
     log:  "results/{sample}/log/bowtie_index.log"
     output:
         bowtie_index = multiext(
@@ -80,6 +86,8 @@ rule bowtie_align:
         mem_mb = 16000
     container:
         'docker://tronbioinformatics/easyquant:0.6.0'
+    conda:
+        '../envs/easyquant.yaml'
     log:  "results/{sample}/log/bowtie_align.log"
     shell:
         "bowtie2 "
@@ -112,6 +120,8 @@ rule requantify:
         mem_mb = 8000
     container:
         'docker://tronbioinformatics/easyquant:0.6.0'
+    conda:
+        '../envs/easyquant.yaml'
     log:  "results/{sample}/log/requantification.log"
     shell:
         "bp_quant count "
@@ -136,7 +146,9 @@ rule add_quant_counts:
     resources:
         mem_mb = 8000
     container:
-        'docker://tronbioinformatics/splice2neo:0.6.11'
+        'docker://tronbioinformatics/splice2neo:0.6.12'
+    conda:
+        '../envs/R.yaml'
     script:
         '../scripts/quant.R'
 
@@ -148,19 +160,13 @@ rule translate_to_peptide:
     output:
         junctions = "results/{sample}/fetchdata/sj_final_results.tsv",
         neofox_annotation = "results/{sample}/fetchdata/sj_results_neofox_annotation.tsv"
-    params:
-        exe = workflow.source_path('../scripts/peptide.R'),
     log:  "results/{sample}/log/add_peptide_annotation.log"
     threads: 1
     resources:
         mem_mb = 16000
     container:
-        'docker://tronbioinformatics/splice2neo:0.6.11'
-    shell:
-        'Rscript --vanilla {params.exe} '
-        '--sj {input.sj} '
-        '--sample {wildcards.sample} '
-        '--cds {input.cds} '
-        '--genome {input.genome} '
-        '--output {output.junctions} '
-        '--output_neofox {output.neofox_annotation} 2>&1 | tee {log}'
+        'docker://tronbioinformatics/splice2neo:0.6.12'
+    conda:
+        '../envs/R.yaml'
+    script:
+        '../scripts/peptide.R'
