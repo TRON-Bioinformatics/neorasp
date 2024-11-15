@@ -78,7 +78,8 @@ rule bowtie_align:
     log: "results/logs/{sample}_bowtie.txt"
     params:
         index_prefix = lambda wildcards, input: input.bowtie_index[0].removesuffix(".1.bt2"),
-        report_threshold = config["requantify"].get('bowtie_k_threshold', 200),
+        report_threshold = '-a' if config["requantify"].get('bowtie_k_threshold', 200) == 'all' \
+            else f'-k {config["requantify"].get("bowtie_k_threshold", 200)}',
     output:
         sam = temp("results/{sample}/easyquant/alignment/bowtie_Aligned.out.sam")
     threads: 4
@@ -93,7 +94,7 @@ rule bowtie_align:
         "bowtie2 "
         "-p {threads} "
         "-x {params.index_prefix} "
-        "-k {params.report_threshold} "
+        "{params.report_threshold} "
         "--end-to-end "
         "--no-discordant "
         "--no-mixed "

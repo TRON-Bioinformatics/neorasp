@@ -1,4 +1,4 @@
-# TronMake cancer RNA-splicing
+# TronMake Cancer RNA-splicing
 
 <!-- badges: start -->
 
@@ -8,7 +8,7 @@
 
 <!-- badges: end -->
 
-TronMake RNA-splicing is a workflow to identify non-canonical tumor-specific splice junction from RNA-seq.
+TronMake Cancer RNA-splicing is a workflow to identify non-canonical tumor-specific splice junction from RNA-seq.
 The workflow implements a sensitive alignment based splice junction detection and targeted re-quantification
 of candidate transcript variants. In our bioinformatics pipeline, [SnakeMake](https://snakemake.readthedocs.io/en/stable/) is employed as the primary workflow manager to orchestrate various steps. 
 

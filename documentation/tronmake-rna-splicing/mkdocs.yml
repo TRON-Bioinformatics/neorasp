@@ -1,4 +1,4 @@
-site_name: TronMake cancer RNA-splicing
+site_name: TronMake Cancer RNA-splicing
 nav: 
   - Home: index.md
   - Installation: installation.md
