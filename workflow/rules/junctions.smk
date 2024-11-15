@@ -210,7 +210,8 @@ rule add_context_sequence:
     resources:
         mem_mb = 20000
     params:
-        extra = ""
+        extra = "",
+        cts_size = config['requantify'].get('cts_size', 1000)
     container:
         'docker://tronbioinformatics/splice2neo:0.6.12'
     conda:

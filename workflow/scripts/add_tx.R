@@ -65,6 +65,6 @@ df %>%
 df <- df %>%
   dplyr::filter(!exclude_gene) %>%
   dplyr::filter(!is.na(gene_id)) %>%
-  splice2neo::add_context_seq(transcripts = transcripts, size = 100, bsg = bsg)
+  splice2neo::add_context_seq(transcripts = transcripts, size = snakemake@params[['cts_size']], bsg = bsg)
 
 df %>% readr::write_tsv(snakemake@output[['annotated_sj']])
