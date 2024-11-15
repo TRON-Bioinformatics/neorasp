@@ -101,6 +101,7 @@ rule parse_junctions:
     script:
         '../scripts/parse_junctions.R'
 
+
 rule calculate_junction_cpm:
     """CPM calculation
 
@@ -129,7 +130,7 @@ rule calculate_junction_cpm:
     log: "results/{sample}/log/sj_cpm.log"
     threads: 1
     resources:
-        mem_mb = 4000
+        mem_mb = 4096
     conda: '../envs/python.yaml'
     shell:
         'python {params.exe} '
