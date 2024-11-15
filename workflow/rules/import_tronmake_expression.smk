@@ -259,7 +259,7 @@ rule salmon:
         quant = 'results/{sample}/salmon_bam/quant.sf',
         quant_gene = 'results/{sample}/salmon_bam/quant.genes.sf'
     resources:
-        mem_mb = 15000
+        mem_mb = 16000
     threads: 4
     log:
         'results/{sample}/log/salmon_bam_quant.log'

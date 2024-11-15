@@ -10,7 +10,7 @@ default-resources:
   runtime: 3600
 
 set-threads:
-  salmon_quant_bam: 4
+  salmon: 4
   qualimap: 2
   star: 18
   fastp: 2
