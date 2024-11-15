@@ -12,6 +12,4 @@
 
 pages:
   extends: .mkdocs
-  only:
-    - main
-    - dev
+
