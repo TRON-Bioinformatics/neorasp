@@ -1,43 +1,52 @@
-# TronMake RNA-splice
+# TronMake cancer RNA-splicing
 
 <!-- badges: start -->
 
 [![Release](https://gitlab.rlp.net/tron/tronmake-rna-splicing/-/badges/release.svg)](https://gitlab.rlp.net/tron/tronmake-rna-splicing/-/releases)
-[![Snakemake](https://img.shields.io/badge/snakemake-8.16.0-brightgreen.svg?style=flat)](https://snakemake.readthedocs.io)
+[![Snakemake](https://img.shields.io/badge/snakemake-8.24.1-brightgreen.svg?style=flat)](https://snakemake.readthedocs.io)
 [![pipeline status](https://gitlab.rlp.net/tron/tronmake-rna-splicing/badges/develop/pipeline.svg)](https://gitlab.rlp.net/tron/tronmake-rna-splicing/commits/master)
 
 <!-- badges: end -->
 
 
-The TronMake RNA-splice pipeline is a workflow to detect tumor-specific splice junctions in RNA-seq.
-
+The TronMake cancer RNA-splicing pipeline is a workflow to detect tumor-specific splice junctions in tumor RNA.
 The workflow implements a sensitive alignment based splice junction detection and targeted re-quantification
-of candidate transcript variants. 
-
-This pipeline aligns paired FASTQ files with STAR in 2-pass mode. It then calculates PSI and Intron jaccard values with FRASER.
-Next, junctions are filtered for novelty. To exclude false-positve junction calls, we exclude alignments from problematic 
-regions and genes. Remaining junction candidates are then re-quantified using easyquant.
+of candidate transcript variants. This pipeline aligns paired-end FASTQ files with STAR in 2-pass mode. It then calculates 
+percent splice in (PSI) and Intron jaccard values with FRASER. Next, junctions are filtered for novelty. To exclude 
+false-positve junction calls, we exclude alignments from problematic regions and genes. Lastly, remaining junction candidates will be re-quantified with easyquant.
 
 
-## Components
+## Workflow
 
-1. Adapter and quality trimming ([`fastp`](https://github.com/OpenGene/fastp))
+- Input:
+  - A table with paired-end FASTQ data for tumor samples
+  - A reference genome lib
 
-2. Detection and PSI calculation: [`STAR`](https://github.com/alexdobin/STAR) -> [`fraser`](https://github.com/deweylab/RSEM) -> **SJ QUANTIFICATION**
+- Process:
+    1. Adapter and quality trimming ([`fastp`](https://github.com/OpenGene/fastp))
 
-3. Expression quantification: [`Salmon`](https://salmon.readthedocs.io/en/latest/) -> **GENE and TRANSCRIPT QUANTIFICATION**
+    2. Detection and metric calculation: [`STAR`](https://github.com/alexdobin/STAR) -> [`fraser`](https://github.com/deweylab/RSEM) -> **SJ QUANTIFICATION**
 
-4. Filtering: 
-    * Filtering based on junction expression (either raw count or CPM based) 
-    * Removing canonical junctions from GENCODE and healthy long read studies.
-    * Removing junctions located in UCSC & ENCODE problematic regions.
-    * Removing junctions from IG, TCR, BCR and HLA regions.
+    3. Expression quantification: [`Salmon`](https://salmon.readthedocs.io/en/latest/) -> **GENE and TRANSCRIPT QUANTIFICATION**
 
-5. Targeted re-quantification of splice junction candidates ([`easyquant`](https://github.com/TRON-Bioinformatics/easyquant)).
+    4. Filtering: 
+        * Filtering based on junction expression.
+        * Removing canonical junctions from GENCODE and healthy long read studies.
+        * Removing junctions located in:
+            * Problematic regions (low mappability).
+            * IG-, TCR-, BCR- and HLA-regions.
+    
+    5. Targeted re-quantification of splice junction candidates ([`easyquant`](https://github.com/TRON-Bioinformatics/easyquant)).
 
-6. Identification of false-positive re-quantification results.
+    6. Identification of false-positive re-quantification results.
 
-7. Peptide annotation for NeoFox
+    7. Peptide annotation for NeoFox
+
+## Dependencies
+
+ - Python (>=3.10)
+ - snakemake (==8.24.1)
+ - Conda (>=24.9)
 
 
 ## Installation
@@ -46,6 +55,7 @@ regions and genes. Remaining junction candidates are then re-quantified using ea
 
 ```
 git clone https://gitlab.rlp.net/tron/tronmake-rna-splicing
+
 ```
 
 ### Create conda environment
@@ -56,31 +66,13 @@ conda env create -f environment.yaml --prefix conda_env/
 conda activate conda_env
 ```
 
-### Run the pipeline
+## Usage
 
-```
-snakemake \
-    -p --use-conda --conda-prefix /path/to/shared_conda_envs \
-    --executor local,slurm \
-    --rerun-triggers mtime \
-    --directory /path/to/output \
-    --configfile /path/to/config \
-    --config sample_sheet=/path/to/input.tsv \
-    --software-deployment-method conda
-```
-
-* `--conda-prefix`: Where should the conda environments be stored
-* `--config`: (Optional). Allows to overwrite settings from `--configfile`
-* `--directory`: Specifies where the results are stored.
-* `--configfile`: The path to the config file that contains e.g. the paths to the genome indices.
-* `--software-deployment-method`: Conda and Apptainer are supported. For Apptainer support please make sure to bind input directories (Files + genome indices) into the container.
-
-
-### Input tables
+The pipeline requires as input a tab-separated table.
 
 #### FASTQ
 
-The table with normal paired end FASTQ files expects three tab-separated columns **without** a header
+The table with paired end FASTQ files expects three tab-separated columns **without** a header
 
 | Sample name          | FASTQ 1                      | FASTQ 2                  |
 |----------------------|---------------------------------|------------------------------|
@@ -110,7 +102,7 @@ Make sure to set `BAM_input: true` in the config file to trigger BAM to FASTQ co
 
 #### SRA 
 
-When using the SRA mode, the table expects two tab-separated columns **without** a header.
+When using the SRA mode, the table expects  a single column **without** a header.
 Make sure to set `sra_mode: true` in the config file to trigger download of FASTQ files of SRA Run accessions.
 
 |accession |
@@ -121,14 +113,33 @@ Make sure to set `sra_mode: true` in the config file to trigger download of FAST
 |SRR6298261|
 |SRR6298262|
 
-**Note: The pipeline currently support only SRA Run accessions starting with `SRR`. Other accessions such as study, expirment and/or group are not supported**
+**Note: The pipeline currently support only SRA Run accessions starting with `SRR`, `DRR` or `ERR`. Other accessions such as study, expirment and/or group are currently not supported**
+
+
+### Run the pipeline
+
+```
+snakemake \
+    -p --use-conda --conda-prefix /path/to/shared_conda_envs \
+    --executor local,slurm \
+    --rerun-triggers mtime \
+    --directory /path/to/output \
+    --configfile /path/to/config \
+    --config sample_sheet=/path/to/input.tsv \
+    --software-deployment-method conda
+```
+
+* `--conda-prefix`: Where should the conda environments be stored
+* `--config`: (Optional). Allows to overwrite settings from `--configfile`
+* `--directory`: Specifies where the results are stored.
+* `--configfile`: The path to the config file that contains e.g. the paths to the genome indices.
+* `--software-deployment-method`: Conda and Apptainer are supported. For Apptainer support please make sure to bind input directories (Files + genome indices) into the container.
 
 
 
 ### Reference genome
 
-The reference genome has to be provided as pre-built genome library. The (TronMake Genome Lib Builder)[https://gitlab.rlp.net/tron/tronmake-genome-lib-builder]
-pipeline provide the required genome  and tool indices.
+The reference genome has to be provided as pre-built genome library. The [TronMake Genome Lib Builder]([https://gitlab.rlp.net/tron/tronmake-genome-lib-builder) can be used to generate the required genome and tool indices.
 
 
 ## Authors & Acknowledgements 
@@ -143,7 +154,7 @@ Main developers:
 
 Contributers:
 
-- None / NA
+- None / NA / NULL
 
 ## References
 

@@ -18,6 +18,8 @@ rule get_fastq_SRA:
         'results/{accession}/log/sra_download.log'
     container:
         'docker://quay.io/biocontainers/sra-tools:3.1.1--h4304569_0'
+    conda:
+        '../envs/ucsc_bedgraph_to_bigwig.yaml'
     shell:
         'fasterq-dump '
         '--temp {params.tmpdir} '
@@ -61,6 +63,8 @@ rule bam2fastq:
         repair_script = workflow.source_path('../scripts/repair_sam_qname.awk')
     container:
         'docker://quay.io/biocontainers/samtools:1.20--h50ea8bc_0'
+    conda:
+        '../envs/samtools.yaml'
     shell:
         'samtools collate --threads 2 -u -O {input.bam} | awk -f {params.repair_script} | '
         'samtools fastq --threads 2 -1 {output.r1} -2 {output.r2} -0 /dev/null -s /dev/null -n'
@@ -83,7 +87,9 @@ rule fastp:
         extra = ""
     threads: 2
     container:
-        'docker://quay.io/biocontainers/fastp:0.23.4--h125f33a_5' 
+        'docker://quay.io/biocontainers/fastp:0.23.4--h125f33a_5'
+    conda:
+        '../envs/fastp.yaml'
     shell:
         'fastp '
         '--thread {threads} '
@@ -142,6 +148,8 @@ rule star:
         mem_mb = 48000
     container:
         'docker://quay.io/biocontainers/star:2.7.11b--h43eeafb_2'
+    conda:
+        '../envs/star.yaml'
     shell:
         'STAR '
         '{params.read_cmd} '
@@ -168,6 +176,8 @@ rule bedGraphToBigWig:
         extra = "" # optional params string
     container:
         'docker://quay.io/biocontainers/ucsc-bedgraphtobigwig:472--h9b8f530_1'
+    conda:
+        '../envs/ucsc_bedgraph_to_bigwig.yaml'
     shell:
         '''
         bedGraphToBigWig {params.extra} {input.bedGraph_forward} {input.chromsizes} {output.bw_forward} &> {log}
@@ -197,6 +207,8 @@ rule qualimap:
         extra = ""
     container:
         'docker://quay.io/biocontainers/qualimap:2.3--hdfd78af_0'
+    conda:
+        '../envs/qualimap.yaml'
     shell:
         '{params.java_opts} '
         'qualimap rnaseq {params.extra} '
@@ -204,6 +216,9 @@ rule qualimap:
         '-outdir {output} &> {log}'
 
 rule insert_size:
+    """
+    Estimate insert size distribution from reads.
+    """
     input:
         aln = rules.star.output.alignment,
         refgene = os.path.join(config['index_dir'], 'ref_annot.bed')
@@ -219,6 +234,8 @@ rule insert_size:
         out_prefix = lambda wildcards, ouput: output.reads_inner_distance.removesuffix('.inner_distance.txt')
     container:
         'docker://quay.io/biocontainers/rseqc:5.0.4--pyhdfd78af_0'
+    conda:
+        '../envs/rseqc.yaml'
     shell:
         "inner_distance.py " 
         "{parmas.extra} "
@@ -248,6 +265,8 @@ rule salmon:
         'results/{sample}/log/salmon_bam_quant.log'
     container:
         'docker://quay.io/biocontainers/salmon:1.10.3--h6dccd9a_2'
+    conda:
+        '../envs/salmon.yaml'
     shell:
         'salmon quant '
         '--alignments {input.bam} '
