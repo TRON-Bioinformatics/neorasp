@@ -2,7 +2,7 @@
   image: condaforge/miniforge3:24.7.1-2
   stage: deploy
   script:
-    - apt update && apt install libmagic1
+    - apt update && apt install -y libmagic1
     - mamba env create -n mkdocs -f environment.yaml
     - source /opt/conda/bin/activate mkdocs
     - snakemake -p --until docstring_export --configfile tests/splicing.yaml
