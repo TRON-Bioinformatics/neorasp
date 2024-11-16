@@ -1,6 +1,7 @@
 # Usage
 
-> **Information: If possible, use absolute paths when specifying directories or files.**
+> **Information: If possible, use absolute paths when specifying directories or files.**  
+> **Recommendation: If possible, configure the workflow with a yaml configfile and not on the command line.**
 
 ```
 snakemake \
@@ -15,7 +16,7 @@ snakemake \
     [--retries <n>]
 ```
 
-* `config`: After `--config` different parameters are specified (**NOTE**: the parameters after config are separated by space and do not start with `--`):
+* `config`: After `--config` different parameters can be specified (**NOTE**: the parameters after config are separated by space and do not start with `--`. **Moreover they can be omitted if a configfile is used**):
     * `sample_sheet=`: Define the path to the sample sheet.
     * `index_dir=`: Path to the genome library and genome indices.
 * `directory`: Specifies where the results are stored.
@@ -27,7 +28,7 @@ snakemake \
 * `--profile` (optional): Path to a profile specification that defines e.g. which executor to use and how many jobs are submitted in parallel (see section [Configuration](#configuration)).
 * `--retries` (optional): Number of retries if a rule fails. When a rule is restarted and the default workflow config is not modified, the RAM for the failed rule is increased, to account for potentially higher RAM requirements.
 
-## Config file
+# Config file
 
 The config file contains variables that configure how the workflow is run. This
 includes the paths to the reference and indices.
@@ -52,3 +53,10 @@ In the config file the following attributes are specified:
     * `cts_size`: Size of context sequence (+/- bp of exonic sequence). Ideally this should be determined based on the fragment size. (default: `1000`) 
 
 * `chrom-filter`: List of chromosomes for which the splice junctions should be kept. Default are human standard chromosomes.
+
+
+## Example config file
+
+~~~yaml
+{% include "../../../config/config.yaml" %}
+~~~

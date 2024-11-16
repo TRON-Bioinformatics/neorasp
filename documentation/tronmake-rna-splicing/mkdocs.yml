@@ -6,6 +6,7 @@ nav:
   - Usage: usage.md
   - Cluster: cluster.md
   - About: about.md
+  - Rules: rules.md
   - References: references.md
 theme:
   name: material
@@ -15,4 +16,16 @@ theme:
     accent: teal
   icon:
     repo: fontawesome/brands/gitlab
+  features:
+    - navigation.sections
+    - navigation.tabs
+copyright: © TRON gGmbH, 2024. This work is licensed under MIT.
+
 repo_url: https://gitlab.rlp.net/tron/tronmake-rna-splicing
+plugins:
+  - snakemake-rule:
+      rule_folders:
+        - '../../workflow/rules'
+  - search
+  - table-reader
+  - include-markdown

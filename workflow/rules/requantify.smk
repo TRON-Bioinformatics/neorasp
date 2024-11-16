@@ -41,6 +41,16 @@ rule generate_context_fa:
 
 
 rule bowtie_index:
+    """
+    Build bowtie2 index of predicted context sequences.
+
+    input:
+        context_fa (str): Path to FASTA file with context sequences
+    output:
+        bowtie_index (List[str]): Paths of bowtie2 index files
+    params:
+        prefix (str): Path where bowtie2 shall be created
+    """
     input:
         context_fa = rules.generate_context_fa.output.context_fa
     params:
@@ -71,6 +81,26 @@ rule bowtie_index:
         
 
 rule bowtie_align:
+    """
+    Targeted mapping of RNA-seq reads against context sequences.
+    Alignment generated in this step is used in re-quantification
+    counting. Reads mates are aligned against the predicted transcript
+    sequence using stringent parameters taken from RSEM. Parameters
+    ensure that only properly mapped mates are reported.
+
+    `--no-mixed --dpad 0 --gbar 99999999 --mp 1,1 --np 1 --score-min L,0,-0.01`
+
+    input:
+        r1 (str): 
+        r2 (str):
+        bowtie_index (str):
+    output:
+        sam (str)
+    params:
+        index_prefix (str):
+        report_threshold (str):
+    
+    """
     input:
         r1 = "results/{sample}/fastp/{sample}_R1.fastq.gz",
         r2 = "results/{sample}/fastp/{sample}_R2.fastq.gz",

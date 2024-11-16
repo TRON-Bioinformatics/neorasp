@@ -12,3 +12,6 @@ dependencies:
     - snakemake-executor-plugin-slurm
     - python-magic
     - loguru
+    - mkdocs
+    - mkdocs-table-reader-plugin
+    - mkdocs-material

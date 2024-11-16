@@ -18,4 +18,3 @@ rule all:
         get_final_output()
     default_target: True
     localrule: True
-        
