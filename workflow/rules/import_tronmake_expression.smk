@@ -3,6 +3,16 @@ This script is used to import the TronMake RNA-expression workflow rules.
 '''
 
 rule get_fastq_SRA:
+    """
+
+    Dowload SRA Run accessions from archive. Wildcard
+    accession is used by fasterq-dump to retrieve
+    FASTQ files
+
+    output:
+        fq1 (str): Path to foward reads of accession
+        fq2 (str): Path to reverse reads of accession
+    """
     output:
         # the wildcard name must be accession, pointing to an SRA number
         fq1 = temp("results/{accession}/sra/{accession}_1.fastq.gz"),

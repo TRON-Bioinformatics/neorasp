@@ -8,6 +8,8 @@
 
 <!-- badges: end -->
 
+Full documentation: https://tron.pages.gitlab.rlp.net/tronmake-rna-splicing
+
 
 The TronMake cancer RNA-splicing pipeline is a workflow to detect tumor-specific splice junctions in tumor RNA.
 The workflow implements a sensitive alignment based splice junction detection and targeted re-quantification
