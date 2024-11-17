@@ -9,6 +9,7 @@ nav:
   - References: references.md
   - About: about.md
 theme:
+  logo: assets/tron.svg
   name: material
   palette:
     scheme: slate
@@ -16,7 +17,6 @@ theme:
     accent: teal
   icon:
     repo: fontawesome/brands/gitlab
-    logo: assets/tron.svg
   features:
     - navigation.sections
     - navigation.tabs
