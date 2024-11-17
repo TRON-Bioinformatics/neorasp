@@ -32,4 +32,4 @@ SnakeMake comes with integrated package management to retrieve and install all s
 required to run the pipeline. The following table gives an overview which conda envrionments or
 Docker containers are used by individual steps in the pipeline.
 
-{{ read_table('../../software.tsv', sep = '\t') }}
+{{ read_table('../software.tsv', sep = '\t') }}
