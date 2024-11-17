@@ -23,9 +23,6 @@ copyright: © TRON gGmbH, 2024. This work is licensed under MIT.
 
 repo_url: https://gitlab.rlp.net/tron/tronmake-rna-splicing
 plugins:
-  - snakemake-rule:
-      rule_folders:
-        - '../../workflow/rules'
   - search
   - table-reader
   - include-markdown
