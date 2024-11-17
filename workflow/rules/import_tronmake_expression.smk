@@ -246,6 +246,7 @@ rule insert_size:
 
 rule salmon:
     """
+
     Quantification of gene and transcript expression
     using Salmon. Quantification is performed on STAR
     alignment with transcript coordinates and reference
@@ -261,7 +262,7 @@ rule salmon:
         libtype (str): Library type of sequencing reads. Default is 'A'
         extra (str): Additional parameters passed to salmon execution.
             Default is '--seqBias --gcBias --geneMap'
-        outd 
+        outdir (str): Output dirname
 
     """
     input:
