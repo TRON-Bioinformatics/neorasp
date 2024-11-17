@@ -259,7 +259,9 @@ rule salmon:
         quant_gene (str): Gene quantification (sum of all transcript TPMs)
     params:
         libtype (str): Library type of sequencing reads. Default is 'A'
-        extra (str): Extra parameters passed to Salmon command. 
+        extra (str): Additional parameters passed to salmon execution.
+            Default is '--seqBias --gcBias --geneMap'
+        outd 
 
     """
     input:
