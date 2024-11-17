@@ -246,7 +246,21 @@ rule insert_size:
 
 rule salmon:
     """
-    Rule to quantify RNA expression in TPM using Salmon.
+    Quantification of gene and transcript expression
+    using Salmon. Quantification is performed on STAR
+    alignment with transcript coordinates and reference
+    transcripts (Aligned.toTranscriptome.out.bam).
+
+    input:
+        bam (str): Path to Aligned.toTranscriptome.out.bam
+        transcripts (str): Path to reference transcripts in FASTA
+    output:
+        quant (str): Transcript quantification
+        quant_gene (str): Gene quantification (sum of all transcript TPMs)
+    params:
+        libtype (str): Library type of sequencing reads. Default is 'A'
+        extra (str): Extra parameters passed to Salmon command. 
+
     """
     input:
         bam = rules.star.output.transcriptome_bam,
