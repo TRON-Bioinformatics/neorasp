@@ -111,8 +111,8 @@ def determine_star_read_command(wildcards, read):
 
 rule docstring_export:
     output:
-        doctrings_markdown = "documentation/tronmake-rna-splicing/assets/docstring.md",
-        dependencies = "documentation/tronmake-rna-splicing/assets/software.tsv"
+        doctrings_markdown = "documentation/tronmake-rna-splicing/docs/assets/docstring.md",
+        dependencies = "documentation/tronmake-rna-splicing/docs/assets/software.tsv"
     run:
         with open(output.doctrings_markdown, 'w') as file_handle, open(output.dependencies, "w") as sof_handle:
             sof_handle.write('Rule\tConda environment\tDocker container\n')
