@@ -26,7 +26,7 @@ import subprocess
 from loguru import logger
 
 
-__version__ = "0.0.1"
+__version__ = "0.0.2"
 __pipeline__ = pathlib.Path(__file__).parent / 'workflow' / 'Snakefile'
 
 epilog = "Copyright (c) 2024 TRON gGmbH (See LICENSE for licensing details)"

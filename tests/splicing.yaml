@@ -12,3 +12,4 @@ requantify:
   interval_mode: true
   allow_mismatches: false
   bowtie_k_threshold: 200
+  cts_size: 1000
