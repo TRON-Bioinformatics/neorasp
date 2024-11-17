@@ -4,10 +4,10 @@ nav:
   - Installation: installation.md
   - Input: input.md
   - Usage: usage.md
-  - Cluster: cluster.md
-  - About: about.md
-  - Rules: rules.md
+  - Cluster execution: cluster.md
+  - Workflow rules: rules.md
   - References: references.md
+  - About: about.md
 theme:
   name: material
   palette:
@@ -16,9 +16,11 @@ theme:
     accent: teal
   icon:
     repo: fontawesome/brands/gitlab
+    logo: assets/tron.svg
   features:
     - navigation.sections
     - navigation.tabs
+
 copyright: © TRON gGmbH, 2024. This work is licensed under MIT.
 
 repo_url: https://gitlab.rlp.net/tron/tronmake-rna-splicing
