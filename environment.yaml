@@ -15,3 +15,4 @@ dependencies:
     - mkdocs
     - mkdocs-table-reader-plugin
     - mkdocs-material
+    - mkdocs-include-markdown-plugin
