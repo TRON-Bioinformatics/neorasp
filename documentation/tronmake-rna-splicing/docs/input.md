@@ -46,4 +46,4 @@ Make sure to set `sra_mode: true` in the config file to trigger download of FAST
 |SRR6298261|
 |SRR6298262|
 
-**Note: The pipeline currently support only SRA Run accessions starting with `SRR`, `DRR` or `ERR`. Other accessions such as study, expirment and/or group are currently not supported**
+**Note: The pipeline currently support only SRA Run accessions starting with `SRR`, `DRR` or `ERR`. Other accessions such as study, experiment and/or group are currently not supported**
