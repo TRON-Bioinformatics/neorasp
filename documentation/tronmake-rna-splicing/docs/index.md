@@ -23,7 +23,7 @@ The main steps comprise:
   * Peptide annotation for neoantigen feature annotation ([`NeoFox`](https://github.com/TRON-Bioinformatics/neofox))
 
 
-![TronMake Cancer RNA-splicing DAG](assets/pipeline_rulegraph.svg){ width="50%" }
+![TronMake Cancer RNA-splicing DAG](assets/pipeline_rulegraph.svg){ width="300" }
 
 
 ## Components
