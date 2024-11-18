@@ -123,6 +123,6 @@ rule docstring_export:
                     container = rule.container_img.removeprefix("docker://") if not rule.container_img is None else None
                     sof_handle.write(f'{rule.name}\t{conda_env}\t{container}\n')
                     # Get docstrings and dump to yaml
-                    file_handle.write(f'## Rule `{rule.name}`\n')
+                    file_handle.write(f'### Rule `{rule.name}`\n')
                     file_handle.write(f'```\n{rule.docstring}\n```\n')
 

@@ -23,18 +23,7 @@ The main steps comprise:
   * Peptide annotation for neoantigen feature annotation ([`NeoFox`](https://github.com/TRON-Bioinformatics/neofox))
 
 
-![TronMake Cancer RNA-splicing DAG](assets/pipeline_rulegraph.svg){: style="height:600px;width:600px"}
+![TronMake Cancer RNA-splicing DAG](assets/pipeline_rulegraph.svg){: style="height:700px;width:700px"}
 
-
-## Components
-|Tool | Link | License|
-|:----:|:----:|:------:|
-|fastp| https://github.com/OpenGene/fastp | MIT|
-|STAR | https://github.com/alexdobin/STAR | MIT|
-|samtools |https://github.com/samtools/samtools | MIT/Expat|
-|fraser	| https://github.com/gagneurlab/FRASER | MIT|
-|salmon	| https://salmon.readthedocs.io/en/latest/ | GPL-3.0|
-|easyquant |https://github.com/TRON-Bioinformatics/easyquant | MIT|
-|splice2neo | https://github.com/TRON-Bioinformatics/splice2neo | MIT|
 		
 
