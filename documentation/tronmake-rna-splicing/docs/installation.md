@@ -26,10 +26,3 @@ conda activate conda_env
  - conda (>=24.9)
  - apptainer (>=1.3.4)
 
-# Pipeline dependencies
-
-SnakeMake comes with integrated package management to retrieve and install all software
-required to run the pipeline. The following table gives an overview which conda envrionments or
-Docker containers are used by individual steps in the pipeline.
-
-{{ read_table('assets/software.tsv', sep = '\t') }}
