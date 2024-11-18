@@ -120,7 +120,7 @@ rule star:
         r1 = "results/{sample}/fastp/{sample}_R1.fastq.gz",
         r2 = "results/{sample}/fastp/{sample}_R2.fastq.gz"
     output:
-        alignment = "results/{sample}/star/Aligned.sortedByCoord.out.bam",
+        alignment = temp("results/{sample}/star/Aligned.out.bam"),
         log = "results/{sample}/star/Log.out",
         sj = "results/{sample}/star/SJ.out.tab",
         chim_junc = "results/{sample}/star/Chimeric.out.junction",
@@ -134,7 +134,7 @@ rule star:
         "results/{sample}/log/star.log",
     params:
         # ENCODE3 RNA-seq options
-        extra=' '.join(['--outSAMtype BAM SortedByCoordinate', 
+        extra=' '.join(['--outSAMtype BAM Unsorted', 
                         '--outFilterType BySJout',
                         '--alignSJoverhangMin 8',
                         '--alignSJDBoverhangMin 1',
@@ -169,7 +169,7 @@ rule star:
         '{params.extra} '
         '--outFileNamePrefix {params.prefix}/ &> {log}'
 
-rule bedGraphToBigWig:
+rule bedgraph_to_bigwig:
     """
     Bigwig with genome wide coverage
     """
@@ -194,12 +194,29 @@ rule bedGraphToBigWig:
         bedGraphToBigWig {params.extra} {input.bedGraph_reverse} {input.chromsizes} {output.bw_reverse} &>> {log}
         '''
 
+rule samtools:
+    input:
+        bam = "results/{sample}/star/Aligned.out.bam"
+    output:
+        bam = "results/{sample}/star/Aligned.sortedByCoord.out.bam",
+        bai = "results/{sample}/star/Aligned.sortedByCoord.out.bam.bai"
+    container:
+        'docker://quay.io/biocontainers/samtools:1.20--h50ea8bc_0'
+    conda:
+        '../envs/samtools.yaml'
+    threads: 1
+    shell:
+        """
+        samtools sort -@{threads} -m 2G -T ${{tmp}}/SORTtmp_{wildcards.sample} -O bam {input.bam} > {output.bam}
+        samtools index {output.bam}
+        """
+
 rule qualimap:
     """
     Gather quality statistics
     """
     input:
-        bam = rules.star.output.alignment,
+        bam = rules.samtools.output.bam,
         # GTF containing transcript, gene, and exon data
         gtf = os.path.join(config['index_dir'], 'ref_annot.gtf')
     output:
@@ -230,7 +247,7 @@ rule insert_size:
     Estimate insert size distribution from reads.
     """
     input:
-        aln = rules.star.output.alignment,
+        aln = rules.samtools.output.bam,
         refgene = os.path.join(config['index_dir'], 'ref_annot.bed')
     output:
         reads_inner_distance = "results/{sample}/metrics/{sample}.inner_distance.txt",
