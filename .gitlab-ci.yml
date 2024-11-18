@@ -6,7 +6,7 @@
     - mamba env create -n mkdocs -f environment.yaml
     - source /opt/conda/bin/activate mkdocs
     - git clone https://github.com/OpenOmics/snakevision.git
-    - pip install snakevision/requirements.txt
+    - pip install -r snakevision/requirements.txt
     - snakemake --configfile tests/splicing.yaml --rulegraph --forceall > documentation/tronmake-rna-splicing/docs/assets/pipeline_rulegraph.dot
     - ./snakevision/bin/snakevision -s all docstring_export -o documentation/tronmake-rna-splicing/docs/assets/pipeline_rulegraph.svg documentation/tronmake-rna-splicing/docs/assets/pipeline_rulegraph.dot
     - snakemake -p --until docstring_export --configfile tests/splicing.yaml
