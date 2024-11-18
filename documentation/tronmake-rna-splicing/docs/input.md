@@ -22,7 +22,7 @@ Make sure to set `interleaved_input: true` in the config file to trigger derinte
 | sample_2 | /path/to/sample_2.fastq.gz |
 
 
-#### (u)BAM
+## (u)BAM
 
 When using (u)BAM files as input the table expects two tab-separated columns **without** a header.
 Make sure to set `BAM_input: true` in the config file to trigger BAM to FASTQ conversion.
@@ -33,7 +33,7 @@ Make sure to set `BAM_input: true` in the config file to trigger BAM to FASTQ co
 | sample_2 | /path/to/sample_2.bam,/path/to/sample_2_2.bam           |
 | sample_3 | /path/to/sample_3.bam,/path/to/sample_3_2.bam           |
 
-#### SRA 
+## SRA 
 
 When using the SRA mode, the table expects a single column **without** a header.
 Make sure to set `sra_mode: true` in the config file to trigger download of FASTQ files of SRA Run accessions.
