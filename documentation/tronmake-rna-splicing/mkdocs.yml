@@ -41,7 +41,6 @@ plugins:
   - search
   - table-reader
   - include-markdown
-  - inline-select-svg:
-      pattern: "pipeline_rulegraph[.]svg$"
+
 markdown_extensions:
   - attr_list
