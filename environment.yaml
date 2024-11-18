@@ -18,4 +18,4 @@ dependencies:
     - mkdocs-include-markdown-plugin
     - mkdocs-git-revision-date-plugin
     - mkdocs-glightbox
-    - mkdocs-plugin-inline-svg
+    - mkdocs-inline-select-svg-plugin
