@@ -9,7 +9,7 @@ snakemake \
     --directory <output_directory> \
     --software-deployment-method conda \
     --configfile <path to my config> \
-    --workflow-profile profiles/fastq2vcf/ \
+    --workflow-profile workflow/profiles/default \
     --default-resources "tmpdir='<output_directory>'" \
     [--conda-prefix </path/to/conda/env/location>] \
     [--profile </path/to/profile/directory>]
@@ -25,7 +25,7 @@ snakemake \
 * `workflow-profile`: To define the resources for each snakemake rule.
 * `--default-resources`: The temporary directory has to be use by some rules. We advise to set the tmpdir to a fast storage, if available. Otherwise use "tmpdir='<output_directory>'". If not specified, tmpdir is set to the systems default temporary directory.
 * `--conda-prefix` (optional): Where should the conda environments be stored. Further information in section [Shared conda prefix](#shared-conda-prefix)
-* `--profile` (optional): Path to a profile specification that defines e.g. which executor to use and how many jobs are submitted in parallel (see section [Configuration](#configuration)).
+* `--profile` (optional): Path to a profile specification that defines e.g. which executor to use and how many jobs are submitted in parallel (see section [Cluster config](#cluster-execution)).
 * `--retries` (optional): Number of retries if a rule fails. When a rule is restarted and the default workflow config is not modified, the RAM for the failed rule is increased, to account for potentially higher RAM requirements.
 
 # Config file

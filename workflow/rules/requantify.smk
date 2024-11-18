@@ -9,7 +9,7 @@ rule prepare_requant:
         sj (str): Path to splice junctions with context sequences
 
     output:
-        easyquant_table (str): Path to generated easyquant table
+        easyquant_table (str): Path to table with context sequences.
         genes_of_interest (str): A file with gene ids.
     """
     input:
@@ -29,8 +29,14 @@ rule prepare_requant:
         '../scripts/prepare_quant.R'
 
 rule generate_context_fa:
-    """
-    Convert input table to FASTA file
+    """Easyquant FASTA
+
+    Convert easyquant input table to FASTA file
+
+    input:
+        easyquant_table (str): Path to table with context sequences
+    output:
+        context_fa (str): Path to FASTA file of context sequences
     """
     input:
         easyquant_table = rules.prepare_requant.output.easyquant_table
@@ -52,8 +58,9 @@ rule generate_context_fa:
 
 
 rule bowtie_index:
-    """
-    Build bowtie2 index of predicted context sequences.
+    """Bowtie2 index
+
+    Build bowtie2 index of predicted transcript context sequences.
 
     input:
         context_fa (str): Path to FASTA file with context sequences
@@ -92,7 +99,8 @@ rule bowtie_index:
         
 
 rule bowtie_align:
-    """
+    """Bowtie2 align
+
     Targeted mapping of RNA-seq reads against context sequences.
     Alignment generated in this step is used in re-quantification
     counting. Reads mates are aligned against the predicted transcript
@@ -102,14 +110,16 @@ rule bowtie_align:
     `--no-mixed --dpad 0 --gbar 99999999 --mp 1,1 --np 1 --score-min L,0,-0.01`
 
     input:
-        r1 (str): 
-        r2 (str):
-        bowtie_index (str):
+        r1 (str): Path to forward read.
+        r2 (str): Path to reverse read.
+        bowtie_index (List[str]): A list with paths to bowtie2 index files. 
+    
     output:
-        sam (str)
+        sam (str): Path to unsorted re-quantification alignment in SAM format.
+    
     params:
-        index_prefix (str):
-        report_threshold (str):
+        index_prefix (str): Prefix of bowtie2 index files.
+        report_threshold (str): Number of alignments bowtie2 should report. Defaults to 200.
     
     """
     input:
@@ -145,6 +155,28 @@ rule bowtie_align:
         "2> {log}"
 
 rule requantify:
+    """Re-quantification
+
+    Counting of junction and spanning read-pairs for predicted
+    context sequences. Only properly mapped read pairs are
+    counted for each transcript sequence in this step. By
+    default, only reads that overlap the junction point
+    +/- 10bp mismatch free are counted as junction reads.
+
+    input:
+        sam (str):  Path to unsorted re-quantification alignment in SAM format.
+        context_seq (str): Path to table with context sequences.
+
+    output:
+        quant (str): Path to easyquant quantification table.
+        read_info (str): Path to easyquant read into table.
+
+    params:
+        requant_dir (str): Path to working directory of easyquant.
+        distance (int): Number of mismatch-free bp around junction of interest. Defaults to 10
+        interval (str): Execution of easyquant in interval mode. Defaults to True.
+        mismatches (str): Allow mismatches in junction region. Defaults to False.
+    """
     input:
         sam = "results/{sample}/easyquant/alignment/bowtie_Aligned.out.sam",
         context_seq = rules.prepare_requant.output.easyquant_table
@@ -176,6 +208,18 @@ rule requantify:
         "2>&1 | tee {log}"
 
 rule add_quant_counts:
+    """Add quant counts
+
+    Merge re-quantification results back to splice junction table.
+
+    input:
+        sj (str):  Path to splice junctions with context sequences
+        quantification (str): Path to easyquant quantification table.
+    output:
+        requantified_sj (str): Path to splice junctions table with merged re-quantification results.
+    params:
+        requant_dir (str):  Path to working directory of easyquant.
+    """
     input:
         sj = rules.add_transcript_expression.output.sj_expression,
         quantification = rules.requantify.output.quant
@@ -195,6 +239,21 @@ rule add_quant_counts:
         '../scripts/quant.R'
 
 rule translate_to_peptide:
+    """Peptide sequences
+
+    Annotate splice junctions with mutated peptide sequence.
+    In this step, all junctions that generate a mutated coding
+    sequence are formated for annotatin with NeoFox.
+
+    input:
+        sj (str):  Path to splice junction table.
+        cds (str): Path to RDS object of reference coding sequence.
+        genome (str): Path to 2Bit object of reference genome.
+    output:
+        junctions (str): Path to splice junctions table with peptide annotation.
+        neofox_annotation (str): Splice junction derived peptides in NeoFox format.
+
+    """
     input:
         sj = rules.add_quant_counts.output.requantified_sj,
         cds = os.path.join(config['index_dir'], 'ref_cds.RDS'),

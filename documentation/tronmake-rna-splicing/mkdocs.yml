@@ -12,16 +12,27 @@ nav:
 theme:
   logo: assets/tron.svg
   name: material
-  palette:
-    scheme: slate
-    primary: teal
-    accent: teal
   icon:
     repo: fontawesome/brands/gitlab
   features:
     - navigation.sections
     - navigation.tabs
-    - toc.integrate 
+    - toc.integrate
+  palette:
+    # Palette toggle for light mode 
+    - scheme: default
+      primary: teal
+      accent: teal
+      toggle:
+        icon: material/lightbulb-on
+        name: Switch to dark mode
+    # Palette toggle for dark mode
+    - scheme: slate
+      primary: teal
+      accent: teal
+      toggle:
+        icon: material/weather-night
+        name: Switch to light mode 
 
 copyright: © TRON gGmbH, 2024. This work is licensed under MIT.
 
@@ -30,22 +41,6 @@ plugins:
   - search
   - table-reader
   - include-markdown
-  - glightbox:
-      touchNavigation: true
-      loop: false
-      effect: zoom
-      slide_effect: slide
-      width: 100%
-      height: auto
-      zoomable: true
-      draggable: true
-      skip_classes:
-        - custom-skip-class-name
-      auto_caption: false
-      caption_position: bottom
-      background: white
-      shadow: true
-      manual: false
   - inline-select-svg:
       pattern: "pipeline_rulegraph[.]svg$"
 
