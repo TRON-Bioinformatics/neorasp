@@ -1,5 +1,16 @@
 rule prepare_requant:
-    """Prepare easyquant input
+    """
+    Prepare splice junction context sequences
+    for re-quantification with easyquant. This
+    creates the required input table with unique
+    cts identifiers and breakpoints.
+
+    input:
+        sj (str): Path to splice junctions with context sequences
+
+    output:
+        easyquant_table (str): Path to generated easyquant table
+        genes_of_interest (str): A file with gene ids.
     """
     input:
         sj = rules.add_transcript_expression.output.sj_expression
