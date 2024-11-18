@@ -3,7 +3,7 @@ This script is used to import the TronMake RNA-expression workflow rules.
 '''
 
 rule get_fastq_SRA:
-    """
+    """SRA fastq-dump
 
     Dowload SRA Run accessions from archive. Wildcard
     accession is used by fasterq-dump to retrieve
@@ -42,9 +42,18 @@ rule get_fastq_SRA:
         'gzip {params.fq2_unzipped} '
 
 rule deinterleave:
-    """
-    When fastq input is interleaved unwrap the fastq files into
-    separate temporary forward and reverse reads.
+    """Deinterleave FASTQ
+
+    When FASTQ input is in interleaved format unwrap the 
+    reads into separate temporary forward (R1) and reverse (R2)
+    reads.
+
+    input:
+        interleaved_fastq (str): Path to interleaved FASTQ file
+    output:
+        r1 (str): Path to temporary R1 reads.
+        r2 (str): Path to temporary R2 reads.
+
     """
     input:
         interleaved_fastq = get_interleaved_input
@@ -60,8 +69,23 @@ rule deinterleave:
         "cut -f 5-8 | tr '\\t' '\\n' > {output.r2} "
 
 rule bam2fastq:
-    """
-    When BAM input is provided, separate reads into fastq files.
+    """Convert BAM
+
+    When read input is provided as (uBAM), convert alignment 
+    into temporary forward (R1) and reverse (R2) FASTQ files.
+    Converting step consists of sorting alignment by query
+    name, fixing query name (qname) of alignments (removing _1,_2)
+    extension and separation into FASTQ files.
+
+    input:
+        bam (str): Path to input BAM file
+    output:
+        r1 (str): Path to temporary R1 reads.
+        r2 (str): Path to temporary R2 reads.       
+    params:
+        repair_script (str): Path to AWK implementation of qname 
+            fixing script.
+    
     """
     input:
         bam = get_bam_input
@@ -80,8 +104,21 @@ rule bam2fastq:
         'samtools fastq --threads 2 -1 {output.r1} -2 {output.r2} -0 /dev/null -s /dev/null -n'
 
 rule fastp:
-    """
-    Adapter trimming and read filtering
+    """fastp
+
+    Quality control, adapter trimming and read filtering
+    of raw read data using fastp.
+
+    input:
+        sample (List[str]): A list with paths to forward and reverse reads.
+    output:
+        trimmed (List[str]): A list with paths to trimmed forward and reverse reads
+        unpaired (str): Path to unpaired/singleton reads.
+        html (str): Path to fastp html report.
+        json (str): Path to fastp json statistics.
+    params:
+        extra (str): Additional parameters passed to fastp.
+
     """
     input:
         sample = lambda wildcards: get_fq(wildcards).values()
@@ -113,8 +150,30 @@ rule fastp:
         '--json {output.json} '
 
 rule star:
-    """
-    Align RNA-seq reads using ENCODE3 parameters
+    """STAR
+
+    Align RNA-seq reads against genome using STAR.
+    By default, reads are aligned using the ENCODE3
+    pipeline options.
+
+    input
+        r1 (str): Path to forward (R1) reads.
+        r2 (str): Path to reverse (R2) reads.
+    output:
+        alignment (str): Path to unsorted BAM file.
+        log (str): Path to STAR execution log.
+        log_final (str): Path to final STAR log file.
+        sj (str): Path to high-confidence SJ.out.tab.
+        chim_junc (str): Path to chimeric SJ out.tab.
+        transcriptome_bam (str): Path to alignment in transcript coordinates.
+        forward_wig (str): Coverage of forward strand in bedGraph format.
+        reverse_wig (str): Coverage of reverse strand in bedGraph format.
+        unmapped_fq1 (str): Path to unmapped forward (R1) reads.
+        unmapped_fq2 (str): Path to unmapped reverse (R2) reads.
+    params:
+        extra (List[str]): Additional parameters passed to STAR.
+            Defaults to ENCODE3 options.
+
     """
     input:
         r1 = "results/{sample}/fastp/{sample}_R1.fastq.gz",
@@ -170,8 +229,20 @@ rule star:
         '--outFileNamePrefix {params.prefix}/ &> {log}'
 
 rule bedgraph_to_bigwig:
-    """
-    Bigwig with genome wide coverage
+    """BigWig creation
+    
+    Convert coverage bedGraph files from STAR to binary
+    BigWig for genome wide coverage in IGV.
+
+    input:
+        bedGraph_forward (str): Coverage of forward strand in bedGraph format.
+        bedGraph_reverse (str): Coverage of reverse strand in bedGraph format.
+        chromsizes (str): Path to TSV file describing chromosome sizes.
+    output:
+        bw_forward (str): Coverage of forward strand in BigWig format.
+        bw_reverse (str): Coverage of reverse strand in BigWig format.
+    params: 
+        extra (str): Additional parameters passed to bedGraphToBigWig.
     """
     input:
         bedGraph_forward = rules.star.output.forward_wig,
@@ -195,6 +266,18 @@ rule bedgraph_to_bigwig:
         '''
 
 rule samtools:
+    """Samtools
+
+    Sort queryname sorted alignment from STAR by coordinate
+    and create index for random access.
+
+    input:
+        bam (str): Path to queryname sorted BAM file.
+    output:
+        bam (str): Path to coordinate sorted BAM file.
+        bai (str): Path to corresponding BAI index file.
+
+    """
     input:
         bam = "results/{sample}/star/Aligned.out.bam"
     output:
@@ -212,8 +295,22 @@ rule samtools:
         """
 
 rule qualimap:
-    """
-    Gather quality statistics
+    """QualiMap
+    
+    Gather quality statistics from RNA-seq read alignment
+    using QualiMap. This rule executes the rnaseq subcommand
+    of QualiMap.
+
+    input:
+        bam (str): Path to coordinate sorted BAM file.
+        gtf (str): Path to reference annotation in GTF format.
+    output:
+        directory (str): Path to qualimap working directoy.
+    params:
+        java_opts (str): Options for the java virtual machine (JVM).
+            Defaults to 'JAVA_OPTS="-Xmx8192M -Djava.awt.headless=true"'
+        extra (str): Additional parameters passed to QualiMap.
+    
     """
     input:
         bam = rules.samtools.output.bam,
@@ -243,8 +340,25 @@ rule qualimap:
         '-outdir {output} &> {log}'
 
 rule insert_size:
-    """
-    Estimate insert size distribution from reads.
+    """RseQC
+
+    Estimate insert size distribution from aligned RNA-seq reads
+    and the reference gene annotation. By default, 10.000.000
+    reads-pairs are randomly sampled for the calculation.
+
+    input:
+        aln (str): Path to coordinate sorted BAM file.
+        refgene (str): Path to reference gene model in BED12 format.
+    output:
+        reads_inner_distance (str): Path to per-read inner distance table.
+        freq (str): Path to per inner distance frequency table.
+        pdf (str): Path to pdf graph
+        plot_r (str): Path to R script
+    params:
+        extra (str): Additional parameters passed for inner_distance.py.
+            Defaults to '-k 10000000'
+        out_prefix (str): Path to inner_distance.py working directory.
+
     """
     input:
         aln = rules.samtools.output.bam,
@@ -272,12 +386,12 @@ rule insert_size:
         "&> {log} "
 
 rule salmon:
-    """
+    """Salmon
 
     Quantification of gene and transcript expression
     using Salmon. Quantification is performed on STAR
-    alignment with transcript coordinates and reference
-    transcripts (Aligned.toTranscriptome.out.bam).
+    alignment with transcript coordinates (Aligned.toTranscriptome.out.bam) 
+    and reference transcripts (ref_cdna.fa).
 
     input:
         bam (str): Path to Aligned.toTranscriptome.out.bam
@@ -286,7 +400,8 @@ rule salmon:
         quant (str): Transcript quantification
         quant_gene (str): Gene quantification (sum of all transcript TPMs)
     params:
-        libtype (str): Library type of sequencing reads. Default is 'A'
+        libtype (str): Library type of sequencing reads.
+            Defaults to automatic detection = 'A'
         extra (str): Additional parameters passed to salmon execution.
             Default is '--seqBias --gcBias --geneMap'
         outdir (str): Output dirname
