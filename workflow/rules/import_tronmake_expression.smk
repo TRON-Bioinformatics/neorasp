@@ -179,7 +179,7 @@ rule star:
         r1 = "results/{sample}/fastp/{sample}_R1.fastq.gz",
         r2 = "results/{sample}/fastp/{sample}_R2.fastq.gz"
     output:
-        alignment = temp("results/{sample}/star/Aligned.out.bam"),
+        bam = temp("results/{sample}/star/Aligned.sortedByCoord.out.bam"),
         log = "results/{sample}/star/Log.out",
         sj = "results/{sample}/star/SJ.out.tab",
         chim_junc = "results/{sample}/star/Chimeric.out.junction",
@@ -193,7 +193,7 @@ rule star:
         "results/{sample}/log/star.log",
     params:
         # ENCODE3 RNA-seq options
-        extra=' '.join(['--outSAMtype BAM Unsorted', 
+        extra=' '.join(['--outSAMtype BAM SortedByCoordinate', 
                         '--outFilterType BySJout',
                         '--alignSJoverhangMin 8',
                         '--alignSJDBoverhangMin 1',
@@ -208,7 +208,7 @@ rule star:
                         '--outWigStrand Stranded',
                         '--outReadsUnmapped Fastx',
                         '--limitBAMsortRAM 48000000000']),
-        prefix = lambda wildcards, output: os.path.dirname(output.alignment),
+        prefix = lambda wildcards, output: os.path.dirname(output.bam),
         index = os.path.join(config['index_dir'], 'indices', 'star'),
         read_cmd =
             lambda wildcards, input: determine_star_read_command(wildcards, input.r1)
@@ -279,9 +279,8 @@ rule samtools:
 
     """
     input:
-        bam = "results/{sample}/star/Aligned.out.bam"
+        bam = "results/{sample}/star/Aligned.sortedByCoord.out.bam"
     output:
-        bam = "results/{sample}/star/Aligned.sortedByCoord.out.bam",
         bai = "results/{sample}/star/Aligned.sortedByCoord.out.bam.bai"
     container:
         'docker://quay.io/biocontainers/samtools:1.20--h50ea8bc_0'
@@ -290,8 +289,7 @@ rule samtools:
     threads: 1
     shell:
         """
-        samtools sort -@{threads} -m 2G -T ${{tmp}}/SORTtmp_{wildcards.sample} -O bam {input.bam} > {output.bam}
-        samtools index {output.bam}
+        samtools index {input.bam}
         """
 
 rule qualimap:
@@ -313,7 +311,8 @@ rule qualimap:
     
     """
     input:
-        bam = rules.samtools.output.bam,
+        bam = rules.star.output.bam,
+        bai = rules.samtools.output.bai,
         # GTF containing transcript, gene, and exon data
         gtf = os.path.join(config['index_dir'], 'ref_annot.gtf')
     output:
@@ -361,7 +360,8 @@ rule insert_size:
 
     """
     input:
-        aln = rules.samtools.output.bam,
+        aln = rules.star.output.bam,
+        bai = rules.samtools.output.bai,
         refgene = os.path.join(config['index_dir'], 'ref_annot.bed')
     output:
         reads_inner_distance = "results/{sample}/metrics/{sample}.inner_distance.txt",

@@ -18,8 +18,8 @@ rule fraser:
     """
 
     input:
-        bam = rules.samtools.output.bam,
-        bai = rules.samtools.output.bai
+        bam = rules.star.output.bam,
+        bai = rules.samtools.output.bai,
     params:
         working_dir = 
             lambda wildcards, output: os.path.dirname(output.psi_table),
