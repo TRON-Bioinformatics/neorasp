@@ -20,3 +20,5 @@ dependencies:
     - mkdocs-glightbox
     - mkdocs-inline-select-svg-plugin
     - markdown
+    - pytest
+    - pytest-workflow

@@ -4,8 +4,8 @@ rule fraser:
     Run FRASER on each sample to calculate PSI and Intron Jaccard Index of splice junctions
 
     input:
-        bam (str): Alignment (BAM sorted by coordinated)
-        bai (str): Alignment index (BAM sorted by coordinated)
+        bam (str): Alignment (BAM sorted by coordinated).
+        bai (str): Alignment index.
 
     output:
         psi_table (str): Splice junction annotated with intron usage
@@ -13,8 +13,8 @@ rule fraser:
     params:
         working_dir (str): Working directory for fraser functions
         min_read (int): Minimum number of reads to count splice junction. Defaults to 5
-        mapq_filter (int): Mapping quality filter to discard low quality alignments in calculations. Defaults to 255
-        exe (str): Path to FRASER wrapper script
+        mapq_filter (int): Mapping quality filter to discard low quality alignments in calculations. 
+            Defaults to 255
     """
 
     input:
@@ -56,7 +56,8 @@ rule parse_junctions:
         removed_junction (str): Path to expressed canonical junctions
 
     params:
-        read_support (int): Minimum number of unique alignments to report junction. Defaults to 5
+        read_support (int): Minimum number of unique alignments to report junction. 
+            Defaults to 5
 
     """
     input:
@@ -110,6 +111,8 @@ rule calculate_junction_cpm:
     resources:
         mem_mb = 4096
     conda: '../envs/python.yaml'
+    container:
+        'docker://tronbioinformatics/tron_data_utils:0.0.1'
     shell:
         'python {params.exe} '
         '-i {input.star_sj} '
@@ -150,37 +153,107 @@ rule filter_mappability:
     script:
         '../scripts/filter_mapability.R'
 
+rule add_gene_annotation:
+    """Annotation
+
+    Predicted splice junctions are annotated with possible transcript,
+    gene and HGNC identifiers. Junctions not overlapping any transcript
+    feature from the annotation are removed in this step.
+
+    input:
+        parsed_sj (str):  Path to splice junction table.
+        transcripts (str): Path to RDS object of reference transcripts.
+        gene2hgnc (str): Path to gene to HGNC (gene name) mapping.
+        tx2gene (str): Path to transcript to gene mapping.
+    output:
+        annotated_sj (str): Path to splice junction table with feature annotation.
+        annotated_sj_problematic (str): Path to table with splice junctions
+            not overlapping any feature.
+
+    """
+    input:
+        parsed_sj = rules.filter_mappability.output.parsed_sj,
+        transcripts = os.path.join(config['index_dir'], 'ref_transcripts.RDS'),
+        tx2gene = os.path.join(config['index_dir'], 'tx2gene.tsv'),
+        gene2hgnc = os.path.join(config['index_dir'], 'hgnc2ensembl_id.tsv.gz')
+    output:
+        annotated_sj = temp("results/{sample}/fetchdata/splice2neo/sj_gene_transcript.tsv"),
+        annotated_sj_problematic = "results/{sample}/fetchdata/splice2neo/sj_no_transcript_overlap.tsv"
+    threads: 1
+    resources:
+        mem_mb = 20000
+    params:
+        extra = "",
+    container:
+        'docker://tronbioinformatics/splice2neo:0.6.12'
+    conda:
+        '../envs/R.yaml'
+    log:  "results/{sample}/log/add_gene_transcript.log"
+    script:
+        '../scripts/add_gene_annot.R'
+
+rule filter_gene_hgnc:
+    """HGNC filter
+
+    Rule to remove splice junctions from highly polymorphic
+    gene loci or genes not located on chromosomes.
+    Default genes removed in this step are IG^, TCR^, BCR^ and HLA.
+
+    input:
+        parsed_sj (str):  Path to splice junction table.
+    output:
+        sj_passed_gene (str): Path to table with junctions passing the filter.
+        sj_excluded_gene (str): Path to table with junctions falling into exclusion regions.
+        sj_gene_exclusion_intention (str): Path to table with detailed information
+            of calssification.
+    params:
+        working_dir (str): Dirname of output files.
+        exe (str): Path to python script
+
+    """
+    input:
+        parsed_sj = rules.add_gene_annotation.output.annotated_sj,
+    params:
+        working_dir = lambda wildcards, output: os.path.dirname(output.sj_passed_gene),
+        exe = workflow.source_path('../scripts/filter_gene_regex.py')
+    output:
+        sj_excluded_gene = "results/{sample}/fetchdata/splice2neo/sj_problematic_gene.tsv",
+        sj_passed_gene = temp("results/{sample}/fetchdata/splice2neo/sj_pass_gene.tsv"),
+        sj_gene_exclusion_intention = "results/{sample}/fetchdata/splice2neo/gene_exclusion_intention.tsv"
+    threads: 1
+    resources:
+        mem_mb = 8000
+    container:
+        'docker://tronbioinformatics/tron_data_utils:0.0.1'
+    conda:
+        '../envs/python.yaml'
+    log:  "results/{sample}/log/gene_filtering.log"
+    shell:
+        'python {params.exe} '
+        '-i {input.parsed_sj} '
+        '-o {params.working_dir} 2>&1 | tee {log}'
+
+
 rule add_context_sequence:
     """Add transcript sequence
 
     Rule to annotate splice junction candidates with possible transcript sequences.
-    Junctions without gene or transcript overlap are removed in this step. Moreover,
-    junctions falling in genes defined in a custom exclusion list can be removed in this
-    step. Default genes removed in this step are IG^, TCR^, BCR^ and HLA.
 
     input:
         parsed_sj (str):  Path to splice junction table.
         transcripts (str): Path to RDS object of reference transcripts.
         genome (str): Path to 2Bit object of reference genome.
-        tx2gene (str): Path to transcript to gene mapping.
-        gene2hgnc (str): Path to gene to HGNC (gene name) mapping.
-        gene_exclusion (str): Path to gene exclusion list. Needs to contain tidyverse 
-            compatible regex representation of genes to exclude.
     output:
         annotated_sj (str): Path to splice junction table with context sequences.
         annotated_sj_problematic (str): Path to table with removed junctions.
 
     """
     input:
-        parsed_sj = rules.filter_mappability.output.parsed_sj,
+        parsed_sj = rules.filter_gene_hgnc.output.sj_passed_gene,
         transcripts = os.path.join(config['index_dir'], 'ref_transcripts.RDS'),
-        genome = os.path.join(config['index_dir'], 'ref_genome.2bit'),
-        tx2gene = os.path.join(config['index_dir'], 'tx2gene.tsv'),
-        gene2hgnc = os.path.join(config['index_dir'], 'hgnc2ensembl_id.tsv.gz'),
-        gene_exclusion = os.path.join(config['index_dir'], 'exclusion_pattern.tsv')
+        genome = os.path.join(config['index_dir'], 'ref_genome.2bit')
     output:
         annotated_sj = temp("results/{sample}/fetchdata/splice2neo/sj_annotated.tsv"),
-        annotated_sj_problematic = "results/{sample}/fetchdata/splice2neo/sj_problematic_gene_no_transcript_overlap.tsv"
     threads: 1
     resources:
         mem_mb = 20000
@@ -194,6 +267,7 @@ rule add_context_sequence:
     log:  "results/{sample}/log/add_cts.log"
     script:
         '../scripts/add_tx.R'
+
 
 rule add_transcript_expression:
     """Add transcript/gene expression

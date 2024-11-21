@@ -24,9 +24,9 @@ def get_final_output():
             collect("results/{sample}/fetchdata/sj_results_neofox_annotation.tsv", sample = sample.sample_name)
         )
         #"results/{sample}/metrics/{sample}.inner_distance.txt",
-        #final_files.extend(
-        #    collect("results/{sample}/metrics/{sample}.inner_distance.txt", sample = sample.sample_name)
-        #)
+        final_files.extend(
+            collect("results/{sample}/metrics/{sample}.inner_distance.txt", sample = sample.sample_name)
+        )
     return final_files
 
 def read_sample_sheet(file):

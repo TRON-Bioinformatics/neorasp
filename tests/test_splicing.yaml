@@ -2,4 +2,4 @@
   tags:
     - integrationtest
   command: >
-    snakemake --software-deployment-method conda -j 1 --configfile tests/splicing.yaml
+    snakemake -p --sdm apptainer -j 1 --configfile tests/splicing.yaml --apptainer-args '--bind /tmp'

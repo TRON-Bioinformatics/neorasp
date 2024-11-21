@@ -35,10 +35,10 @@ set-resources:
     mem_mb: 16000 + ((attempt - 1) * 10000)
     runtime: "1h"
   qualimap:
-    mem_mb: 8000 + ((attempt - 1) * 5000)
+    mem_mb: 16000 + ((attempt - 1) * 5000)
     runtime: "1h"
   star:
-    mem_mb: 32000 + ((attempt - 1) * 10000)
+    mem_mb: 48000 + ((attempt - 1) * 10000)
     runtime: "8h"
   fastp:
     mem_mb: 8000 + ((attempt - 1) * 5000)

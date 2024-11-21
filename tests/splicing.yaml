@@ -4,10 +4,10 @@ index_dir: 'tests/resources/GRCh38v45_minigenome'
 interleaved_input: false
 bam_input: false
 fraser:
-  min_read: 1
+  min_read: 2
   mapq_filter: 255
 star:
-  min_read: 1
+  min_read: 2
 requantify:
   interval_mode: true
   allow_mismatches: false

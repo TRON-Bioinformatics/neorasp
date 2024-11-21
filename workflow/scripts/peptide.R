@@ -8,17 +8,6 @@ suppressMessages({
   library(rtracklayer)
 })
 
-parser <- ArgumentParser(description='Annotate junctions with peptide sequence')
-
-parser$add_argument('--sj', help='Splice junctions')
-parser$add_argument('--sample', help= 'Sample name')
-parser$add_argument('--cds', help= 'Sample name')
-parser$add_argument('--genome', help= 'Sample name')
-parser$add_argument('--output', help= 'Output')
-parser$add_argument('--output_neofox', help= 'Output for neofox')
-
-
-
 df <- readr::read_tsv(snakemake@input[['sj']], show_col_types = FALSE)
 cds <- base::readRDS(snakemake@input[['cds']])
 bsg <- rtracklayer::TwoBitFile(snakemake@input[['genome']])
@@ -38,8 +27,8 @@ dat_for_neofox <- df %>%
   dplyr::mutate(
     mutatedXmer = peptide_context,
     wildTypeXmer = NA,
-    patientIdentifier = xargs$sample
-  )
+    patientIdentifier = snakemake@wildcards[['sample']]
+  ) %>% dplyr::select(patientIdentifier, junc_id, tx_id, mutatedXmer, wildTypeXmer) %>% dplyr::distinct()
 
 df %>% readr::write_tsv(snakemake@output[['junctions']])
 dat_for_neofox %>% readr::write_tsv(snakemake@output[['neofox_annotation']])

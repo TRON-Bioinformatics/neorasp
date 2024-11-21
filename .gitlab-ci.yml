@@ -1,3 +1,32 @@
+test_syntaxcheck:
+  image: condaforge/miniforge3:24.9.2-0
+  stage: test
+  variables:
+    GIT_SUBMODULE_STRATEGY: recursive
+  before_script:
+    - apt update && apt --quiet --assume-yes install -y libmagic1
+  script:
+    - mamba env create -n tronmake -f environment.yaml
+    - source /opt/conda/bin/activate tronmake
+    - pytest --tag dryrun --git-aware --symlink --stderr-bytes 100000 --kwd --basetemp /tmp/test
+
+test_integration:
+  image: condaforge/miniforge3:24.9.2-0
+  stage: test
+  variables:
+    GIT_SUBMODULE_STRATEGY: recursive
+  before_script:
+    - apt update && apt --quiet --assume-yes install -y libmagic1 software-properties-common
+    - add-apt-repository -y ppa:apptainer/ppa
+    - apt update && apt --quiet --assume-yes install -y apptainer
+  script:
+    - mamba env create -n tronmake -f environment.yaml
+    - source /opt/conda/bin/activate tronmake
+    - pytest --tag integrationtest --git-aware --symlink --stderr-bytes 100000 --kwd --basetemp /tmp/test
+  only:
+    - dev
+
+
 .mkdocs:
   image: condaforge/miniforge3:24.7.1-2
   stage: deploy
