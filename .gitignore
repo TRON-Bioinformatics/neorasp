@@ -19,3 +19,5 @@ workflow/results
 .conda/
 .condarc
 results/
+conda_env
+.java/

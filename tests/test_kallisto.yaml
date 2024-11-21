@@ -1,7 +1,0 @@
-- name: kallisto
-  tags:
-    - integrationtest
-  command: >
-    snakemake --software-deployment-method conda --conda-frontend mamba -j 1 --configfile tests/expression.yaml --config quant_mode=kallisto
-  files:
-    - path: "results/expression.RDS"

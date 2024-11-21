@@ -13,7 +13,7 @@ install.packages(c('argparse', 'remotes'), repos='http://cran.us.r-project.org',
 library(remotes)
 remotes::install_version("Matrix", version = "1.6-5", repos = "http://cran.us.r-project.org")
 remotes::install_version("MASS", version = "7.3-60", repos = "http://cran.us.r-project.org")
-remotes::install_git("https://github.com/TRON-Bioinformatics/splice2neo.git", ref = "v0.6.11", Ncpus=8)
+remotes::install_git("https://github.com/TRON-Bioinformatics/splice2neo.git", ref = "v0.6.12", Ncpus=8)
 
 __EOF__
 

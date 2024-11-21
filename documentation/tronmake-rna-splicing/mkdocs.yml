@@ -1,0 +1,46 @@
+site_name: TronMake Cancer RNA-splicing
+site_author: Johannes Hausmann
+nav: 
+  - Home: index.md
+  - Installation: installation.md
+  - Input: input.md
+  - Usage: usage.md
+  - Cluster execution: cluster.md
+  - Workflow rules: rules.md
+  - References: references.md
+  - About: about.md
+theme:
+  logo: assets/tron.svg
+  name: material
+  icon:
+    repo: fontawesome/brands/gitlab
+  features:
+    - navigation.sections
+    - navigation.tabs
+    - toc.integrate
+  palette:
+    # Palette toggle for light mode 
+    - scheme: default
+      primary: teal
+      accent: teal
+      toggle:
+        icon: material/lightbulb-on
+        name: Switch to dark mode
+    # Palette toggle for dark mode
+    - scheme: slate
+      primary: teal
+      accent: teal
+      toggle:
+        icon: material/weather-night
+        name: Switch to light mode 
+
+copyright: © TRON gGmbH, 2024. This work is licensed under MIT.
+
+repo_url: https://gitlab.rlp.net/tron/tronmake-rna-splicing
+plugins:
+  - search
+  - table-reader
+  - include-markdown
+
+markdown_extensions:
+  - attr_list
