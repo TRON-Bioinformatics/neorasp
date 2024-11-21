@@ -28,7 +28,7 @@ snakemake \
 * `--profile` (optional): Path to a profile specification that defines e.g. which executor to use and how many jobs are submitted in parallel (see section [Cluster config](#cluster-execution)).
 * `--retries` (optional): Number of retries if a rule fails. When a rule is restarted and the default workflow config is not modified, the RAM for the failed rule is increased, to account for potentially higher RAM requirements.
 
-# Config file
+## Config file
 
 The config file contains variables that configure how the workflow is run. This
 includes the paths to the reference and indices.
@@ -55,8 +55,49 @@ In the config file the following attributes are specified:
 * `chrom-filter`: List of chromosomes for which the splice junctions should be kept. Default are human standard chromosomes.
 
 
-## Example config file
+### Example config file
 
 ~~~yaml
 {% include "../../../config/config.yaml" %}
 ~~~
+
+
+## Shared conda/apptainer prefix
+
+If you want to collaboratively work with this pipeline, it is helpful to have a shared conda environment and apptainer directory. This allows the specification of `--conda-prefix` / `--apptainer-prefix` to the shared directory. If different users use the pipeline, the same environments are not installed multiple times, saving time and storage. **NOTE: It has to be ensured, that the umask of the pipeline users is u=rwx,g=rwx,o= to allow users of the same group to use the created conda environments properly.**
+
+## FAQ
+
+**Junction of interest not detected.**
+
+If your junction of interest is not detected it might be  filtered out in one of the steps.
+
+* If the junction was thought to be canonical you might find it in `results/{sample}/fetchdata/detected_sj_canonical.tsv`.
+
+* If the junction falls into hard to map/align regions you might find it in `results/{sample}/fetchdata/mappability/sj_problematic_mappability.tsv`. 
+
+* If your junction falls into a highly polymorphic gene you might find it in `results/{sample}/fetchdata/splice2neo/sj_problematic_gene.tsv`
+
+* If your junction does not overlap a gene you might find it in `results/{sample}/fetchdata/splice2neo/sj_no_transcript_overlap.tsv`
+
+
+**Which HGNC genes are excluded by default**
+
+We exclude by default gene loci from highly polymorphic gene regions such as HLA or T-cell receptor genes.
+The following regex matches are applied to the HGNC gene ids for filtering
+
+|exclude_gene_pattern|exclude_pattern_intention|
+|:------------------:|:-----------------------:|
+|^MT- | Mitochondrial gene|
+|^HLA- | HLA gene|
+|^IGH[VDJCG]?|Immunoglobulin gene|
+|^IGHA[12]|Immunoglobulin gene|
+|^IGHM|Immunoglobulin gene|
+|^IGHE|Immunoglobulin gene|
+|^IGHEP[12]|Immunoglobulin gene|
+|^IGK[VJC]?|Immunoglobulin gene|
+|^IGL[VJC]?|Immunoglobulin gene|
+|^TRA|T cell receptor alpha|
+|^TRB|T cell receptor beta|
+|^TRD|T cell receptor delta|
+|^TRG|T cell receptor gamma|
