@@ -3,8 +3,6 @@ suppressMessages({
   library(readr)
   library(dplyr)
   library(magrittr)
-  library(argparse)
-  
 })
 
 df <- readr::read_tsv(snakemake@input[['annotated_sj']], show_col_types = FALSE)

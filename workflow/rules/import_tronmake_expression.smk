@@ -160,7 +160,7 @@ rule star:
         r1 (str): Path to forward (R1) reads.
         r2 (str): Path to reverse (R2) reads.
     output:
-        alignment (str): Path to unsorted BAM file.
+        bam (str): Path to unsorted BAM file.
         log (str): Path to STAR execution log.
         log_final (str): Path to final STAR log file.
         sj (str): Path to high-confidence SJ.out.tab.
@@ -179,7 +179,7 @@ rule star:
         r1 = "results/{sample}/fastp/{sample}_R1.fastq.gz",
         r2 = "results/{sample}/fastp/{sample}_R2.fastq.gz"
     output:
-        bam = temp("results/{sample}/star/Aligned.sortedByCoord.out.bam"),
+        bam = "results/{sample}/star/Aligned.sortedByCoord.out.bam",
         log = "results/{sample}/star/Log.out",
         sj = "results/{sample}/star/SJ.out.tab",
         chim_junc = "results/{sample}/star/Chimeric.out.junction",
@@ -268,13 +268,11 @@ rule bedgraph_to_bigwig:
 rule samtools:
     """Samtools
 
-    Sort queryname sorted alignment from STAR by coordinate
-    and create index for random access.
+    Create index of BAM file for random access.
 
     input:
-        bam (str): Path to queryname sorted BAM file.
-    output:
         bam (str): Path to coordinate sorted BAM file.
+    output:
         bai (str): Path to corresponding BAI index file.
 
     """
@@ -324,9 +322,9 @@ rule qualimap:
     # and which can be used to request RAM during cluster job submission as `{resources.mem_mb}`:
     # https://snakemake.readthedocs.io/en/latest/executing/cluster.html#job-properties
     resources:
-        mem_mb = 8192
+        mem_mb = 16000
     params:
-        java_opts = 'JAVA_OPTS="-Xmx8192M -Djava.awt.headless=true"',
+        java_opts = 'JAVA_OPTS="-Xmx15000M -Djava.awt.headless=true"',
         extra = ""
     container:
         'docker://quay.io/biocontainers/qualimap:2.3--hdfd78af_0'
@@ -355,7 +353,7 @@ rule insert_size:
         plot_r (str): Path to R script
     params:
         extra (str): Additional parameters passed for inner_distance.py.
-            Defaults to '-k 10000000'
+            Defaults to '-k 10000000 -q 255'
         out_prefix (str): Path to inner_distance.py working directory.
 
     """
@@ -371,15 +369,15 @@ rule insert_size:
     log:
         'results/{sample}/log/insert_size.log',
     params:
-        extra = "-k 10000000",
-        out_prefix = lambda wildcards, ouput: output.reads_inner_distance.removesuffix('.inner_distance.txt')
+        extra = "-k 10000000 -q 255",
+        out_prefix = lambda wildcards, output: output.reads_inner_distance.removesuffix('.inner_distance.txt')
     container:
-        'docker://quay.io/biocontainers/rseqc:5.0.4--pyhdfd78af_0'
+        'docker://tronbioinformatics/tron_data_utils:0.0.1'
     conda:
         '../envs/rseqc.yaml'
     shell:
         "inner_distance.py " 
-        "{parmas.extra} "
+        "{params.extra} "
         "--input-file {input.aln} "
         "--refgene {input.refgene} "
         "--out-prefix {params.out_prefix} "

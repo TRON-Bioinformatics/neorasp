@@ -11,7 +11,7 @@ fraser:
   mapq_filter: 255
 
 star:
-  min_read: 15
+  min_read: 5
 
 requantify:
   interval_mode: true

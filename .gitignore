@@ -20,3 +20,4 @@ workflow/results
 .condarc
 results/
 conda_env
+.java/

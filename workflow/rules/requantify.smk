@@ -224,7 +224,7 @@ rule add_quant_counts:
         sj = rules.add_transcript_expression.output.sj_expression,
         quantification = rules.requantify.output.quant
     output:
-        requantified_sj = "results/{sample}/fetchdata/splice2neo/sj_annotated_requantified.tsv"
+        requantified_sj = temp("results/{sample}/fetchdata/splice2neo/sj_annotated_requantified.tsv")
     params:
         requant_dir = lambda wildcards, input: os.path.dirname(input.quantification)
     log:  "results/{sample}/log/add_requantification_counts.log"
