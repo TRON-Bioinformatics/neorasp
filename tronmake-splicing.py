@@ -1,16 +1,32 @@
 #!/usr/bin/env python3
+# -*- coding: utf-8 -*-
 
-import os
+"""TronMake RNA-splicing
+
+This script can be used to start the SnakeMake workflow
+
+Example:
+    $ python tronmake-splicing.py ....
+
+@Author: Johannes Hausmann
+@Date: 2024-11-05
+@Copyright: Copyright 2024, TRON gGmbH, Mainz, Germany
+@License: MIT
+@Version: 0.0.1
+@Status: Development
+
+"""
+
 import sys
 import argparse
 import pathlib
 import tempfile
 import yaml
 import subprocess
-from logzero import logger
+from loguru import logger
 
 
-__version__ = "0.0.1"
+__version__ = "0.0.2"
 __pipeline__ = pathlib.Path(__file__).parent / 'workflow' / 'Snakefile'
 
 epilog = "Copyright (c) 2024 TRON gGmbH (See LICENSE for licensing details)"
@@ -27,15 +43,16 @@ def execute_cmd(cmd, working_dir = "."):
 def splicing_pipeline(args):
     wf_config = {}
     wf_config["star"] = {"min_read": args.min_expression}
-    wf_config["fraser"] = {"min_read": args.min_expression, "mapq_filter": 255}
+    wf_config["fraser"] = {"min_read": args.min_expression,
+                           "mapq_filter": args.mapq}
     wf_config["samples"] = args.samples
     wf_config["index_dir"] = args.genome_lib
     wf_config["sra_mode"] = False
-    wf_config["quant_mode"] = "salmon_bam"
     wf_config["interleaved_input"] = False
     wf_config["bam_input"] = False
-    wf_config["fastq_screen_conf"] = False
-    wf_config["requantify"] = {"interval_mode": True, "allow_mismatches": False}
+    wf_config["requantify"] = {"interval_mode": True, 
+                               "allow_mismatches": False,
+                               "bowtie_k_threshold": 200}
 
     with tempfile.NamedTemporaryFile(mode="w", delete=False, dir=args.workdir) as temp_config:
         yaml.dump(wf_config, temp_config)
@@ -87,6 +104,12 @@ def tronmake_cli():
         dest="min_expression",
         help="Minimum number of reads to consider splice junction valid",
         default=5
+    )
+    parser.add_argument(
+        "--mapq",
+        dest="mapq",
+        help="Use only reads with this MAPQ value for splice junction analysis",
+        default=255
     )
     parser.add_argument(
         "--jobs",

@@ -1,6 +1,5 @@
 jobs: 16
 local-cores: 16
-conda-frontend: mamba
 latency-wait: 120
 keep-going: True
 printshellcmds: True
@@ -11,13 +10,12 @@ default-resources:
   runtime: 3600
 
 set-threads:
-  tronmake_expression_salmon_quant_bam: 4
-  tronmake_expression_qualimap: 2
-  tronmake_expression_star: 18
-  tronmake_expression_fastp: 2
-  tronmake_expression_bedGraphToBigWig_forward: 1
-  tronmake_expression_bedGraphToBigWig_reverse: 1
-  tronmake_expression_get_fastq_SRA: 2
+  salmon: 4
+  qualimap: 4
+  star: 18
+  fastp: 4
+  bedGraphToBigWig: 1
+  get_fastq_SRA: 2
   samtools_index: 1
   fraser: 4
   parse_junctions: 1
@@ -33,62 +31,59 @@ set-threads:
   find_cts_matching_wt: 8
 
 set-resources:
-  tronmake_expression_salmon_quant_bam:
-    mem_mb: 16000
+  salmon:
+    mem_mb: 16000 + ((attempt - 1) * 10000)
     runtime: "1h"
-  tronmake_expression_qualimap:
-    mem_mb: 10000
+  qualimap:
+    mem_mb: 16000 + ((attempt - 1) * 5000)
     runtime: "1h"
-  tronmake_expression_star:
-    mem_mb: 48000
+  star:
+    mem_mb: 48000 + ((attempt - 1) * 10000)
     runtime: "8h"
-  tronmake_expression_fastp:
-    mem_mb: 8000
+  fastp:
+    mem_mb: 8000 + ((attempt - 1) * 5000)
     runtime: "1h"
-  tronmake_expression_bedGraphToBigWig_forward:
-    mem_mb: 4096
+  bedGraphToBigWig:
+    mem_mb: 4000 + ((attempt - 1) * 2000)
     runtime: "1h"
-  tronmake_expression_bedGraphToBigWig_reverse:
-    mem_mb: 4096
-    runtime: "1h"
-  tronmake_expression_get_fastq_SRA:
-    mem_mb: 8000
+  get_fastq_SRA:
+    mem_mb: 8000 + ((attempt - 1) * 2000)
     runtime: "2h"
   samtools_index:
-    mem_mb: 4096
+    mem_mb: 2000 + ((attempt - 1) * 500)
     runtime: "1h"
   fraser:
-    mem_mb: 16000
+    mem_mb: 16000 + ((attempt - 1) * 10000)
     runtime: "1h"
   parse_junctions:
-    mem_mb: 8000
+    mem_mb: 8000 * attempt
     runtime: "1h"
   filter_mapability:
-    mem_mb: 8000
+    mem_mb: 8000 * attempt
     runtime: "1h"
   add_context_sequence:
-    mem_mb: 16000
+    mem_mb: 16000 + ((attempt - 1) * 10000)
     runtime: "4h"
   add_transcript_expression:
-    mem_mb: 4000
+    mem_mb: 4000 + ((attempt - 1) * 2000)
     runtime: "1h"
   prepare_requant:
-    mem_mb: 4000
+    mem_mb: 4000 + ((attempt - 1) * 2000)
     runtime: "1h"
   generate_context_fa:
-    mem_mb: 4000
+    mem_mb: 4000 + ((attempt - 1) * 2000)
     runtime: "1h"
   bowtie_index:
-    mem_mb: 8000
+    mem_mb: 8000 + ((attempt - 1) * 2000)
     runtime: "1h"
   bowtie_align:
-    mem_mb: 16000
+    mem_mb: 16000 + ((attempt - 1) * 10000)
     runtime: "4h"
   requantify:
-    mem_mb: 8000
+    mem_mb: 8000 + ((attempt - 1) * 2000)
     runtime: "4h"
   add_quant_counts:
-    mem_mb: 4000
+    mem_mb: 4000 * attempt
     runtime: "1h"
   find_cts_matching_wt:
     mem_mb: 16000

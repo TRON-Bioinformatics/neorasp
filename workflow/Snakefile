@@ -3,7 +3,6 @@ import sys
 import math
 import pandas as pd
 
-# Base container image for running jobs
 configfile: workflow.source_path('../config/config.yaml')
 
 include: "rules/common.smk"
@@ -12,11 +11,10 @@ include: "rules/junctions.smk"
 include: "rules/requantify.smk"
 include: "rules/filtering.smk"
 
-samples = tronmake_expression.read_sample_sheet(config['sample_sheet'])
+samples = read_sample_sheet(config['sample_sheet'])
 
 rule all:
     input:
         get_final_output()
     default_target: True
     localrule: True
-        
