@@ -2,4 +2,4 @@
   tags:
     - integrationtest
   command: >
-    snakemake -p --sdm apptainer -j 2 --configfile tests/splicing.yaml --apptainer-args '--bind /tmp --bind /builds/tron/tronmake-rna-splicing'
+    snakemake -p --sdm apptainer -j 2 --configfile tests/splicing.yaml --apptainer-args '--bind /tmp --bind /builds/tron/tronmake-rna-splicing --bind /root/.cache/snakemake/'
