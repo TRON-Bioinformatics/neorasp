@@ -16,9 +16,9 @@ test_integration:
   variables:
     GIT_SUBMODULE_STRATEGY: recursive
   before_script:
-    - DEBIAN_FRONTEND=noninteractive TZ=Etc/UTC apt update && apt --quiet --assume-yes install -y libmagic1 software-properties-common
+    - DEBIAN_FRONTEND=noninteractive TZ=Etc/UTC apt update && DEBIAN_FRONTEND=noninteractive TZ=Etc/UTC apt --quiet --assume-yes install -y libmagic1 software-properties-common
     - add-apt-repository -y ppa:apptainer/ppa
-    - DEBIAN_FRONTEND=noninteractive TZ=Etc/UTC apt update && apt --quiet --assume-yes install -y apptainer
+    - DEBIAN_FRONTEND=noninteractive TZ=Etc/UTC apt update && DEBIAN_FRONTEND=noninteractive TZ=Etc/UTC apt --quiet --assume-yes install -y apptainer
   script:
     - mamba env create -n tronmake -f environment.yaml
     - source /opt/conda/bin/activate tronmake
