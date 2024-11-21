@@ -23,8 +23,6 @@ test_integration:
     - mamba env create -n tronmake -f environment.yaml
     - source /opt/conda/bin/activate tronmake
     - pytest --tag integrationtest --git-aware --symlink --stderr-bytes 100000 --kwd --basetemp /tmp/test
-  only:
-    - dev
 
 
 .mkdocs:
