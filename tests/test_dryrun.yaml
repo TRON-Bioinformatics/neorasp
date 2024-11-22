@@ -1,4 +1,4 @@
-- name: dryrun_splice
+- name: test_dryrun
   tags:
     - dryrun
   command: >
