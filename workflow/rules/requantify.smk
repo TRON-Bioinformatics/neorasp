@@ -72,7 +72,7 @@ rule bowtie_index:
     input:
         context_fa = rules.generate_context_fa.output.context_fa
     params:
-        prefix = lambda wildcards, output: os.path.dirname(output.bowtie_index[0]) + "/bowtie"
+        prefix = lambda wildcards, output: output.bowtie_index[0].removesuffix('.1.bt2')
     threads: 4
     resources:
         mem_mb = 8000
