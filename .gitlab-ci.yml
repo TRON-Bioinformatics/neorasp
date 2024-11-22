@@ -46,7 +46,7 @@ test_integration:
 
 
 .mkdocs:
-  image: condaforge/miniforge3:24.9.2.-0
+  image: condaforge/miniforge3:24.9.2-0
   stage: deploy
   script:
     - apt update && apt install -y libmagic1
