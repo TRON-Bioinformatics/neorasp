@@ -1,16 +1,19 @@
 # Usage
 
 > **Information: If possible, use absolute paths when specifying directories or files.**  
-> **Recommendation: If possible, configure the workflow with a yaml configfile and not on the command line.**
+> **Recommendation: If possible, configure the workflow with a yaml configfile and not on the command line.**  
+> **Apptainer: If possible, use apptainer to run the pipeline. This has been tested. Conda execution is possible but not tested.**
 
 ```
 snakemake \
     --config sample_sheet=</path/to/samples.tsv> index_dir=</path/to/genome_lib> \
     --directory <output_directory> \
-    --software-deployment-method conda \
+    --software-deployment-method apptainer \
     --configfile <path to my config> \
     --workflow-profile workflow/profiles/default \
     --default-resources "tmpdir='<output_directory>'" \
+    [--apptainer-prefix </path/to/apptainer/image/location>] \
+    [--apptainer-args '--bind </path/to/mount>'] \
     [--conda-prefix </path/to/conda/env/location>] \
     [--profile </path/to/profile/directory>]
     [--retries <n>]
@@ -21,10 +24,12 @@ snakemake \
     * `index_dir=`: Path to the genome library and genome indices.
 * `directory`: Specifies where the results are stored.
 * `configfile`: The path to the config file that contains e.g. the paths to the genome indices (see [Config file](#config-file)).
-* `software-deployment-method`: Currently conda and apptainer are supported and tested.
-* `workflow-profile`: To define the resources for each snakemake rule.
+* `software-deployment-method`: Currently conda and apptainer are supported. Apptainer is tested and recommended.
+* `workflow-profile` (optional): To define the resources for each snakemake rule. The workflow ships a default profile suitable for most analysis.  
 * `--default-resources`: The temporary directory has to be use by some rules. We advise to set the tmpdir to a fast storage, if available. Otherwise use "tmpdir='<output_directory>'". If not specified, tmpdir is set to the systems default temporary directory.
 * `--conda-prefix` (optional): Where should the conda environments be stored. Further information in section [Shared conda prefix](#shared-conda-prefix)
+* `--apptainer-prefix` (optional): Where should the Apptainer images be stored.  
+* `--apptainer-args` (required when `--sdm apptainer`): Which directories should be mounted into the container images.  This is required when using apptainer.
 * `--profile` (optional): Path to a profile specification that defines e.g. which executor to use and how many jobs are submitted in parallel (see section [Cluster config](#cluster-execution)).
 * `--retries` (optional): Number of retries if a rule fails. When a rule is restarted and the default workflow config is not modified, the RAM for the failed rule is increased, to account for potentially higher RAM requirements.
 
@@ -83,8 +88,8 @@ If your junction of interest is not detected it might be  filtered out in one of
 
 **Which HGNC genes are excluded by default**
 
-We exclude by default gene loci from highly polymorphic gene regions such as HLA or T-cell receptor genes.
-The following regex matches are applied to the HGNC gene ids for filtering
+We exclude by default gene loci from highly polymorphic gene regions such as HLA, T-cell or B-cell receptor genes.
+The following regex matches are applied to the HGNC gene ids for filtering.
 
 |exclude_gene_pattern|exclude_pattern_intention|
 |:------------------:|:-----------------------:|

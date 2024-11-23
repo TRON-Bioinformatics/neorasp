@@ -1,5 +1,8 @@
-- name: test_run
+- name: test_full_run
   tags:
     - integrationtest
   command: >
-    snakemake -p --sdm apptainer -j 2 --configfile tests/splicing.yaml --apptainer-args '--bind /tmp --bind /builds/tron/tronmake-rna-splicing --bind /root/.cache/snakemake/'
+    bash -c "
+    snakemake -p --sdm apptainer -j 2 --configfile tests/splicing.yaml \
+      --apptainer-args '--bind /tmp --bind /builds/tron/tronmake-rna-splicing --bind /root/.cache/snakemake/'
+    "

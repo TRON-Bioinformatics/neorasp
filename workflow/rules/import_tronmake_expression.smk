@@ -22,7 +22,7 @@ rule get_fastq_SRA:
         fq2_unzipped = lambda wildcards, output: os.path.splitext(output.fq2)[1],
         extra = "--skip-technical --split-3",
         tmpdir = lambda wildcards, output: os.path.dirname(output.fq1),
-        mem = ""
+        mem = 4096
     threads: 2
     log:
         'results/{accession}/log/sra_download.log'
@@ -31,13 +31,14 @@ rule get_fastq_SRA:
     conda:
         '../envs/ucsc_bedgraph_to_bigwig.yaml'
     shell:
+        'exec 2> {log}; '
         'fasterq-dump '
         '--temp {params.tmpdir} '
-        '--threads {snakemake.threads}'
+        '--threads {threads}'
         '{params.mem} '
         '{params.extra} '
         '{params.tmpdir} ' 
-        '{accession} ; '
+        '{wildcards.accession} ; '
         'gzip {params.fq1_unzipped} ; '
         'gzip {params.fq2_unzipped} '
 
@@ -62,11 +63,16 @@ rule deinterleave:
         r2 = temp('results/{sample}/deinterleave/{sample}_R2.fastq')
     container:
         'docker://busybox:1.37.0-glibc'
+    log:
+        "results/{sample}/log/deinterleave.log"
     shell:
-        "zcat {input.interleaved_fastq} | "
-        "paste - - - - - - - - | "
-        "tee >(cut -f 1-4 | tr '\\t' '\\n' > {output.r1}) | "
-        "cut -f 5-8 | tr '\\t' '\\n' > {output.r2} "
+        '''
+        exec 2> {log}
+        zcat {input.interleaved_fastq} | \
+        paste - - - - - - - - | \
+        tee >(cut -f 1-4 | tr '\\t' '\\n' > {output.r1}) | \
+        cut -f 5-8 | tr '\\t' '\\n' > {output.r2} 
+        '''
 
 rule bam2fastq:
     """Convert BAM
@@ -99,9 +105,15 @@ rule bam2fastq:
         'docker://quay.io/biocontainers/samtools:1.20--h50ea8bc_0'
     conda:
         '../envs/samtools.yaml'
+    log:
+        "results/{sample}/log/bam2fastq.log"
     shell:
-        'samtools collate --threads 2 -u -O {input.bam} | awk -f {params.repair_script} | '
-        'samtools fastq --threads 2 -1 {output.r1} -2 {output.r2} -0 /dev/null -s /dev/null -n'
+        '''
+        exec 2> {log}
+        samtools collate --threads 2 -u -O {input.bam} | \
+        awk -f {params.repair_script} | \
+        samtools fastq --threads 2 -1 {output.r1} -2 {output.r2} -0 /dev/null -s /dev/null -n
+        '''
 
 rule fastp:
     """fastp
@@ -284,9 +296,12 @@ rule samtools:
         'docker://quay.io/biocontainers/samtools:1.20--h50ea8bc_0'
     conda:
         '../envs/samtools.yaml'
+    log:
+        "results/{sample}/log/samtools.log"
     threads: 1
     shell:
         """
+        exec 2> {log}
         samtools index {input.bam}
         """
 
