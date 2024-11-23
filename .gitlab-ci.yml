@@ -1,6 +1,11 @@
+stages:
+  - precheck
+  - test
+  - deploy
+
 test_syntaxcheck:
   image: condaforge/miniforge3:24.9.2-0
-  stage: test
+  stage: precheck
   variables:
     GIT_SUBMODULE_STRATEGY: recursive
   before_script:
@@ -9,6 +14,19 @@ test_syntaxcheck:
     - mamba env create -n tronmake -f environment.yaml
     - source /opt/conda/bin/activate tronmake
     - pytest --tag dryrun --git-aware --symlink --stderr-bytes 100000 --kwd --basetemp /tmp/test
+
+test_linting:
+  image: condaforge/miniforge3:24.9.2-0
+  stage: precheck
+  variables:
+    GIT_SUBMODULE_STRATEGY: recursive
+  before_script:
+    - apt update && apt --quiet --assume-yes install -y libmagic1
+  script:
+    - mamba env create -n tronmake -f environment.yaml
+    - source /opt/conda/bin/activate tronmake
+    - snakemake --lint
+
 
 test_integration:
   image: condaforge/miniforge3:24.9.2-0
@@ -23,10 +41,12 @@ test_integration:
     - mamba env create -n tronmake -f environment.yaml
     - source /opt/conda/bin/activate tronmake
     - pytest --tag integrationtest --git-aware --symlink --stderr-bytes 100000 --kwd --basetemp /tmp/test
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
 
 
 .mkdocs:
-  image: condaforge/miniforge3:24.7.1-2
+  image: condaforge/miniforge3:24.9.2-0
   stage: deploy
   script:
     - apt update && apt install -y libmagic1
@@ -35,8 +55,8 @@ test_integration:
     - git clone https://github.com/OpenOmics/snakevision.git
     - pip install -r snakevision/requirements.txt
     - snakemake --configfile tests/splicing.yaml --rulegraph --forceall > documentation/tronmake-rna-splicing/docs/assets/pipeline_rulegraph.dot
-    - ./snakevision/bin/snakevision -s all docstring_export -o documentation/tronmake-rna-splicing/docs/assets/pipeline_rulegraph.svg documentation/tronmake-rna-splicing/docs/assets/pipeline_rulegraph.dot
-    - snakemake -p --until docstring_export --configfile tests/splicing.yaml
+    - ./snakevision/bin/snakevision -s all doc_all docstring_export software_export -o documentation/tronmake-rna-splicing/docs/assets/pipeline_rulegraph.svg documentation/tronmake-rna-splicing/docs/assets/pipeline_rulegraph.dot
+    - snakemake -p --until doc_all --configfile tests/splicing.yaml
     - mkdocs build -f documentation/tronmake-rna-splicing/mkdocs.yml -d ../../public
   artifacts:
     paths:
