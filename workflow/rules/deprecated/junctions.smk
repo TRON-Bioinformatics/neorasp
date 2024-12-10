@@ -1,0 +1,40 @@
+rule filter_gene_hgnc:
+    """HGNC filter
+
+    Rule to remove splice junctions from highly polymorphic
+    gene loci or genes not located on chromosomes.
+    Default genes removed in this step are IG^, TCR^, BCR^ and HLA.
+
+    input:
+        parsed_sj (str):  Path to splice junction table.
+    output:
+        sj_passed_gene (str): Path to table with junctions passing the filter.
+        sj_excluded_gene (str): Path to table with junctions falling into exclusion regions.
+        sj_gene_exclusion_intention (str): Path to table with detailed information
+            of calssification.
+    params:
+        working_dir (str): Dirname of output files.
+        exe (str): Path to python script
+
+    """
+    input:
+        parsed_sj = rules.add_gene_annotation.output.annotated_sj,
+    params:
+        working_dir = lambda wildcards, output: os.path.dirname(output.sj_passed_gene),
+        exe = workflow.source_path('../scripts/filter_gene_regex.py')
+    output:
+        sj_excluded_gene = "results/{sample}/fetchdata/splice2neo/sj_problematic_gene.tsv",
+        sj_passed_gene = temp("results/{sample}/fetchdata/splice2neo/sj_pass_gene.tsv"),
+        sj_gene_exclusion_intention = "results/{sample}/fetchdata/splice2neo/gene_exclusion_intention.tsv"
+    threads: 1
+    resources:
+        mem_mb = 8000
+    container:
+        'docker://tronbioinformatics/tron_data_utils:0.0.1'
+    conda:
+        '../envs/python.yaml'
+    log:  "results/{sample}/log/gene_filtering.log"
+    shell:
+        'python {params.exe} '
+        '-i {input.parsed_sj} '
+        '-o {params.working_dir} 2>&1 | tee {log}'
