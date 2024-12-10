@@ -208,14 +208,12 @@ rule filter_gene_hgnc:
             of calssification.
     params:
         working_dir (str): Dirname of output files.
-        exe (str): Path to python script
 
     """
     input:
         parsed_sj = rules.add_gene_annotation.output.annotated_sj,
     params:
-        working_dir = lambda wildcards, output: os.path.dirname(output.sj_passed_gene),
-        exe = workflow.source_path('../scripts/filter_gene_regex.py')
+        working_dir = lambda wildcards, output: os.path.dirname(output.sj_passed_gene)
     output:
         sj_excluded_gene = "results/{sample}/fetchdata/splice2neo/sj_problematic_gene.tsv",
         sj_passed_gene = temp("results/{sample}/fetchdata/splice2neo/sj_pass_gene.tsv"),
@@ -228,10 +226,8 @@ rule filter_gene_hgnc:
     conda:
         '../envs/python.yaml'
     log:  "results/{sample}/log/gene_filtering.log"
-    shell:
-        'python {params.exe} '
-        '-i {input.parsed_sj} '
-        '-o {params.working_dir} 2>&1 | tee {log}'
+    script:
+        '../scripts/filter_gene_name.py'
 
 
 rule add_context_sequence:
