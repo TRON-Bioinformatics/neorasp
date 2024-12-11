@@ -259,8 +259,8 @@ rule translate_to_peptide:
         cds = os.path.join(config['index_dir'], 'ref_cds.RDS'),
         genome = os.path.join(config['index_dir'], 'ref_genome.2bit')
     output:
-        junctions = "results/{sample}/fetchdata/sj_final_results.tsv",
-        neofox_annotation = "results/{sample}/fetchdata/sj_results_neofox_annotation.tsv"
+        junctions = "results/{sample}/fetchdata/sj_final.tsv",
+        neofox_annotation = "results/{sample}/fetchdata/sj_final_neofox_annotation.tsv"
     log:  "results/{sample}/log/add_peptide_annotation.log"
     threads: 1
     resources:
