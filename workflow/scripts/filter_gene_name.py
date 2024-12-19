@@ -86,7 +86,7 @@ class FilterGene:
                     output_df[~output_df.exclude_gene].to_csv(pass_handle, index=False, sep="\t")
 
 def main():
-    filter = FilterGene(snakemake.input['parsed_sj '], snakemake.params['working_dir'])
+    filter = FilterGene(snakemake.input['parsed_sj'], snakemake.params['working_dir'])
     filter.run()
 
 if __name__ == '__main__':
