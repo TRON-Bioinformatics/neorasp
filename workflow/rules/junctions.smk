@@ -215,7 +215,7 @@ rule filter_gene_hgnc:
     params:
         working_dir = lambda wildcards, output: os.path.dirname(output.sj_passed_gene)
     output:
-        sj_excluded_gene = "results/{sample}/fetchdata/splice2neo/gene_name_filter/sj_exclusion_gene.tsv",
+        sj_excluded_gene = "results/{sample}/fetchdata/splice2neo/gene_name_filter/sj_problematic_gene.tsv",
         sj_passed_gene = "results/{sample}/fetchdata/splice2neo/gene_name_filter/sj_pass_gene.tsv",
         sj_gene_exclusion_intention = "results/{sample}/fetchdata/splice2neo/gene_name_filter/gene_exclusion_intention.tsv"
     threads: 1
