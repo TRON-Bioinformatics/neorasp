@@ -38,10 +38,6 @@ class FilterGene:
         '^IGHEP[12]' : 'Immunoglobulin gene',
         '^IGK[VJC]?' : 'Immunoglobulin gene' ,
         '^IGL[VJC]?' : 'Immunoglobulin gene',
-        '^TRA' : 'T cell receptor alpha',
-        '^TRB' : 'T cell receptor beta',
-        '^TRD' : 'T cell receptor delta',
-        '^TRG' : 'T cell receptor gamma',
     }
 
     def __init__(self, junction_table, output_path) -> None:
