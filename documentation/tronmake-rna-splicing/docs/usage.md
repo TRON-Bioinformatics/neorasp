@@ -75,15 +75,15 @@ If you want to collaboratively work with this pipeline, it is helpful to have a 
 
 **Junction of interest not detected.**
 
-If your junction of interest is not detected it might be  filtered out in one of the steps.
+If your junction of interest is not detected it might be  filtered out in one of the pipeline steps.
 
-* If the junction was thought to be canonical you might find it in `results/{sample}/fetchdata/detected_sj_canonical.tsv`.
+* If the junction was thought to be canonical you might find it in: `results/{sample}/fetchdata/detected_sj_canonical.tsv`.
 
-* If the junction falls into hard to map/align regions you might find it in `results/{sample}/fetchdata/mappability/sj_problematic_mappability.tsv`. 
+* If the junction falls into hard to map/align regions you might find it in: `results/{sample}/fetchdata/mappability/sj_problematic_mappability.tsv`. 
 
-* If your junction falls into a highly polymorphic gene you might find it in `results/{sample}/fetchdata/splice2neo/sj_problematic_gene.tsv`
+* If your junction falls into a highly polymorphic gene you might find it in: `results/{sample}/fetchdata/splice2neo/gene_name_filter/sj_problematic_gene.tsv`
 
-* If your junction does not overlap a gene you might find it in `results/{sample}/fetchdata/splice2neo/sj_no_transcript_overlap.tsv`
+* If your junction does not overlap a gene you might find it in: `results/{sample}/fetchdata/splice2neo/gene_annot/sj_no_transcript_overlap.tsv`
 
 
 **Which HGNC genes are excluded by default**
@@ -102,7 +102,4 @@ The following regex matches are applied to the HGNC gene ids for filtering.
 |^IGHEP[12]|Immunoglobulin gene|
 |^IGK[VJC]?|Immunoglobulin gene|
 |^IGL[VJC]?|Immunoglobulin gene|
-|^TRA|T cell receptor alpha|
 |^TRB|T cell receptor beta|
-|^TRD|T cell receptor delta|
-|^TRG|T cell receptor gamma|
