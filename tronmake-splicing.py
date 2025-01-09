@@ -39,7 +39,7 @@ def execute_cmd(cmd, working_dir = "."):
         logger.error(p.stderr)
     return p.returncode
 
-def find_apptainer_mounts(args: dict) -> set[str]:
+def find_apptainer_mounts(parse_args) -> set[str]:
     """
     SnakeMake does not support auto-mounting directories from the input sample sheet
     and the genome library into the container. Therefore we do this here by finding
@@ -75,7 +75,8 @@ def splicing_pipeline(args):
     wf_config["requantify"] = {"interval_mode": True, 
                                "allow_mismatches": False,
                                "bowtie_k_threshold": 200}
-    input_paths = find_apptainer_mounts()
+
+    input_paths = find_apptainer_mounts(args)
     apptainer_bind_commands = generate_apptainer_mounts(input_paths)
 
     with tempfile.NamedTemporaryFile(mode="w", delete=False, dir=args.workdir) as temp_config:
