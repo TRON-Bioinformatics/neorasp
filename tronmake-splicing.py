@@ -56,6 +56,9 @@ def find_apptainer_mounts(parse_args) -> set[str]:
     return genome_lib_path + input_path_set
 
 def generate_apptainer_mounts(paths: set, mode: str = "ro") -> str:
+    """
+    Generate apptainer mount commands
+    """
     apptainer_mounts = list
     for this_path in paths:
         apptainer_mounts.append(f'--bind {this_path}:{mode}')
@@ -74,7 +77,8 @@ def splicing_pipeline(args):
     wf_config["bam_input"] = False
     wf_config["requantify"] = {"interval_mode": True, 
                                "allow_mismatches": False,
-                               "bowtie_k_threshold": 200}
+                               "bowtie_k_threshold": 200,
+                               "cts_size": 1000}
 
     input_paths = find_apptainer_mounts(args)
     apptainer_bind_commands = generate_apptainer_mounts(input_paths)
