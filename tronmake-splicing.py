@@ -90,7 +90,7 @@ def splicing_pipeline(args):
                '--use-conda',
                '--directory', str(args.workdir),
                '--rerun-triggers', 'mtime',
-               apptainer_bind_commands]
+               '--apptainer-args', f"'{apptainer_bind_commands}'"]
         if args.slurm:
             cmd.extend(['--executor', 'slurm'])
         
