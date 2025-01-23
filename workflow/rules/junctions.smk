@@ -65,7 +65,7 @@ rule parse_junctions:
         fraser_psi = rules.fraser.output.psi_table,
         canonical_junctions = os.path.join(config['index_dir'], 'canonical_junctions.tsv')
     output:
-        parsed_sj = "results/{sample}/fetchdata/parsing/parsed_star_fraser_sj.tsv",
+        parsed_sj = "results/{sample}/fetchdata/parsing/parsed_sj_star_fraser.tsv",
         removed_junction = "results/{sample}/fetchdata/detected_sj_canonical.tsv"
     params:
         read_support = config['fraser'].get('min_read', 5),
@@ -177,8 +177,8 @@ rule add_gene_annotation:
         tx2gene = os.path.join(config['index_dir'], 'tx2gene.tsv'),
         gene2hgnc = os.path.join(config['index_dir'], 'hgnc2ensembl_id.tsv.gz')
     output:
-        annotated_sj = temp("results/{sample}/fetchdata/splice2neo/sj_gene_transcript.tsv"),
-        annotated_sj_problematic = "results/{sample}/fetchdata/splice2neo/sj_no_transcript_overlap.tsv"
+        annotated_sj = "results/{sample}/fetchdata/splice2neo/gene_annot/sj_gene_transcript_overlap.tsv",
+        annotated_sj_problematic = "results/{sample}/fetchdata/splice2neo/gene_annot/sj_no_transcript_overlap.tsv"
     threads: 1
     resources:
         mem_mb = 20000
@@ -208,18 +208,16 @@ rule filter_gene_hgnc:
             of calssification.
     params:
         working_dir (str): Dirname of output files.
-        exe (str): Path to python script
 
     """
     input:
         parsed_sj = rules.add_gene_annotation.output.annotated_sj,
     params:
-        working_dir = lambda wildcards, output: os.path.dirname(output.sj_passed_gene),
-        exe = workflow.source_path('../scripts/filter_gene_regex.py')
+        working_dir = lambda wildcards, output: os.path.dirname(output.sj_passed_gene)
     output:
-        sj_excluded_gene = "results/{sample}/fetchdata/splice2neo/sj_problematic_gene.tsv",
-        sj_passed_gene = temp("results/{sample}/fetchdata/splice2neo/sj_pass_gene.tsv"),
-        sj_gene_exclusion_intention = "results/{sample}/fetchdata/splice2neo/gene_exclusion_intention.tsv"
+        sj_excluded_gene = "results/{sample}/fetchdata/splice2neo/gene_name_filter/sj_problematic_gene.tsv",
+        sj_passed_gene = "results/{sample}/fetchdata/splice2neo/gene_name_filter/sj_pass_gene.tsv",
+        sj_gene_exclusion_intention = "results/{sample}/fetchdata/splice2neo/gene_name_filter/gene_exclusion_intention.tsv"
     threads: 1
     resources:
         mem_mb = 8000
@@ -228,10 +226,8 @@ rule filter_gene_hgnc:
     conda:
         '../envs/python.yaml'
     log:  "results/{sample}/log/gene_filtering.log"
-    shell:
-        'python {params.exe} '
-        '-i {input.parsed_sj} '
-        '-o {params.working_dir} 2>&1 | tee {log}'
+    script:
+        '../scripts/filter_gene_name.py'
 
 
 rule add_context_sequence:
@@ -253,7 +249,7 @@ rule add_context_sequence:
         transcripts = os.path.join(config['index_dir'], 'ref_transcripts.RDS'),
         genome = os.path.join(config['index_dir'], 'ref_genome.2bit')
     output:
-        annotated_sj = temp("results/{sample}/fetchdata/splice2neo/sj_annotated.tsv"),
+        annotated_sj = "results/{sample}/fetchdata/splice2neo/cts/sj_annotated_cts.tsv",
     threads: 1
     resources:
         mem_mb = 20000
