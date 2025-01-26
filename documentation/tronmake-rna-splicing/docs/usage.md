@@ -63,7 +63,7 @@ In the config file the following attributes are specified:
 ### Example config file
 
 ~~~yaml
-{% include "../../../config/config.yaml" %}
+{% include "../../../config/config_test.yaml" %}
 ~~~
 
 
@@ -75,7 +75,7 @@ If you want to collaboratively work with this pipeline, it is helpful to have a 
 
 **Junction of interest not detected.**
 
-If your junction of interest is not detected it might be  filtered out in one of the pipeline steps.
+If your junction of interest is not detected it might be filtered out in one of the pipeline steps.
 
 * If the junction was thought to be canonical you might find it in: `results/{sample}/fetchdata/detected_sj_canonical.tsv`.
 
