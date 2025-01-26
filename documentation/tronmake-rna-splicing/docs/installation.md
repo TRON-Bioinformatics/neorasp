@@ -19,6 +19,8 @@ conda env create -f environment.yaml --prefix conda_env/
 conda activate conda_env
 ```
 
+**Please make sure that the conda chanel priority is not set to strict.**
+
 # System dependencies
 
  - python (>=3.10)
