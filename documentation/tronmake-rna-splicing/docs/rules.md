@@ -1,7 +1,6 @@
 # Workflow overview
 
-This page provides a quick overview of the components used in the pipeline followed by the API
-of individual rules.
+This page provides a short overview of the components used in the pipeline followed by the API of individual rules.
 
 ## Workflow components
 
