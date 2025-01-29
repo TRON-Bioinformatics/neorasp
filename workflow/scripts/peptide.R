@@ -27,8 +27,12 @@ dat_for_neofox <- df %>%
   dplyr::mutate(
     mutatedXmer = peptide_context,
     wildTypeXmer = NA,
-    patientIdentifier = snakemake@wildcards[['sample']]
-  ) %>% dplyr::select(patientIdentifier, junc_id, tx_id, mutatedXmer, wildTypeXmer) %>% dplyr::distinct()
+    patientIdentifier = snakemake@wildcards[['sample']],
+    rnaExpression = transcript_expression_tpm,
+    rnaVariantAlleleFrequency = intron_jaccard,
+    gene = hgnc,
+  ) %>% dplyr::select(patientIdentifier, junc_id, tx_id, mutatedXmer, wildTypeXmer, rnaExpression, rnaVariantAlleleFrequency, gene) %>%
+  dplyr::distinct()
 
 df %>% readr::write_tsv(snakemake@output[['junctions']])
 dat_for_neofox %>% readr::write_tsv(snakemake@output[['neofox_annotation']])
