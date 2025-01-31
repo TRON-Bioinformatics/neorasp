@@ -8,7 +8,9 @@ The output of the pipeline consists of two main files.
 Within the files, each line describes a candidate junction transcript. The file `sj_final.tsv` contains all candidate junctions with annotated features and targeted re-quantification results. The file `sj_final_neofox_annotation.tsv` contains only junction candidates with a mutated peptide sequence in format
 suitable for analysis with NeoFox.
 
-## Column-description sj_final.tsv
+## Column-descriptions 
+
+### sj_final.tsv
 
 * `junc_id`: Predicted splice junction in standardised format `<chr>:<start>-<end>:<strand>`
 * `uniquely_mapping_reads`: Uniquely mapped reads support by STAR.
@@ -28,7 +30,7 @@ suitable for analysis with NeoFox.
 * `cts_junc_pos`: The junction position in the context sequence.
 * `cts_size`: The size of the context sequence.
 * `cts_id`: A unique id for the context sequence as hash value using the XXH128 hash algorithm.
-* `transcript_expression_tpm`: Salmon expression estimate of gene in TPM.
+* `transcript_expression_tpm`: Salmon expression estimate of transcript in TPM.
 * `gene_expression_tpm`: Salmon expression estimate of gene in TPM.
 * `splice_site_motif`: Di-nucleotide motif of splice junction.
 * `jCPM_uniquely_mapped`: CPM normalized uniquely mapped reads (STAR).
@@ -61,3 +63,13 @@ suitable for analysis with NeoFox.
 * `peptide_context_seq_raw`: The peptide sequence around the junction including stop codons.
 * `peptide_context_junc_pos`: The junction position relative to the `peptide_context` sequence.
 * `peptide_context`: The peptide sequence around the junction truncated after stop codons.
+
+
+### sj_final_neofox_annotation.tsv
+
+* `patientIdentifier`: Patient identifier for NeoFox input. Must match to `identifier` in NeoFox patient data sheet.
+* `mutatedXmer`: The peptide sequence around the junction.
+* `wildTypeXmer`: Peptide sequence of wild-type. Currently always NA.
+* `rnaExpression`: Transcript expression in TPM.
+* `rnaVariantAlleleFrequency`: Matches to `intron_jaccard`.
+* `gene`: The HGNC identifier of the gene.
