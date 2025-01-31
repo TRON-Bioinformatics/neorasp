@@ -20,7 +20,21 @@ alt_peptides <- peptide_annot %>%
   splice2neo::add_peptide(cds = cds, flanking_size = 13, bsg = bsg)
 
 df <- df %>% 
-  dplyr::left_join(alt_peptides)
+  dplyr::left_join(alt_peptides) %>%
+  dplyr::select(
+    -tx_lst,
+    -exclude_gene,
+    -tx_mod_id,
+    -junc_interval_end,
+    -span_interval_end,
+    -within_interval,
+    -coverage_perc,
+    -coverage_mean,
+    -coverage_median,
+    -interval,
+    -cds_mod_id, 
+  ) %>% dplyr::rename(junction_reads = junc_interval_start,
+                      spanning_reads = span_interval_start)
 
 dat_for_neofox <- df %>%
   dplyr::filter(!is.na(peptide_context) & nchar(peptide_context) > 7) %>%
