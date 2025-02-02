@@ -73,8 +73,9 @@ If you want to collaboratively work with this pipeline, it is helpful to have a 
 
 ## Apptainer arguments
 
-Please make sure to mount the appropriate directories into the singularity image. By default, snakemake will only mount the current working directory and the location of the workflow into the
-container. However, if your input is located somewhere else you need to pass the appropriate bind commands to the container.
+Please make sure to mount the appropriate directories into the singularity image. By default, snakemake will only mount the current working directory and the location of the workflow into the container. However, if your input (FASTQ files and genome library) is located somewhere else you need to pass the appropriate bind commands to the container. In addition, the `.cache` folder of snakemake must be mounted in the container. Therefore `$HOME/.cache/snakemake` should also be included in the `--bind` command.
+
+`--apptainer-args '--bind /path/to/your/input --bind /home/user/.cache/snakemake'`
 
 
 
