@@ -18,8 +18,7 @@ conda env create -f environment.yaml --prefix conda_env/
 conda activate conda_env
 ```
 
-**Please make sure that the conda chanel priority is not set to strict.**
-Channel priority is configured and set in `$HOME/.condarc`.
+**Please make sure that the conda chanel priority is not set to strict. Channel priority is configured and set in `$HOME/.condarc`.**
 
 # System dependencies
 
