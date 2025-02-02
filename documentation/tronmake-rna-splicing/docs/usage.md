@@ -63,7 +63,7 @@ In the config file the following attributes are specified:
 ### Example config file
 
 ~~~yaml
-{% include "../../../config/config.yaml" %}
+{% include "../../../config/config_test.yaml" %}
 ~~~
 
 
@@ -71,11 +71,21 @@ In the config file the following attributes are specified:
 
 If you want to collaboratively work with this pipeline, it is helpful to have a shared conda environment and apptainer directory. This allows the specification of `--conda-prefix` / `--apptainer-prefix` to the shared directory. If different users use the pipeline, the same environments are not installed multiple times, saving time and storage. **NOTE: It has to be ensured, that the umask of the pipeline users is u=rwx,g=rwx,o= to allow users of the same group to use the created conda environments properly.**
 
+## Apptainer arguments
+
+Please make sure to mount the appropriate directories into the singularity image. By default, snakemake will only mount the current working directory and the location of the workflow into the container. However, if your input (FASTQ files and genome library) is located somewhere else you need to pass the appropriate bind commands to the container. In addition, the `.cache` folder of snakemake must be mounted in the container. Therefore `$HOME/.cache/snakemake` should also be included in the `--bind` command.
+
+`--apptainer-args '--bind /path/to/your/input --bind /home/user/.cache/snakemake'`
+
+
+
 ## FAQ
 
 **Junction of interest not detected.**
 
-If your junction of interest is not detected it might be  filtered out in one of the pipeline steps.
+If your junction of interest is not detected it might be filtered out in one of the pipeline steps.
+
+* If the junction was lowly covered it might be filtered out by the initial read count cutoff.
 
 * If the junction was thought to be canonical you might find it in: `results/{sample}/fetchdata/detected_sj_canonical.tsv`.
 
