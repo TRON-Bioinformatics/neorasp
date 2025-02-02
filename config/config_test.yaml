@@ -1,7 +1,7 @@
 # Input file section
 sample_sheet: 'tests/pep/samples.tsv'
 sra_mode: false
-index_dir: 'REDACTED'
+index_dir: 'tests/resources/GRCh38v45_minigenome'
 interleaved_input: false
 bam_input: false
 
@@ -40,6 +40,7 @@ chrom-filter:
   - chr17
   - chr18
   - chr19
+  - chr20
   - chr21
   - chr22
   - chrX
