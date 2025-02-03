@@ -2,119 +2,6 @@
 This script is used to import the TronMake RNA-expression workflow rules.
 '''
 
-rule get_fastq_SRA:
-    """SRA fastq-dump
-
-    Dowload SRA Run accessions from archive. Wildcard
-    accession is used by fasterq-dump to retrieve
-    FASTQ files
-
-    output:
-        fq1 (str): Path to foward reads of accession
-        fq2 (str): Path to reverse reads of accession
-    """
-    output:
-        # the wildcard name must be accession, pointing to an SRA number
-        fq1 = temp("results/{accession}/sra/{accession}_1.fastq.gz"),
-        fq2 = temp("results/{accession}/sra/{accession}_2.fastq.gz")
-    params:
-        fq1_unzipped = lambda wildcards, output: os.path.splitext(output.fq1)[0],
-        fq2_unzipped = lambda wildcards, output: os.path.splitext(output.fq2)[1],
-        extra = "--skip-technical --split-3",
-        tmpdir = lambda wildcards, output: os.path.dirname(output.fq1),
-        mem = 4096
-    threads: 2
-    log:
-        'results/{accession}/log/sra_download.log'
-    container:
-        'docker://quay.io/biocontainers/sra-tools:3.1.1--h4304569_0'
-    conda:
-        '../envs/ucsc_bedgraph_to_bigwig.yaml'
-    shell:
-        'exec 2> {log}; '
-        'fasterq-dump '
-        '--temp {params.tmpdir} '
-        '--threads {threads}'
-        '{params.mem} '
-        '{params.extra} '
-        '{params.tmpdir} ' 
-        '{wildcards.accession} ; '
-        'gzip {params.fq1_unzipped} ; '
-        'gzip {params.fq2_unzipped} '
-
-rule deinterleave:
-    """Deinterleave FASTQ
-
-    When FASTQ input is in interleaved format unwrap the 
-    reads into separate temporary forward (R1) and reverse (R2)
-    reads.
-
-    input:
-        interleaved_fastq (str): Path to interleaved FASTQ file
-    output:
-        r1 (str): Path to temporary R1 reads.
-        r2 (str): Path to temporary R2 reads.
-
-    """
-    input:
-        interleaved_fastq = get_interleaved_input
-    output:
-        r1 = temp('results/{sample}/deinterleave/{sample}_R1.fastq'),
-        r2 = temp('results/{sample}/deinterleave/{sample}_R2.fastq')
-    container:
-        'docker://busybox:1.37.0-glibc'
-    log:
-        "results/{sample}/log/deinterleave.log"
-    shell:
-        '''
-        exec 2> {log}
-        zcat {input.interleaved_fastq} | \
-        paste - - - - - - - - | \
-        tee >(cut -f 1-4 | tr '\\t' '\\n' > {output.r1}) | \
-        cut -f 5-8 | tr '\\t' '\\n' > {output.r2} 
-        '''
-
-rule bam2fastq:
-    """Convert BAM
-
-    When read input is provided as (uBAM), convert alignment 
-    into temporary forward (R1) and reverse (R2) FASTQ files.
-    Converting step consists of sorting alignment by query
-    name, fixing query name (qname) of alignments (removing _1,_2)
-    extension and separation into FASTQ files.
-
-    input:
-        bam (str): Path to input BAM file
-    output:
-        r1 (str): Path to temporary R1 reads.
-        r2 (str): Path to temporary R2 reads.       
-    params:
-        repair_script (str): Path to AWK implementation of qname 
-            fixing script.
-    
-    """
-    input:
-        bam = get_bam_input
-    output:
-        r1 = temp('results/{sample}/bam2fastq/{sample}_R1.fastq.gz'),
-        r2 = temp('results/{sample}/bam2fastq/{sample}_R2.fastq.gz')
-    threads: 4
-    params: 
-        repair_script = workflow.source_path('../scripts/repair_sam_qname.awk')
-    container:
-        'docker://quay.io/biocontainers/samtools:1.20--h50ea8bc_0'
-    conda:
-        '../envs/samtools.yaml'
-    log:
-        "results/{sample}/log/bam2fastq.log"
-    shell:
-        '''
-        exec 2> {log}
-        samtools collate --threads 2 -u -O {input.bam} | \
-        awk -f {params.repair_script} | \
-        samtools fastq --threads 2 -1 {output.r1} -2 {output.r2} -0 /dev/null -s /dev/null -n
-        '''
-
 rule fastp:
     """fastp
 
@@ -135,11 +22,11 @@ rule fastp:
     input:
         sample = lambda wildcards: get_fq(wildcards).values()
     output:
-        trimmed = ["results/{sample}/fastp/{sample}_R1.fastq.gz", 
-                   "results/{sample}/fastp/{sample}_R2.fastq.gz"],
-        unpaired = "results/{sample}/fastp/{sample}_singletons.fastq.gz",
-        html = "results/{sample}/fastp/{sample}.html",
-        json = "results/{sample}/fastp/{sample}.json"
+        trimmed = ["results/{sample}/fastp/{replicate}/{sample}_R1.fastq.gz", 
+                   "results/{sample}/fastp/{replicate}/{sample}_R2.fastq.gz"],
+        unpaired = "results/{sample}/fastp/{replicate}/{sample}_singletons.fastq.gz",
+        html = "results/{sample}/fastp/{replicate}/{sample}.html",
+        json = "results/{sample}/fastp/{replicate}/{sample}.json"
     log:
         "results/{sample}/log/fastp.log"
     params:
@@ -188,8 +75,7 @@ rule star:
 
     """
     input:
-        r1 = "results/{sample}/fastp/{sample}_R1.fastq.gz",
-        r2 = "results/{sample}/fastp/{sample}_R2.fastq.gz"
+        unpack(get_star_input)
     output:
         bam = "results/{sample}/star/Aligned.sortedByCoord.out.bam",
         log = "results/{sample}/star/Log.out",
@@ -204,6 +90,8 @@ rule star:
     log:
         "results/{sample}/log/star.log",
     params:
+        input_str_fq1 = lambda wildcards, input: ','.join(input.fq1),
+        input_str_fq2 = lambda wildcards, input: ','.join(input.fq2),
         # ENCODE3 RNA-seq options
         extra=' '.join(['--outSAMtype BAM SortedByCoordinate', 
                         '--outFilterType BySJout',
@@ -219,7 +107,9 @@ rule star:
                         '--outWigType bedGraph ',
                         '--outWigStrand Stranded',
                         '--outReadsUnmapped Fastx',
-                        '--limitBAMsortRAM 48000000000']),
+                        '--limitBAMsortRAM 48000000000',
+                        f'--outSAMattrRGline {get_rg_star(wildcards)}
+                ]),
         prefix = lambda wildcards, output: os.path.dirname(output.bam),
         index = os.path.join(config['index_dir'], 'indices', 'star'),
         read_cmd =
@@ -236,7 +126,7 @@ rule star:
         '{params.read_cmd} '
         '--runThreadN {threads} '
         '--genomeDir {params.index} '
-        '--readFilesIn {input.r1} {input.r2} '
+        '--readFilesIn {params.input_str_fq1} {params.input_str_fq2} '
         '{params.extra} '
         '--outFileNamePrefix {params.prefix}/ &> {log}'
 
