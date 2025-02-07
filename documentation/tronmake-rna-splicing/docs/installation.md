@@ -1,9 +1,8 @@
 # Installation
 
 This sections describes the process to install the workflow on a linux machine.
-Please make sure the following dependencies are installed on your system. snakemake
-and python are installed by the conda environment shipped with the repository.
-Apptainer is only required when running the workflow with container support.
+Snakemake and python are installed by the conda environment shipped with the repository.
+Apptainer is required to run the workflow with container support.
 
 ## Download pipeline repository
 
@@ -19,10 +18,12 @@ conda env create -f environment.yaml --prefix conda_env/
 conda activate conda_env
 ```
 
+**Please make sure that the conda chanel priority is not set to strict. Channel priority is configured and set in `$HOME/.condarc`.**
+
 # System dependencies
 
- - python (>=3.10)
- - snakemake (==8.24.1)
+Please make sure the following dependencies are installed on your system.
+
  - conda (>=24.9)
  - apptainer (>=1.3.4)
 
