@@ -29,6 +29,7 @@ set-threads:
   requantify: 1
   add_quant_counts: 1
   find_cts_matching_wt: 8
+  insert_size: 1
 
 set-resources:
   salmon:
@@ -51,6 +52,9 @@ set-resources:
     runtime: "2h"
   samtools_index:
     mem_mb: 2000 + ((attempt - 1) * 500)
+    runtime: "1h"
+  insert_size:
+    mem_mb: 4000 + ((attempt - 1) * 2000)
     runtime: "1h"
   fraser:
     mem_mb: 16000 + ((attempt - 1) * 10000)
