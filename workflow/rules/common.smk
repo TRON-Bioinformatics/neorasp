@@ -27,6 +27,10 @@ def get_final_output():
         final_files.extend(
             collect("results/{sample}/metrics/{sample}.inner_distance.txt", sample = sample.sample_name)
         )
+        # Cram files
+        final_files.extend(
+            collect("results/{sample}/star/Aligned.sortedByCoord.out.cram", sample = sample.sample_name)
+        )
     return final_files
 
 def read_sample_sheet(file):
