@@ -323,7 +323,7 @@ rule bam2cram:
         bai = "results/{sample}/star/Aligned.sortedByCoord.out.bam.bai",
         genome = os.path.join(config['index_dir'], 'ref_genome.fa')
     output:
-        cram = "results/{sample}/star/Aligned.sortedByCoord.out.cram"
+        cram = "results/{sample}/star/Aligned.sortedByCoord.out.cram",
         crai = "results/{sample}/star/Aligned.sortedByCoord.out.cram.crai"
     container:
         'docker://quay.io/biocontainers/samtools:1.20--h50ea8bc_0'
@@ -332,6 +332,8 @@ rule bam2cram:
     log:
         'results/{sample}/log/samtools_cram.log'
     threads: 4
+    resources:
+        mem_mb: 8192
     shell:
         """
         exec 2> {log}
