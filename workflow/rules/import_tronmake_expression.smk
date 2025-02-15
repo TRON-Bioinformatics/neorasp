@@ -333,7 +333,7 @@ rule bam2cram:
         'results/{sample}/log/samtools_cram.log'
     threads: 4
     resources:
-        mem_mb: 8192
+        mem_mb = 8192
     shell:
         """
         exec 2> {log}
