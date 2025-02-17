@@ -191,7 +191,7 @@ rule star:
         r1 = "results/{sample}/fastp/{sample}_R1.fastq.gz",
         r2 = "results/{sample}/fastp/{sample}_R2.fastq.gz"
     output:
-        bam = "results/{sample}/star/Aligned.sortedByCoord.out.bam",
+        bam = temp("results/{sample}/star/Aligned.sortedByCoord.out.bam"),
         log = "results/{sample}/star/Log.out",
         sj = "results/{sample}/star/SJ.out.tab",
         chim_junc = "results/{sample}/star/Chimeric.out.junction",
@@ -303,6 +303,42 @@ rule samtools:
         """
         exec 2> {log}
         samtools index {input.bam}
+        """
+
+rule bam2cram:
+    """CRAM file
+
+    Create CRAM file of alignment
+
+    input:
+        bam (str): Path to coordinate sorted BAM file.
+        bai (str): Path to corresponding BAI index file.
+    output:
+        cram (str): Path to alignment in CRAM format.
+        crai (str): Path to corresponding CRAI index file
+
+    """
+    input:
+        bam = "results/{sample}/star/Aligned.sortedByCoord.out.bam",
+        bai = "results/{sample}/star/Aligned.sortedByCoord.out.bam.bai",
+        genome = os.path.join(config['index_dir'], 'ref_genome.fa')
+    output:
+        cram = "results/{sample}/star/Aligned.sortedByCoord.out.cram",
+        crai = "results/{sample}/star/Aligned.sortedByCoord.out.cram.crai"
+    container:
+        'docker://quay.io/biocontainers/samtools:1.20--h50ea8bc_0'
+    conda:
+        '../envs/samtools.yaml'
+    log:
+        'results/{sample}/log/samtools_cram.log'
+    threads: 4
+    resources:
+        mem_mb = 8192
+    shell:
+        """
+        exec 2> {log}
+        samtools view -@ {threads} -m 2G -T {input.genome} -C -o {output.cram} {input.bam}
+        samtools index {output.cram}
         """
 
 rule qualimap:
