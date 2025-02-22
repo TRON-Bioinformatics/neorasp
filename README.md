@@ -4,7 +4,7 @@
 
 [![Release](https://gitlab.rlp.net/tron/tronmake-rna-splicing/-/badges/release.svg)](https://gitlab.rlp.net/tron/tronmake-rna-splicing/-/releases)
 [![Snakemake](https://img.shields.io/badge/snakemake-8.24.1-brightgreen.svg?style=flat)](https://snakemake.readthedocs.io)
-[![pipeline status](https://gitlab.rlp.net/tron/tronmake-rna-splicing/badges/develop/pipeline.svg)](https://gitlab.rlp.net/tron/tronmake-rna-splicing/commits/main)
+[![pipeline status](https://gitlab.rlp.net/tron/tronmake-rna-splicing/badges/dev/pipeline.svg)](https://gitlab.rlp.net/tron/tronmake-rna-splicing/commits/main)
 
 <!-- badges: end -->
 
@@ -19,7 +19,7 @@ of candidate transcript variants. In our bioinformatics pipeline, [SnakeMake](ht
 
 - Input:
   - A table with paired-end FASTQ data for tumor samples.
-  - A reference genome lib.
+  - A reference genome library. See [TronMake Genome Lib Builder](https://gitlab.rlp.net/tron/tronmake-genome-lib-builder)
 
 - Process:
     1. Adapter and quality trimming ([`fastp`](https://github.com/OpenGene/fastp))
@@ -37,7 +37,7 @@ of candidate transcript variants. In our bioinformatics pipeline, [SnakeMake](ht
     
     5. Targeted re-quantification of splice junction candidates ([`easyquant`](https://github.com/TRON-Bioinformatics/easyquant))
 
-    6. Peptide annotation for NeoFox
+    6. Peptide annotation for [`NeoFox`](https://github.com/TRON-Bioinformatics/neofox)
 
 ## Dependencies
 
