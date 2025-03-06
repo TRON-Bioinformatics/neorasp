@@ -221,7 +221,7 @@ rule star:
                         '--outReadsUnmapped Fastx',
                         '--limitBAMsortRAM 48000000000']),
         prefix = lambda wildcards, output: os.path.dirname(output.bam),
-        index = os.path.join(config['index_dir'], 'indices', 'star'),
+        index = config['star']['ref'],
         read_cmd =
             lambda wildcards, input: determine_star_read_command(wildcards, input.r1)
     threads: 18
@@ -259,7 +259,7 @@ rule bedgraph_to_bigwig:
     input:
         bedGraph_forward = rules.star.output.forward_wig,
         bedGraph_reverse = rules.star.output.reverse_wig,
-        chromsizes = os.path.join(config['index_dir'], 'ref_genome.chrom.sizes')
+        chromsizes = config['reference']['chromsizes']
     output:
         bw_forward = "results/{sample}/star/Signal.Unique.str1.bw",
         bw_reverse = "results/{sample}/star/Signal.Unique.str2.bw"
@@ -321,7 +321,7 @@ rule bam2cram:
     input:
         bam = "results/{sample}/star/Aligned.sortedByCoord.out.bam",
         bai = "results/{sample}/star/Aligned.sortedByCoord.out.bam.bai",
-        genome = os.path.join(config['index_dir'], 'ref_genome.fa')
+        genome = config['reference']['genome']
     output:
         cram = "results/{sample}/star/Aligned.sortedByCoord.out.cram",
         crai = "results/{sample}/star/Aligned.sortedByCoord.out.cram.crai"
@@ -363,7 +363,7 @@ rule qualimap:
         bam = rules.star.output.bam,
         bai = rules.samtools.output.bai,
         # GTF containing transcript, gene, and exon data
-        gtf = os.path.join(config['index_dir'], 'ref_annot.gtf')
+        gtf = config['reference']['annotation']
     output:
         directory("results/{sample}/qualimap")
     log:
@@ -411,7 +411,7 @@ rule insert_size:
     input:
         aln = rules.star.output.bam,
         bai = rules.samtools.output.bai,
-        refgene = os.path.join(config['index_dir'], 'ref_annot.bed')
+        refgene = config['reference']['annotation_bed']
     output:
         reads_inner_distance = "results/{sample}/metrics/{sample}.inner_distance.txt",
         freq = "results/{sample}/metrics/{sample}.inner_distance_freq.txt",
@@ -458,7 +458,7 @@ rule salmon:
     """
     input:
         bam = rules.star.output.transcriptome_bam,
-        transcripts = os.path.join(config['index_dir'], 'ref_cdna.fa')
+        transcripts = config['reference']['cdna']
     params:
         libtype = 'A',
         extra = f'--seqBias --gcBias --geneMap {os.path.join(config['index_dir'], 'ref_annot.gtf')}',
