@@ -63,7 +63,7 @@ In the config file the following attributes are specified:
 ### Example config file
 
 ~~~yaml
-{% include "../../../config/config_test.yaml" %}
+{% include "../../../config/config.yaml" %}
 ~~~
 
 
