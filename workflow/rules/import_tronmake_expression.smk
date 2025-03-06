@@ -458,10 +458,11 @@ rule salmon:
     """
     input:
         bam = rules.star.output.transcriptome_bam,
-        transcripts = config['reference']['cdna']
+        transcripts = config['reference']['cdna'],
+        gtf = config['reference']['annotation']
     params:
         libtype = 'A',
-        extra = f'--seqBias --gcBias --geneMap {os.path.join(config['index_dir'], 'ref_annot.gtf')}',
+        extra = f'--seqBias --gcBias --geneMap {input.gtf}',
         outdir = lambda wildcards, output: os.path.dirname(output.quant)
     output:
         quant = 'results/{sample}/salmon_bam/quant.sf',
