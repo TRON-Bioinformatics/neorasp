@@ -1,15 +1,32 @@
 sra_mode: false
 sample_sheet: 'tests/pep/samples.tsv'
-index_dir: 'tests/resources/GRCh38v45_minigenome'
 interleaved_input: false
 bam_input: false
+
+
 fraser:
   min_read: 2
   mapq_filter: 255
 star:
   min_read: 2
+  ref: tests/resources/GRCh38v45_minigenome/indices/star
+
 requantify:
   interval_mode: true
   allow_mismatches: false
   bowtie_k_threshold: 200
   cts_size: 1000
+
+reference:
+  genome: 'tests/resources/GRCh38v45_minigenome/ref_genome.fa'
+  annotation: 'tests/resources/GRCh38v45_minigenome/ref_annot.gtf'
+  annotation_bed: 'tests/resources/GRCh38v45_minigenome/ref_annot.bed'
+  cdna: 'tests/resources/GRCh38v45_minigenome/ref_cdna.fa'
+  chromsizes: 'tests/resources/GRCh38v45_minigenome/ref_genome.chrom.sizes'
+  encode_mapability: 'tests/resources/GRCh38v45_minigenome/mappability/encode_blacklist.bed'
+  ucsc_mapability: 'tests/resources/GRCh38v45_minigenome/mappability/ucsc_unusal.bed'
+  ref_transcripts: 'tests/resources/GRCh38v45_minigenome/ref_transcripts.RDS'
+  ref_cds: 'tests/resources/GRCh38v45_minigenome/ref_cds.RDS'
+  tx2gene: 'tests/resources/GRCh38v45_minigenome/tx2gene.tsv'
+  gene2symbol: 'tests/resources/GRCh38v45_minigenome/hgnc2ensembl_id.tsv.gz'
+  2bit: 'tests/resources/GRCh38v45_minigenome/ref_genome.2bit'
