@@ -462,7 +462,7 @@ rule salmon:
         gtf = config['reference']['annotation']
     params:
         libtype = 'A',
-        extra = f'--seqBias --gcBias --geneMap {input.gtf}',
+        extra = lambda wildcards, input: f'--seqBias --gcBias --geneMap {input.gtf}',
         outdir = lambda wildcards, output: os.path.dirname(output.quant)
     output:
         quant = 'results/{sample}/salmon_bam/quant.sf',
