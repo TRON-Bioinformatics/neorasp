@@ -10,9 +10,9 @@ Example:
 
 @Author: Johannes Hausmann
 @Date: 2024-11-05
-@Copyright: Copyright 2024, TRON gGmbH, Mainz, Germany
+@Copyright: Copyright 2025, TRON gGmbH, Mainz, Germany
 @License: MIT
-@Version: 0.0.1
+@Version: 0.0.3
 @Status: Development
 
 """
@@ -30,6 +30,28 @@ __version__ = "0.0.3"
 __pipeline__ = pathlib.Path(__file__).parent / 'workflow' / 'Snakefile'
 
 epilog = "Copyright (c) 2024 TRON gGmbH (See LICENSE for licensing details)"
+
+def get_annotation_files_from_genome_lib(genome_lib):
+    """
+    Collect all files required to execute the workflow from Tron Genome library folder
+    """
+    wf_config = {}
+    genome_lib_path = pathlib.Path(genome_lib)
+    wf_config['star']['ref'] = genome_lib_path / 'indices' / 'star'
+    wf_config['reference']['genome'] = genome_lib_path / 'resources' / 'ref_genome.fasta'
+    wf_config['reference']['annotation'] = genome_lib_path / 'resources' / 'ref_annot.gtf'
+    wf_config['reference']['annotation_bed'] = genome_lib_path / 'resources' / 'ref_annot.bed'
+    wf_config['reference']['cdna'] = genome_lib_path / 'resources' / 'ref_transcripts.fasta'
+    wf_config['reference']['chromsizes'] = genome_lib_path / 'resources' / 'chromosome_sizes.txt'
+    wf_config['reference']['encode_mapability'] = genome_lib_path / 'resources' / 'mappability' / 'encode_exclusion.bed' 
+    wf_config['reference']['ucsc_mapability'] = genome_lib_path / 'resources' / 'mappability' / 'ucsc_problematic.bed'
+    wf_config['reference']['ref_transcripts'] = genome_lib_path / 'indices' / 'R' / 'ref_transcripts.Rds'
+    wf_config['reference']['ref_cds'] = genome_lib_path / 'indices' / 'R' / 'ref_cds.Rds'
+     wf_config['reference']['2bit'] = genome_lib_path / 'indices' / 'R' / 'ref_genome.2bit'
+    wf_config['reference']['tx2gene'] = genome_lib_path / 'resources' / 'ref_annot_transcript2gene.tsv'
+    wf_config['reference']['gene2symbol'] = genome_lib_path / 'resources' / 'ref_annot_gene2symbol.tsv'
+    wf_config['reference']['canonical_juns'] = genome_lib_path / 'resources' / 'ref_annot_splice_sites.tsv'
+    return wf_config        
 
 def execute_cmd(cmd, working_dir = "."):
     """This function runs a command into a subprocess."""
@@ -80,6 +102,8 @@ def splicing_pipeline(args):
                                "bowtie_k_threshold": 200,
                                "cts_size": 1000}
 
+    genome_lib_config = get_annotation_files_from_genome_lib(args.genome_lib)
+    wf_config = wf_config | genome_lib_config
     input_paths = find_apptainer_mounts(args)
     apptainer_bind_commands = generate_apptainer_mounts(input_paths)
 
