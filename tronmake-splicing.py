@@ -26,7 +26,7 @@ import subprocess
 from loguru import logger
 
 
-__version__ = "0.0.2"
+__version__ = "0.0.3"
 __pipeline__ = pathlib.Path(__file__).parent / 'workflow' / 'Snakefile'
 
 epilog = "Copyright (c) 2024 TRON gGmbH (See LICENSE for licensing details)"
@@ -38,6 +38,31 @@ def execute_cmd(cmd, working_dir = "."):
     if p.returncode != 0:
         logger.error(p.stderr)
     return p.returncode
+
+def find_apptainer_mounts(parse_args) -> set[str]:
+    """
+    SnakeMake does not support auto-mounting directories from the input sample sheet
+    and the genome library into the container. Therefore we do this here by finding
+    the parent directories and creating the appropriate apptainer 
+    """
+    genome_lib_path = {args.genome_lib, }
+    input_path_set = set()
+    with open(args.samples, "r") as file_handle:
+        line = file_handle.read()
+        line = line.strip.split("\t")
+        fq1, fq2 = line[1:]
+        input_path_set.add(os.path.dirname(fq1))
+        input_path_set.add(os.path.dirname(fq2))
+    return genome_lib_path + input_path_set
+
+def generate_apptainer_mounts(paths: set, mode: str = "ro") -> str:
+    """
+    Generate apptainer mount commands
+    """
+    apptainer_mounts = list
+    for this_path in paths:
+        apptainer_mounts.append(f'--bind {this_path}:{mode}')
+    return ' '.join(apptainer_mounts) 
 
 
 def splicing_pipeline(args):
@@ -52,7 +77,11 @@ def splicing_pipeline(args):
     wf_config["bam_input"] = False
     wf_config["requantify"] = {"interval_mode": True, 
                                "allow_mismatches": False,
-                               "bowtie_k_threshold": 200}
+                               "bowtie_k_threshold": 200,
+                               "cts_size": 1000}
+
+    input_paths = find_apptainer_mounts(args)
+    apptainer_bind_commands = generate_apptainer_mounts(input_paths)
 
     with tempfile.NamedTemporaryFile(mode="w", delete=False, dir=args.workdir) as temp_config:
         yaml.dump(wf_config, temp_config)
@@ -64,9 +93,11 @@ def splicing_pipeline(args):
                '--configfile', str(temp_config.name),
                '--use-conda',
                '--directory', str(args.workdir),
-               '--rerun-triggers', 'mtime']
+               '--rerun-triggers', 'mtime',
+               '--apptainer-args', f"'{apptainer_bind_commands}'"]
         if args.slurm:
             cmd.extend(['--executor', 'slurm'])
+        
         returncode = execute_cmd(cmd)
 
         if returncode != 0:
