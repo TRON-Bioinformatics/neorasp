@@ -256,8 +256,8 @@ rule translate_to_peptide:
     """
     input:
         sj = rules.add_quant_counts.output.requantified_sj,
-        cds = os.path.join(config['index_dir'], 'ref_cds.RDS'),
-        genome = os.path.join(config['index_dir'], 'ref_genome.2bit')
+        cds = config['reference']['ref_cds'],
+        genome = config['reference']['2bit']
     output:
         junctions = "results/{sample}/fetchdata/sj_final.tsv",
         neofox_annotation = "results/{sample}/fetchdata/sj_final_neofox_annotation.tsv"
