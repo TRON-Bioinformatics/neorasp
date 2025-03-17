@@ -4,7 +4,7 @@ channels:
   - conda-forge
   - nodefaults
 dependencies:
-  - snakemake-minimal=8.24.1
+  - snakemake-minimal=9.0.1
   - pip
   - pandas
   - pip:
