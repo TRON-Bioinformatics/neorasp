@@ -63,7 +63,7 @@ rule parse_junctions:
     input:
         star_sj = rules.star.output.sj,
         fraser_psi = rules.fraser.output.psi_table,
-        canonical_junctions = config['reference']['canonical_juns']
+        canonical_junctions = config['reference']['canonical_juncs']
     output:
         parsed_sj = "results/{sample}/fetchdata/parsing/parsed_sj_star_fraser.tsv",
         removed_junction = "results/{sample}/fetchdata/detected_sj_canonical.tsv"

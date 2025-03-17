@@ -50,7 +50,7 @@ def get_annotation_files_from_genome_lib(genome_lib):
      wf_config['reference']['2bit'] = genome_lib_path / 'indices' / 'R' / 'ref_genome.2bit'
     wf_config['reference']['tx2gene'] = genome_lib_path / 'resources' / 'ref_annot_transcript2gene.tsv'
     wf_config['reference']['gene2symbol'] = genome_lib_path / 'resources' / 'ref_annot_gene2symbol.tsv'
-    wf_config['reference']['canonical_juns'] = genome_lib_path / 'resources' / 'ref_annot_splice_sites.tsv'
+    wf_config['reference']['canonical_juncs'] = genome_lib_path / 'resources' / 'ref_annot_splice_sites.tsv'
     return wf_config        
 
 def execute_cmd(cmd, working_dir = "."):
