@@ -115,7 +115,7 @@ def splicing_pipeline(args):
                '--local-cores', str(args.jobs),
                '--jobs', str(args.jobs),
                '--configfile', str(temp_config.name),
-               '--use-conda',
+               '--sdm apptainer ',
                '--directory', str(args.workdir),
                '--rerun-triggers', 'mtime',
                '--apptainer-args', f"'{apptainer_bind_commands}'"]
