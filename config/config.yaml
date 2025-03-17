@@ -17,7 +17,7 @@ reference:
   tx2gene: 'tests/resources/GRCh38v45_minigenome/tx2gene.tsv'
   gene2symbol: 'tests/resources/GRCh38v45_minigenome/hgnc2ensembl_id.tsv.gz'
   2bit: 'tests/resources/GRCh38v45_minigenome/ref_genome.2bit'
-  canonical_juns: tests/resources/GRCh38v45_minigenome/canonical_junctions.tsv
+  canonical_juncs: tests/resources/GRCh38v45_minigenome/canonical_junctions.tsv
 
 # Tool configuration
 fraser:
