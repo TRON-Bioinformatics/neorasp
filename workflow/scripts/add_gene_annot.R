@@ -5,7 +5,10 @@ suppressMessages({
   library(magrittr)
   library(splice2neo)
   library(GenomicFeatures)
+  library(furrr)
 })
+options(future.fork.enable = TRUE)
+plan(multicore, workers = as.integer(snakemake@threads))
 
 transcripts <- base::readRDS(snakemake@input[['transcripts']])
 
@@ -29,8 +32,11 @@ df_without_tx <- df %>%
     filter(is.na(tx_id)) %>%
     dplyr::mutate(hgnc="", gene_id="")
 
+# Apply choose_tx in parallel to fix issue in splice2neo with large dataframes.
 df <- df %>%
-  splice2neo::choose_tx()
+  split(.$junc_id) %>% 
+  furrr::future_map(~splice2neo::choose_tx(.x))
+df <- dplyr::bind_rows(discard(df, ~nrow(.x) == 0))
 
 # Select likely transcripts and annotate with ENSEMBL gene id and HGNC symbol
 df <- df %>%
