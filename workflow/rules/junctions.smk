@@ -74,7 +74,7 @@ rule parse_junctions:
     resources:
         mem_mb = 8000
     container:
-        'docker://tronbioinformatics/splice2neo:0.6.12'
+        'docker://tronbioinformatics/splice2neo:0.6.13'
     conda:
         '../envs/R.yaml'
     script:
@@ -146,7 +146,7 @@ rule filter_mappability:
     resources:
         mem_mb = 8000
     container:
-        'docker://tronbioinformatics/splice2neo:0.6.12'
+        'docker://tronbioinformatics/splice2neo:0.6.13'
     conda:
         '../envs/R.yaml'
     log: "results/{sample}/log/mappability_filter.log"
@@ -185,7 +185,7 @@ rule add_gene_annotation:
     params:
         extra = "",
     container:
-        'docker://tronbioinformatics/splice2neo:0.6.12'
+        'docker://tronbioinformatics/splice2neo:0.6.13'
     conda:
         '../envs/R.yaml'
     log:  "results/{sample}/log/add_gene_transcript.log"
@@ -257,7 +257,7 @@ rule add_context_sequence:
         extra = "",
         cts_size = config['requantify'].get('cts_size', 1000)
     container:
-        'docker://tronbioinformatics/splice2neo:0.6.12'
+        'docker://tronbioinformatics/splice2neo:0.6.13'
     conda:
         '../envs/R.yaml'
     log:  "results/{sample}/log/add_cts.log"
@@ -296,7 +296,7 @@ rule add_transcript_expression:
     resources:
         mem_mb = 8000
     container:
-        'docker://tronbioinformatics/splice2neo:0.6.12'
+        'docker://tronbioinformatics/splice2neo:0.6.13'
     conda:
         '../envs/R.yaml'
     log:  "results/{sample}/log/add_expression_estimates.log"
