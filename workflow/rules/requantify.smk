@@ -21,7 +21,7 @@ rule prepare_requant:
     resources:
         mem_mb = 8000
     container:
-        'docker://tronbioinformatics/splice2neo:0.6.12'
+        'docker://tronbioinformatics/splice2neo:0.6.13'
     conda:
         '../envs/R.yaml'
     log:  "results/{sample}/log/prepare_requantification.log"
@@ -232,7 +232,7 @@ rule add_quant_counts:
     resources:
         mem_mb = 8000
     container:
-        'docker://tronbioinformatics/splice2neo:0.6.12'
+        'docker://tronbioinformatics/splice2neo:0.6.13'
     conda:
         '../envs/R.yaml'
     script:
@@ -266,7 +266,7 @@ rule translate_to_peptide:
     resources:
         mem_mb = 16000
     container:
-        'docker://tronbioinformatics/splice2neo:0.6.12'
+        'docker://tronbioinformatics/splice2neo:0.6.13'
     conda:
         '../envs/R.yaml'
     script:
