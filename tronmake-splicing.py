@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-"""TronMake RNA-splicing
+"""NeoRasp
 
 This script can be used to start the SnakeMake workflow
 
@@ -29,7 +29,7 @@ from loguru import logger
 __version__ = "0.0.3"
 __pipeline__ = pathlib.Path(__file__).parent / 'workflow' / 'Snakefile'
 
-epilog = "Copyright (c) 2024 TRON gGmbH (See LICENSE for licensing details)"
+epilog = "Copyright (c) 2025 TRON gGmbH (See LICENSE for licensing details)"
 
 def get_annotation_files_from_genome_lib(genome_lib):
     """
@@ -132,7 +132,7 @@ def splicing_pipeline(args):
 
 def tronmake_cli():
     parser = argparse.ArgumentParser(
-        description="TronMake RNA-splice pipeline v{}".format(__version__),
+        description="NeoRasp pipeline v{}".format(__version__),
         formatter_class=argparse.ArgumentDefaultsHelpFormatter,
         epilog=epilog,
     )
