@@ -1,4 +1,4 @@
-site_name: TronMake Cancer RNA-splicing
+site_name: NeoRasp
 site_author: Johannes Hausmann
 nav: 
   - Home: index.md
@@ -35,7 +35,7 @@ theme:
         icon: material/weather-night
         name: Switch to light mode 
 
-copyright: © TRON gGmbH, 2024. This work is licensed under MIT.
+copyright: © TRON gGmbH, 2025. This work is licensed under MIT.
 
 repo_url: https://gitlab.rlp.net/tron/tronmake-rna-splicing
 plugins:

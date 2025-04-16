@@ -1,4 +1,4 @@
-# TronMake Cancer RNA-splicing
+# (Neo)antigens from (R)n(a)-(sp)licing (NeoRasp)
 
 <!-- badges: start -->
 
@@ -11,7 +11,7 @@
 Full documentation: https://tron.pages.gitlab.rlp.net/tronmake-rna-splicing
 
 
-TronMake Cancer RNA-splicing is a workflow to identify non-canonical tumor-specific splice junction from RNA-seq.
+NeoRasp is an end-to-end workflow to identify non-canonical tumor-specific splice junction from RNA-seq.
 The workflow implements a sensitive alignment based splice junction detection and targeted re-quantification
 of candidate transcript variants. In our bioinformatics pipeline, [SnakeMake](https://snakemake.readthedocs.io/en/stable/) is employed as the primary workflow manager to orchestrate various steps. 
 
@@ -58,7 +58,7 @@ git clone https://gitlab.rlp.net/tron/tronmake-rna-splicing
 ### Create conda environment
 
 ```
-cd tronmake-rna-splicing
+cd NeoRasp
 conda env create -f environment.yaml --prefix conda_env/
 conda activate conda_env
 ```
@@ -66,7 +66,7 @@ conda activate conda_env
 
 ## Authors & Acknowledgements 
 
-The TronMake Cancer RNA splicing pipeline was originally developed by Johannes Hausmann at [TRON - Translational Oncology at the Medical Center of the Johannes Gutenberg University Mainz gGmbH (non-profit)](https://tron-mainz.de/).
+The NeoRasp pipeline was originally developed by Johannes Hausmann at [TRON - Translational Oncology at the Medical Center of the Johannes Gutenberg University Mainz gGmbH (non-profit)](https://tron-mainz.de/).
 
 Maintenance is now lead by Johannes Hausmann. 
 
