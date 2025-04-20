@@ -34,7 +34,8 @@ df_without_tx <- df %>%
 
 # Apply choose_tx in parallel to fix issue in splice2neo with large dataframes.
 df <- df %>%
-  split(.$junc_id) %>% 
+  dplyr::filter(!is.na(tx_id)) %>%
+  base::split(.$junc_id) %>% 
   furrr::future_map(~splice2neo::choose_tx(.x))
 df <- dplyr::bind_rows(discard(df, ~nrow(.x) == 0))
 
