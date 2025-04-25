@@ -1,6 +1,6 @@
 # Input
 
-TronMake Cancer RNA-splicing takes tumor RNA sequencing data as input. The input files are provided as tab separated value sheets (TSV) described in the following section. The pipeline supports multiple input modes / formats.
+NeoRasp takes tumor RNA sequencing data as input. The input files are provided as tab separated value sheets (TSV) described in the following section. The pipeline supports multiple input modes / formats.
 
 ## Sequencing data
 

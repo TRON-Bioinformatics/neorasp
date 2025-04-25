@@ -191,7 +191,7 @@ rule star:
         r1 = "results/{sample}/fastp/{sample}_R1.fastq.gz",
         r2 = "results/{sample}/fastp/{sample}_R2.fastq.gz"
     output:
-        bam = "results/{sample}/star/Aligned.sortedByCoord.out.bam",
+        bam = temp("results/{sample}/star/Aligned.sortedByCoord.out.bam"),
         log = "results/{sample}/star/Log.out",
         sj = "results/{sample}/star/SJ.out.tab",
         chim_junc = "results/{sample}/star/Chimeric.out.junction",
@@ -221,7 +221,7 @@ rule star:
                         '--outReadsUnmapped Fastx',
                         '--limitBAMsortRAM 48000000000']),
         prefix = lambda wildcards, output: os.path.dirname(output.bam),
-        index = os.path.join(config['index_dir'], 'indices', 'star'),
+        index = config['star']['ref'],
         read_cmd =
             lambda wildcards, input: determine_star_read_command(wildcards, input.r1)
     threads: 18
@@ -259,7 +259,7 @@ rule bedgraph_to_bigwig:
     input:
         bedGraph_forward = rules.star.output.forward_wig,
         bedGraph_reverse = rules.star.output.reverse_wig,
-        chromsizes = os.path.join(config['index_dir'], 'ref_genome.chrom.sizes')
+        chromsizes = config['reference']['chromsizes']
     output:
         bw_forward = "results/{sample}/star/Signal.Unique.str1.bw",
         bw_reverse = "results/{sample}/star/Signal.Unique.str2.bw"
@@ -305,6 +305,42 @@ rule samtools:
         samtools index {input.bam}
         """
 
+rule bam2cram:
+    """CRAM file
+
+    Create CRAM file of alignment
+
+    input:
+        bam (str): Path to coordinate sorted BAM file.
+        bai (str): Path to corresponding BAI index file.
+    output:
+        cram (str): Path to alignment in CRAM format.
+        crai (str): Path to corresponding CRAI index file
+
+    """
+    input:
+        bam = "results/{sample}/star/Aligned.sortedByCoord.out.bam",
+        bai = "results/{sample}/star/Aligned.sortedByCoord.out.bam.bai",
+        genome = config['reference']['genome']
+    output:
+        cram = "results/{sample}/star/Aligned.sortedByCoord.out.cram",
+        crai = "results/{sample}/star/Aligned.sortedByCoord.out.cram.crai"
+    container:
+        'docker://quay.io/biocontainers/samtools:1.20--h50ea8bc_0'
+    conda:
+        '../envs/samtools.yaml'
+    log:
+        'results/{sample}/log/samtools_cram.log'
+    threads: 4
+    resources:
+        mem_mb = 8192
+    shell:
+        """
+        exec 2> {log}
+        samtools view -@ {threads} -m 2G -T {input.genome} -C -o {output.cram} {input.bam}
+        samtools index {output.cram}
+        """
+
 rule qualimap:
     """QualiMap
     
@@ -327,7 +363,7 @@ rule qualimap:
         bam = rules.star.output.bam,
         bai = rules.samtools.output.bai,
         # GTF containing transcript, gene, and exon data
-        gtf = os.path.join(config['index_dir'], 'ref_annot.gtf')
+        gtf = config['reference']['annotation']
     output:
         directory("results/{sample}/qualimap")
     log:
@@ -375,7 +411,7 @@ rule insert_size:
     input:
         aln = rules.star.output.bam,
         bai = rules.samtools.output.bai,
-        refgene = os.path.join(config['index_dir'], 'ref_annot.bed')
+        refgene = config['reference']['annotation_bed']
     output:
         reads_inner_distance = "results/{sample}/metrics/{sample}.inner_distance.txt",
         freq = "results/{sample}/metrics/{sample}.inner_distance_freq.txt",
@@ -422,10 +458,11 @@ rule salmon:
     """
     input:
         bam = rules.star.output.transcriptome_bam,
-        transcripts = os.path.join(config['index_dir'], 'ref_cdna.fa')
+        transcripts = config['reference']['cdna'],
+        gtf = config['reference']['annotation']
     params:
         libtype = 'A',
-        extra = f'--seqBias --gcBias --geneMap {os.path.join(config['index_dir'], 'ref_annot.gtf')}',
+        extra = lambda wildcards, input: f'--seqBias --gcBias --geneMap {input.gtf}',
         outdir = lambda wildcards, output: os.path.dirname(output.quant)
     output:
         quant = 'results/{sample}/salmon_bam/quant.sf',

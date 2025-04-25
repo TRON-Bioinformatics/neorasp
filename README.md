@@ -1,17 +1,20 @@
-# TronMake Cancer RNA-splicing
+# NeoRasp
 
 <!-- badges: start -->
 
 [![Release](https://gitlab.rlp.net/tron/tronmake-rna-splicing/-/badges/release.svg)](https://gitlab.rlp.net/tron/tronmake-rna-splicing/-/releases)
-[![Snakemake](https://img.shields.io/badge/snakemake-8.24.1-brightgreen.svg?style=flat)](https://snakemake.readthedocs.io)
-[![pipeline status](https://gitlab.rlp.net/tron/tronmake-rna-splicing/badges/develop/pipeline.svg)](https://gitlab.rlp.net/tron/tronmake-rna-splicing/commits/main)
+[![Snakemake](https://img.shields.io/badge/snakemake-9.1.3-brightgreen.svg?style=flat)](https://snakemake.readthedocs.io)
+[![pipeline status](https://gitlab.rlp.net/tron/tronmake-rna-splicing/badges/dev/pipeline.svg)](https://gitlab.rlp.net/tron/tronmake-rna-splicing/commits/main)
 
 <!-- badges: end -->
+
+**(Neo)antigens from (R)n(a)-(sp)licing**
+
 
 Full documentation: https://tron.pages.gitlab.rlp.net/tronmake-rna-splicing
 
 
-TronMake Cancer RNA-splicing is a workflow to identify non-canonical tumor-specific splice junction from RNA-seq.
+NeoRasp is an end-to-end workflow to identify non-canonical tumor-specific splice junction from RNA-seq.
 The workflow implements a sensitive alignment based splice junction detection and targeted re-quantification
 of candidate transcript variants. In our bioinformatics pipeline, [SnakeMake](https://snakemake.readthedocs.io/en/stable/) is employed as the primary workflow manager to orchestrate various steps. 
 
@@ -19,7 +22,7 @@ of candidate transcript variants. In our bioinformatics pipeline, [SnakeMake](ht
 
 - Input:
   - A table with paired-end FASTQ data for tumor samples.
-  - A reference genome lib.
+  - A reference genome library. See [TronMake Genome Lib Builder](https://gitlab.rlp.net/tron/tronmake-genome-lib-builder)
 
 - Process:
     1. Adapter and quality trimming ([`fastp`](https://github.com/OpenGene/fastp))
@@ -37,7 +40,7 @@ of candidate transcript variants. In our bioinformatics pipeline, [SnakeMake](ht
     
     5. Targeted re-quantification of splice junction candidates ([`easyquant`](https://github.com/TRON-Bioinformatics/easyquant))
 
-    6. Peptide annotation for NeoFox
+    6. Peptide annotation for [`NeoFox`](https://github.com/TRON-Bioinformatics/neofox)
 
 ## Dependencies
 
@@ -58,7 +61,7 @@ git clone https://gitlab.rlp.net/tron/tronmake-rna-splicing
 ### Create conda environment
 
 ```
-cd tronmake-rna-splicing
+cd NeoRasp
 conda env create -f environment.yaml --prefix conda_env/
 conda activate conda_env
 ```
@@ -66,7 +69,7 @@ conda activate conda_env
 
 ## Authors & Acknowledgements 
 
-The TronMake Cancer RNA splicing pipeline was originally developed by Johannes Hausmann at [TRON - Translational Oncology at the Medical Center of the Johannes Gutenberg University Mainz gGmbH (non-profit)](https://tron-mainz.de/).
+The NeoRasp pipeline was originally developed by Johannes Hausmann at [TRON - Translational Oncology at the Medical Center of the Johannes Gutenberg University Mainz gGmbH (non-profit)](https://tron-mainz.de/).
 
 Maintenance is now lead by Johannes Hausmann. 
 

@@ -23,9 +23,12 @@ def get_final_output():
         final_files.extend(
             collect("results/{sample}/fetchdata/sj_final_neofox_annotation.tsv", sample = sample.sample_name)
         )
-        #"results/{sample}/metrics/{sample}.inner_distance.txt",
         final_files.extend(
             collect("results/{sample}/metrics/{sample}.inner_distance.txt", sample = sample.sample_name)
+        )
+        # Cram files
+        final_files.extend(
+            collect("results/{sample}/star/Aligned.sortedByCoord.out.cram", sample = sample.sample_name)
         )
     return final_files
 

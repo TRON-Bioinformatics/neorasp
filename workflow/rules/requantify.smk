@@ -21,7 +21,7 @@ rule prepare_requant:
     resources:
         mem_mb = 8000
     container:
-        'docker://tronbioinformatics/splice2neo:0.6.12'
+        'docker://tronbioinformatics/splice2neo:0.6.13'
     conda:
         '../envs/R.yaml'
     log:  "results/{sample}/log/prepare_requantification.log"
@@ -232,7 +232,7 @@ rule add_quant_counts:
     resources:
         mem_mb = 8000
     container:
-        'docker://tronbioinformatics/splice2neo:0.6.12'
+        'docker://tronbioinformatics/splice2neo:0.6.13'
     conda:
         '../envs/R.yaml'
     script:
@@ -256,8 +256,8 @@ rule translate_to_peptide:
     """
     input:
         sj = rules.add_quant_counts.output.requantified_sj,
-        cds = os.path.join(config['index_dir'], 'ref_cds.RDS'),
-        genome = os.path.join(config['index_dir'], 'ref_genome.2bit')
+        cds = config['reference']['ref_cds'],
+        genome = config['reference']['2bit']
     output:
         junctions = "results/{sample}/fetchdata/sj_final.tsv",
         neofox_annotation = "results/{sample}/fetchdata/sj_final_neofox_annotation.tsv"
@@ -266,7 +266,7 @@ rule translate_to_peptide:
     resources:
         mem_mb = 16000
     container:
-        'docker://tronbioinformatics/splice2neo:0.6.12'
+        'docker://tronbioinformatics/splice2neo:0.6.13'
     conda:
         '../envs/R.yaml'
     script:

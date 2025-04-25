@@ -13,7 +13,7 @@ git clone https://gitlab.rlp.net/tron/tronmake-rna-splicing
 ## Create conda environment
 
 ```
-cd tronmake-rna-splicing
+cd NeoRasp
 conda env create -f environment.yaml --prefix conda_env/
 conda activate conda_env
 ```
