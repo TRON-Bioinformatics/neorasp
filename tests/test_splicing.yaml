@@ -6,3 +6,7 @@
     snakemake -p --sdm apptainer -j 2 --configfile tests/splicing.yaml \
       --apptainer-args '--bind /tmp --bind /builds/tron/tronmake-rna-splicing --bind /root/.cache/snakemake/'
     "
+  - path: "results/Hugo_Pt10/star/Aligned.sortedByCoord.out.cram"
+  - path: "results/Hugo_Pt10/fetchdata/sj_final.tsv"
+  - path: "results/Hugo_Pt10/fetchdata/sj_final_neofox_annotation.tsv"
+  - path: "results/Hugo_Pt10/metrics/{sample}.inner_distance.txt"

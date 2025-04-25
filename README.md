@@ -1,4 +1,4 @@
-# (Neo)antigens from (R)n(a)-(sp)licing (NeoRasp)
+# NeoRasp
 
 <!-- badges: start -->
 
@@ -7,6 +7,9 @@
 [![pipeline status](https://gitlab.rlp.net/tron/tronmake-rna-splicing/badges/dev/pipeline.svg)](https://gitlab.rlp.net/tron/tronmake-rna-splicing/commits/main)
 
 <!-- badges: end -->
+
+**(Neo)antigens from (R)n(a)-(sp)licing**
+
 
 Full documentation: https://tron.pages.gitlab.rlp.net/tronmake-rna-splicing
 
