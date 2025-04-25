@@ -1,4 +1,4 @@
-# NeoRasp
+# NeoRasp 🍓🐍
 
 <!-- badges: start -->
 
