@@ -63,7 +63,7 @@ rule parse_junctions:
     input:
         star_sj = rules.star.output.sj,
         fraser_psi = rules.fraser.output.psi_table,
-        canonical_junctions = os.path.join(config['index_dir'], 'canonical_junctions.tsv')
+        canonical_junctions = config['reference']['canonical_juncs']
     output:
         parsed_sj = "results/{sample}/fetchdata/parsing/parsed_sj_star_fraser.tsv",
         removed_junction = "results/{sample}/fetchdata/detected_sj_canonical.tsv"
@@ -74,7 +74,7 @@ rule parse_junctions:
     resources:
         mem_mb = 8000
     container:
-        'docker://tronbioinformatics/splice2neo:0.6.12'
+        'docker://tronbioinformatics/splice2neo:0.6.13'
     conda:
         '../envs/R.yaml'
     script:
@@ -137,8 +137,8 @@ rule filter_mappability:
     """
     input:
         parsed_sj = rules.parse_junctions.output.parsed_sj,
-        encode_regions = os.path.join(config['index_dir'], 'mappability', 'encode_blacklist.bed'),
-        ucsc_regions = os.path.join(config['index_dir'], 'mappability', 'ucsc_unusal.bed')
+        encode_regions = config['reference']['encode_mapability'],
+        ucsc_regions = config['reference']['ucsc_mapability']
     output:
         parsed_sj = "results/{sample}/fetchdata/mappability/sj_passing_mappability.tsv",
         failed_sj = "results/{sample}/fetchdata/mappability/sj_problematic_mappability.tsv"
@@ -146,7 +146,7 @@ rule filter_mappability:
     resources:
         mem_mb = 8000
     container:
-        'docker://tronbioinformatics/splice2neo:0.6.12'
+        'docker://tronbioinformatics/splice2neo:0.6.13'
     conda:
         '../envs/R.yaml'
     log: "results/{sample}/log/mappability_filter.log"
@@ -173,9 +173,9 @@ rule add_gene_annotation:
     """
     input:
         parsed_sj = rules.filter_mappability.output.parsed_sj,
-        transcripts = os.path.join(config['index_dir'], 'ref_transcripts.RDS'),
-        tx2gene = os.path.join(config['index_dir'], 'tx2gene.tsv'),
-        gene2hgnc = os.path.join(config['index_dir'], 'hgnc2ensembl_id.tsv.gz')
+        transcripts = config['reference']['ref_transcripts'],
+        tx2gene = config['reference']['tx2gene'],
+        gene2hgnc = config['reference']['gene2symbol']
     output:
         annotated_sj = "results/{sample}/fetchdata/splice2neo/gene_annot/sj_gene_transcript_overlap.tsv",
         annotated_sj_problematic = "results/{sample}/fetchdata/splice2neo/gene_annot/sj_no_transcript_overlap.tsv"
@@ -185,7 +185,7 @@ rule add_gene_annotation:
     params:
         extra = "",
     container:
-        'docker://tronbioinformatics/splice2neo:0.6.12'
+        'docker://tronbioinformatics/splice2neo:0.6.13'
     conda:
         '../envs/R.yaml'
     log:  "results/{sample}/log/add_gene_transcript.log"
@@ -246,8 +246,8 @@ rule add_context_sequence:
     """
     input:
         parsed_sj = rules.filter_gene_hgnc.output.sj_passed_gene,
-        transcripts = os.path.join(config['index_dir'], 'ref_transcripts.RDS'),
-        genome = os.path.join(config['index_dir'], 'ref_genome.2bit')
+        transcripts = config['reference']['ref_transcripts'],
+        genome = config['reference']['2bit']
     output:
         annotated_sj = "results/{sample}/fetchdata/splice2neo/cts/sj_annotated_cts.tsv",
     threads: 1
@@ -257,7 +257,7 @@ rule add_context_sequence:
         extra = "",
         cts_size = config['requantify'].get('cts_size', 1000)
     container:
-        'docker://tronbioinformatics/splice2neo:0.6.12'
+        'docker://tronbioinformatics/splice2neo:0.6.13'
     conda:
         '../envs/R.yaml'
     log:  "results/{sample}/log/add_cts.log"
@@ -296,7 +296,7 @@ rule add_transcript_expression:
     resources:
         mem_mb = 8000
     container:
-        'docker://tronbioinformatics/splice2neo:0.6.12'
+        'docker://tronbioinformatics/splice2neo:0.6.13'
     conda:
         '../envs/R.yaml'
     log:  "results/{sample}/log/add_expression_estimates.log"

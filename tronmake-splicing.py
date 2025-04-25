@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-"""TronMake RNA-splicing
+"""NeoRasp
 
 This script can be used to start the SnakeMake workflow
 
@@ -10,9 +10,9 @@ Example:
 
 @Author: Johannes Hausmann
 @Date: 2024-11-05
-@Copyright: Copyright 2024, TRON gGmbH, Mainz, Germany
+@Copyright: Copyright 2025, TRON gGmbH, Mainz, Germany
 @License: MIT
-@Version: 0.0.1
+@Version: 0.0.3
 @Status: Development
 
 """
@@ -26,10 +26,32 @@ import subprocess
 from loguru import logger
 
 
-__version__ = "0.0.2"
+__version__ = "0.0.3"
 __pipeline__ = pathlib.Path(__file__).parent / 'workflow' / 'Snakefile'
 
-epilog = "Copyright (c) 2024 TRON gGmbH (See LICENSE for licensing details)"
+epilog = "Copyright (c) 2025 TRON gGmbH (See LICENSE for licensing details)"
+
+def get_annotation_files_from_genome_lib(genome_lib):
+    """
+    Collect all files required to execute the workflow from Tron Genome library folder
+    """
+    wf_config = {}
+    genome_lib_path = pathlib.Path(genome_lib)
+    wf_config['star']['ref'] = genome_lib_path / 'indices' / 'star'
+    wf_config['reference']['genome'] = genome_lib_path / 'resources' / 'ref_genome.fasta'
+    wf_config['reference']['annotation'] = genome_lib_path / 'resources' / 'ref_annot.gtf'
+    wf_config['reference']['annotation_bed'] = genome_lib_path / 'resources' / 'ref_annot.bed'
+    wf_config['reference']['cdna'] = genome_lib_path / 'resources' / 'ref_transcripts.fasta'
+    wf_config['reference']['chromsizes'] = genome_lib_path / 'resources' / 'chromosome_sizes.txt'
+    wf_config['reference']['encode_mapability'] = genome_lib_path / 'resources' / 'mappability' / 'encode_exclusion.bed' 
+    wf_config['reference']['ucsc_mapability'] = genome_lib_path / 'resources' / 'mappability' / 'ucsc_problematic.bed'
+    wf_config['reference']['ref_transcripts'] = genome_lib_path / 'indices' / 'R' / 'ref_transcripts.Rds'
+    wf_config['reference']['ref_cds'] = genome_lib_path / 'indices' / 'R' / 'ref_cds.Rds'
+     wf_config['reference']['2bit'] = genome_lib_path / 'indices' / 'R' / 'ref_genome.2bit'
+    wf_config['reference']['tx2gene'] = genome_lib_path / 'resources' / 'ref_annot_transcript2gene.tsv'
+    wf_config['reference']['gene2symbol'] = genome_lib_path / 'resources' / 'ref_annot_gene2symbol.tsv'
+    wf_config['reference']['canonical_juncs'] = genome_lib_path / 'resources' / 'ref_annot_splice_sites.tsv'
+    return wf_config        
 
 def execute_cmd(cmd, working_dir = "."):
     """This function runs a command into a subprocess."""
@@ -38,6 +60,31 @@ def execute_cmd(cmd, working_dir = "."):
     if p.returncode != 0:
         logger.error(p.stderr)
     return p.returncode
+
+def find_apptainer_mounts(parse_args) -> set[str]:
+    """
+    SnakeMake does not support auto-mounting directories from the input sample sheet
+    and the genome library into the container. Therefore we do this here by finding
+    the parent directories and creating the appropriate apptainer 
+    """
+    genome_lib_path = {args.genome_lib, }
+    input_path_set = set()
+    with open(args.samples, "r") as file_handle:
+        line = file_handle.read()
+        line = line.strip.split("\t")
+        fq1, fq2 = line[1:]
+        input_path_set.add(os.path.dirname(fq1))
+        input_path_set.add(os.path.dirname(fq2))
+    return genome_lib_path + input_path_set
+
+def generate_apptainer_mounts(paths: set, mode: str = "ro") -> str:
+    """
+    Generate apptainer mount commands
+    """
+    apptainer_mounts = list
+    for this_path in paths:
+        apptainer_mounts.append(f'--bind {this_path}:{mode}')
+    return ' '.join(apptainer_mounts) 
 
 
 def splicing_pipeline(args):
@@ -52,7 +99,13 @@ def splicing_pipeline(args):
     wf_config["bam_input"] = False
     wf_config["requantify"] = {"interval_mode": True, 
                                "allow_mismatches": False,
-                               "bowtie_k_threshold": 200}
+                               "bowtie_k_threshold": 200,
+                               "cts_size": 1000}
+
+    genome_lib_config = get_annotation_files_from_genome_lib(args.genome_lib)
+    wf_config = wf_config | genome_lib_config
+    input_paths = find_apptainer_mounts(args)
+    apptainer_bind_commands = generate_apptainer_mounts(input_paths)
 
     with tempfile.NamedTemporaryFile(mode="w", delete=False, dir=args.workdir) as temp_config:
         yaml.dump(wf_config, temp_config)
@@ -62,11 +115,13 @@ def splicing_pipeline(args):
                '--local-cores', str(args.jobs),
                '--jobs', str(args.jobs),
                '--configfile', str(temp_config.name),
-               '--use-conda',
+               '--sdm apptainer ',
                '--directory', str(args.workdir),
-               '--rerun-triggers', 'mtime']
+               '--rerun-triggers', 'mtime',
+               '--apptainer-args', f"'{apptainer_bind_commands}'"]
         if args.slurm:
             cmd.extend(['--executor', 'slurm'])
+        
         returncode = execute_cmd(cmd)
 
         if returncode != 0:
@@ -77,7 +132,7 @@ def splicing_pipeline(args):
 
 def tronmake_cli():
     parser = argparse.ArgumentParser(
-        description="TronMake RNA-splice pipeline v{}".format(__version__),
+        description="NeoRasp pipeline v{}".format(__version__),
         formatter_class=argparse.ArgumentDefaultsHelpFormatter,
         epilog=epilog,
     )

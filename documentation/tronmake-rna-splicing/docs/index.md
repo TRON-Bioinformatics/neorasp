@@ -1,4 +1,4 @@
-# TronMake Cancer RNA-splicing
+# NeoRasp
 
 <!-- badges: start -->
 
@@ -8,7 +8,7 @@
 
 <!-- badges: end -->
 
-TronMake Cancer RNA-splicing is a workflow to identify non-canonical tumor-specific splice junction from RNA-seq.
+NeoRasp in an end-to-end workflow to identify non-canonical tumor-specific splice junction from RNA-seq.
 The workflow implements sensitive alignment-based detection of splice junctions and targeted re-quantification of candidate context sequences. 
 In our bioinformatics pipeline, [SnakeMake](https://snakemake.readthedocs.io/en/stable/) is employed as the primary workflow manager to orchestrate various steps. 
 
@@ -23,7 +23,7 @@ The main steps include:
   * Peptide annotation for neoantigen feature annotation ([`NeoFox`](https://github.com/TRON-Bioinformatics/neofox))
 
 
-![TronMake Cancer RNA-splicing DAG](assets/pipeline_rulegraph.svg){: style="height:700px;width:700px"}
+![NeoRasp DAG](assets/pipeline_rulegraph.svg){: style="height:700px;width:700px"}
 
 		
 
