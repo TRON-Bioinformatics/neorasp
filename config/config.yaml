@@ -34,6 +34,10 @@ requantify:
   bowtie_k_threshold: 200
   cts_size: 1000
 
+reliable_calls:
+  min_junction_usage: 0.01
+  min_junction_cpm: 0.1
+
 # Chromosome filtering
 chrom-filter:
   - chr1

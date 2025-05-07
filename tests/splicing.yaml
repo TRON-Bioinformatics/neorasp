@@ -17,6 +17,10 @@ requantify:
   bowtie_k_threshold: 200
   cts_size: 1000
 
+reliable_calls:
+  min_junction_usage: 0.01
+  min_junction_cpm: 0.1
+
 reference:
   genome: 'tests/resources/GRCh38v45_minigenome/ref_genome.fa'
   annotation: 'tests/resources/GRCh38v45_minigenome/ref_annot.gtf'
