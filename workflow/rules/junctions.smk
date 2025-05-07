@@ -316,7 +316,7 @@ rule filter_reliable_calls:
     input:
         annotated_sj = rules.add_transcript_expression.output.sj_expression,
     output:
-        sj_expression = temp("results/{sample}/fetchdata/splice2neo/sj_annotated_expression_reliable.tsv")
+        sj_expression = temp("results/{sample}/fetchdata/splice2neo/sj_annotated_expression_reliable.tsv"),
         sj_low_expression = "results/{sample}/fetchdata/splice2neo/sj_fail_reliable_call.tsv"
     params:
         exe = workflow.source_path('../scripts/filter_reliable_calls.R'),
