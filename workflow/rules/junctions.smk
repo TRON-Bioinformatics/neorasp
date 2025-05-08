@@ -320,7 +320,8 @@ rule filter_reliable_calls:
         sj_low_expression = "results/{sample}/fetchdata/splice2neo/sj_fail_reliable_call.tsv"
     params:
         exe = workflow.source_path('../scripts/filter_reliable_calls.R'),
-        min_junction_usage = config['reliable_calls'].get('min_junction_usage', 0.01)
+        min_junction_usage = config['reliable_calls'].get('min_junction_usage', 0.01),
+        min_junction_cpm = config['reliable_calls'].get('min_junction_cpm', 0.1)
     threads: 1
     resources:
         mem_mb = 8000
