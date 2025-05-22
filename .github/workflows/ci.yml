@@ -56,7 +56,7 @@ jobs:
           submodules: recursive
 
       - name: Create Conda Environment
-        run: mamba env create -n tronmake -f environment.yaml
+        run: conda env create -n tronmake -f environment.yaml
 
       - name: Trust Git directory
         run: git config --global --add safe.directory "$(pwd)"
