@@ -1,0 +1,69 @@
+name: CI Pipeline
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  syntaxcheck:
+    name: Syntax Check
+    runs-on: ubuntu-latest
+    container:
+      image: condaforge/miniforge3:24.9.2-0
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Install libmagic1
+        run: apt update && apt install -y libmagic1
+
+      - name: Setup Conda Environment
+        run: |
+          mamba env create -n tronmake -f environment.yaml
+          source /opt/conda/bin/activate tronmake
+          pytest --tag dryrun --git-aware --symlink --stderr-bytes 100000 --kwd --basetemp /tmp/test
+
+  linting:
+    name: Linting
+    runs-on: ubuntu-latest
+    container:
+      image: condaforge/miniforge3:24.9.2-0
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Install libmagic1
+        run: apt update && apt install -y libmagic1
+
+      - name: Run Snakemake Lint
+        run: |
+          mamba env create -n tronmake -f environment.yaml
+          source /opt/conda/bin/activate tronmake
+          snakemake --lint
+
+  integration:
+    name: Integration Tests
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    container:
+      image: condaforge/miniforge3:24.9.2-0
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Install Apptainer and libmagic1
+        run: |
+          DEBIAN_FRONTEND=noninteractive TZ=Etc/UTC apt update && \
+          apt install -y libmagic1 software-properties-common && \
+          add-apt-repository -y ppa:apptainer/ppa && \
+          apt update && apt install -y apptainer
+
+      - name: Setup and Run Integration Tests
+        run: |
+          mamba env create -n tronmake -f environment.yaml
+          source /opt/conda/bin/activate tronmake
+          pytest --tag integrationtest --git-aware --symlink --stderr-bytes 100000 --kwd --basetemp /tmp/test
