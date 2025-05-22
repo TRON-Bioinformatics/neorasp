@@ -49,21 +49,17 @@ jobs:
     if: github.event_name == 'pull_request'
     runs-on: ubuntu-latest
     container:
-      image: condaforge/miniforge3:24.9.2-0
+      image: snakemake/snakemake:v9.5.0
     steps:
       - uses: actions/checkout@v4
         with:
           submodules: recursive
 
-      - name: Install Apptainer and libmagic1
-        run: |
-          DEBIAN_FRONTEND=noninteractive TZ=Etc/UTC apt update && \
-          DEBIAN_FRONTEND=noninteractive TZ=Etc/UTC apt install -y libmagic1 software-properties-common && \
-          add-apt-repository -y ppa:apptainer/ppa && \
-          DEBIAN_FRONTEND=noninteractive TZ=Etc/UTC apt update && DEBIAN_FRONTEND=noninteractive TZ=Etc/UTC apt install -y apptainer
+      - name: Create Conda Environment
+        run: mamba env create -n tronmake -f environment.yaml
 
-      - name: Setup and Run Integration Tests
-        run: |
-          mamba env create -n tronmake -f environment.yaml
-          git config --global --add safe.directory "$(pwd)"
-          conda run -n tronmake pytest --tag integrationtest --git-aware --symlink --stderr-bytes 100000 --kwd --basetemp /tmp/test
+      - name: Trust Git directory
+        run: git config --global --add safe.directory "$(pwd)"
+
+      - name: Run Integration Tests
+        run: conda run -n tronmake pytest --tag integrationtest --git-aware --symlink --stderr-bytes 100000 --kwd --basetemp /tmp/test
