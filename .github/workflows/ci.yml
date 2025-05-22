@@ -51,21 +51,15 @@ jobs:
       - uses: actions/checkout@v4
         with:
           submodules: recursive
+      - uses: eWaterCycle/setup-apptainer@v2
+        with:
+          apptainer-version: 1.4.1
 
       - name: Create Conda Environment
         run: conda env create -n tronmake -f environment.yaml
 
       - name: Trust Git directory
         run: git config --global --add safe.directory "$(pwd)"
-      
-      - name: Install apptainer dependencies
-        run: |
-          DEBIAN_FRONTEND=noninteractive TZ=Etc/UTC apt-get update \
-          && DEBIAN_FRONTEND=noninteractive TZ=Etc/UTC apt-get install -y --no-install-recommends zip ca-certificates curl wget gnupg2 squashfs-tools git
-      
-      - name: Install apptainer
-        run: |
-          conda create -q -y -c conda-forge -n apptainer apptainer
 
       - name: Disable apparmor namespace restrictions for apptainer (os='Linux')
         if: runner.os == 'Linux'
@@ -76,5 +70,4 @@ jobs:
 
       - name: Run Integration Tests
         run: |
-          export PATH=/opt/conda/envs/apptainer/bin:${PATH}
           conda run -n tronmake pytest --tag integrationtest --git-aware --symlink --stderr-bytes 100000 --kwd --basetemp /tmp/test
