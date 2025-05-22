@@ -61,7 +61,7 @@ jobs:
       - name: Install apptainer dependencies
         run: |
           DEBIAN_FRONTEND=noninteractive TZ=Etc/UTC apt-get update \
-          && DEBIAN_FRONTEND=noninteractive TZ=Etc/UTC apt-get install -y --no-install-recommends zip2 ca-certificates curl wget gnupg2 squashfs-tools git
+          && DEBIAN_FRONTEND=noninteractive TZ=Etc/UTC apt-get install -y --no-install-recommends zip ca-certificates curl wget gnupg2 squashfs-tools git
       
       - name: Install apptainer
         run: |
