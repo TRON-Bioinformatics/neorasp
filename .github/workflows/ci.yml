@@ -41,7 +41,7 @@ jobs:
       - name: Run Snakemake Lint
         run: |
           mamba env create -n tronmake -f environment.yaml
-          source /opt/conda/bin/activate tronmake
+          . /opt/conda/bin/activate tronmake
           snakemake --lint
 
   integration:
@@ -65,5 +65,5 @@ jobs:
       - name: Setup and Run Integration Tests
         run: |
           mamba env create -n tronmake -f environment.yaml
-          source /opt/conda/bin/activate tronmake
+          . /opt/conda/bin/activate tronmake
           pytest --tag integrationtest --git-aware --symlink --stderr-bytes 100000 --kwd --basetemp /tmp/test
