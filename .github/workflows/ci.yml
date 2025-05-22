@@ -56,9 +56,9 @@ jobs:
       - name: Install Apptainer and libmagic1
         run: |
           DEBIAN_FRONTEND=noninteractive TZ=Etc/UTC apt update && \
-          apt install -y libmagic1 software-properties-common && \
+          DEBIAN_FRONTEND=noninteractive TZ=Etc/UTC apt install -y libmagic1 software-properties-common && \
           add-apt-repository -y ppa:apptainer/ppa && \
-          apt update && apt install -y apptainer
+          DEBIAN_FRONTEND=noninteractive TZ=Etc/UTC apt update && DEBIAN_FRONTEND=noninteractive TZ=Etc/UTC apt install -y apptainer
 
       - name: Setup and Run Integration Tests
         run: |
