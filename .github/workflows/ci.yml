@@ -63,7 +63,7 @@ jobs:
           DEBIAN_FRONTEND=noninteractive TZ=Etc/UTC apt-get update \
           && DEBIAN_FRONTEND=noninteractive TZ=Etc/UTC apt-get install -y --no-install-recommends zip2 ca-certificates curl wget gnupg2 squashfs-tools git
       
-      - name: Install apptainer:
+      - name: Install apptainer
         run: |
           conda create -q -y -c conda-forge -n apptainer apptainer
           export PATH=/opt/conda/envs/apptainer/bin:${PATH}
