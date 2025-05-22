@@ -16,9 +16,6 @@ jobs:
         with:
           submodules: recursive
 
-      - name: Install libmagic1
-        run: apt update && apt install -y libmagic1
-
       - name: Setup Conda Environment
         run: |
           mamba env create -n tronmake -f environment.yaml
@@ -60,9 +57,6 @@ jobs:
 
       - name: Trust Git directory
         run: git config --global --add safe.directory "$(pwd)"
-
-      - name : Install libmagic
-        run: DEBIAN_FRONTEND=noninteractive TZ=Etc/UTC apt update && DEBIAN_FRONTEND=noninteractive TZ=Etc/UTC apt --quiet --assume-yes install -y libmagic1 software-properties-common
 
       - name: Run Integration Tests
         run: conda run -n tronmake pytest --tag integrationtest --git-aware --symlink --stderr-bytes 100000 --kwd --basetemp /tmp/test
