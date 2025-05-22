@@ -63,13 +63,6 @@ jobs:
       - name: Trust Git directory
         run: git config --global --add safe.directory "$(pwd)"
 
-      - name: Disable apparmor namespace restrictions for apptainer (os='Linux')
-        if: runner.os == 'Linux'
-        run: |
-          sh -c 'echo kernel.apparmor_restrict_unprivileged_userns=0 \
-              >/etc/sysctl.d/90-disable-userns-restrictions.conf'
-          sysctl -p /etc/sysctl.d/90-disable-userns-restrictions.conf
-
       - name: Run Integration Tests
         shell: bash -l {0}
         run: |
