@@ -45,6 +45,8 @@ jobs:
     name: Integration Tests
     if: github.event_name == 'pull_request'
     runs-on: ubuntu-latest
+    env:
+      XDG_CACHE_HOME: ${{ github.workspace }}/.cache
     steps:
       - uses: actions/checkout@v4
         with:
