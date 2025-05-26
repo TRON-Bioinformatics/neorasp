@@ -6,6 +6,7 @@ suppressMessages({
   library(splice2neo)
   library(GenomicFeatures)
   library(furrr)
+  library(purrr)
 })
 options(future.fork.enable = TRUE)
 plan(multicore, workers = as.integer(snakemake@threads))

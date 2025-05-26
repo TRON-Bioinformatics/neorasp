@@ -135,9 +135,9 @@ rule fastp:
     input:
         sample = lambda wildcards: get_fq(wildcards).values()
     output:
-        trimmed = ["results/{sample}/fastp/{sample}_R1.fastq.gz", 
-                   "results/{sample}/fastp/{sample}_R2.fastq.gz"],
-        unpaired = "results/{sample}/fastp/{sample}_singletons.fastq.gz",
+        trimmed = [temp("results/{sample}/fastp/{sample}_R1.fastq.gz"), 
+                   temp("results/{sample}/fastp/{sample}_R2.fastq.gz")],
+        unpaired = temp("results/{sample}/fastp/{sample}_singletons.fastq.gz"),
         html = "results/{sample}/fastp/{sample}.html",
         json = "results/{sample}/fastp/{sample}.json"
     log:

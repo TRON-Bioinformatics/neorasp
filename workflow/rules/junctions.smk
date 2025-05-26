@@ -179,7 +179,7 @@ rule add_gene_annotation:
     output:
         annotated_sj = "results/{sample}/fetchdata/splice2neo/gene_annot/sj_gene_transcript_overlap.tsv",
         annotated_sj_problematic = "results/{sample}/fetchdata/splice2neo/gene_annot/sj_no_transcript_overlap.tsv"
-    threads: 1
+    threads: 4
     resources:
         mem_mb = 20000
     params:
@@ -250,7 +250,7 @@ rule add_context_sequence:
         genome = config['reference']['2bit']
     output:
         annotated_sj = "results/{sample}/fetchdata/splice2neo/cts/sj_annotated_cts.tsv",
-    threads: 1
+    threads: 4
     resources:
         mem_mb = 20000
     params:
