@@ -13,7 +13,7 @@ Example:
 @Date: 2024-09-25
 @Copyright: Copyright 2024, TRON gGmbH, Mainz, Germany
 @License: MIT
-@Version: 0.0.1
+@Version: 0.0.2
 @Status: Development
 
 """
@@ -22,12 +22,12 @@ import pandas as pd
 import numpy as np
 from loguru import logger
 
-epilog = "Copyright (c) 2024 TRON gGmbH (See LICENSE for licensing details)"
+epilog = "Copyright (c) 2025 TRON gGmbH (See LICENSE for licensing details)"
 
 class CpmNormalization:
     # Standard chromosomes in UCSC notation
     chromosomes = [f'chr{x}' for x in list(range(1,23)) + ['X','Y']]
-    # Mapping of STAR codes to intron dinucleotides
+    # Mapping of STAR codes to intron di-nucleotides
     intron_motifs = {0 : 'non-canonical', 1 : 'GT/AG',
                      2 : 'CT/AC', 3 : 'GC/AG',
                      4 : 'CT/GC', 5 : 'AT/AC', 6 : 'GT/AT'}
@@ -57,10 +57,12 @@ class CpmNormalization:
         """Parses a star output log file to get input read counts from the fastq origin"""
         log_file = "{}Log.final.out".format(self.sj_out.rstrip('SJ.out.tab'))
         logger.info("-> Reading STAR Log.final.out to obtain sequencing depth")
+        
         number_of_input_reads = 0
         number_of_uniquely_mapped_reads = 0
         number_of_multimapping_reads = 0
         number_of_chimeric_reads = 0
+        
         with open(log_file, "r") as file_handle:
             for line in file_handle:
                 if line.split("|")[0].strip() == "Number of input reads":
@@ -107,7 +109,7 @@ class CpmNormalization:
         """
         if seq_depth == 0:
             return read_count
-        return read_count / seq_depth * 1000000
+        return (read_count / seq_depth) * 1000000
 
     def cpm_normalize(self, junction_df: pd.DataFrame, mapped=True) -> pd.DataFrame:
         """CPM normalization
