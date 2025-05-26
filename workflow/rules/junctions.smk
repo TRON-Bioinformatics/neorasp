@@ -303,4 +303,34 @@ rule add_transcript_expression:
     script:
         '../scripts/add_tpm.R'
 
+rule filter_reliable_calls:
+    """Filter novel junctions based on expression by user
+
+    input:
+        annotated_sj (str):  Path to splice junction table.
+    output:
+        sj_expression (str): Path to splice junction table with relibale calls.
+        sj_low_expression (str): Path to splice junction table failing relibale call parameter.
+
+    """
+    input:
+        annotated_sj = rules.add_transcript_expression.output.sj_expression,
+    output:
+        sj_expression = temp("results/{sample}/fetchdata/splice2neo/sj_annotated_expression_reliable.tsv"),
+        sj_low_expression = "results/{sample}/fetchdata/splice2neo/sj_fail_reliable_call.tsv"
+    params:
+        exe = workflow.source_path('../scripts/filter_reliable_calls.R'),
+        min_junction_usage = config['reliable_calls'].get('min_junction_usage', 0.01),
+        min_junction_cpm = config['reliable_calls'].get('min_junction_cpm', 0.1)
+    threads: 1
+    resources:
+        mem_mb = 8000
+    container:
+        'docker://tronbioinformatics/splice2neo:0.6.13'
+    conda:
+        '../envs/R.yaml'
+    log: 'results/{sample}/log/filter_reliable_calls.log'
+    script:
+        '../scripts/filter_reliable_calls.R'
+
 

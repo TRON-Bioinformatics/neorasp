@@ -13,7 +13,7 @@ rule prepare_requant:
         genes_of_interest (str): A file with gene ids.
     """
     input:
-        sj = rules.add_transcript_expression.output.sj_expression
+        sj = rules.filter_reliable_calls.output.sj_expression
     output:
         easyquant_table = "results/{sample}/easyquant/context_seq.tsv",
         genes_of_interest = "results/{sample}/easyquant/genes_of_interest.txt"
@@ -221,7 +221,7 @@ rule add_quant_counts:
         requant_dir (str):  Path to working directory of easyquant.
     """
     input:
-        sj = rules.add_transcript_expression.output.sj_expression,
+        sj = rules.filter_reliable_calls.output.sj_expression,
         quantification = rules.requantify.output.quant
     output:
         requantified_sj = temp("results/{sample}/fetchdata/splice2neo/sj_annotated_requantified.tsv")
