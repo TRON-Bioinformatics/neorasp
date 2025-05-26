@@ -6,7 +6,7 @@ printshellcmds: True
 rerun-incomplete: True
 default-resources:
   mem_mb: 4096
-  threads: 4
+  threads: 1
   runtime: 3600
 
 set-threads:
@@ -89,6 +89,3 @@ set-resources:
   add_quant_counts:
     mem_mb: 4000 * attempt
     runtime: "1h"
-  find_cts_matching_wt:
-    mem_mb: 16000
-    runtime: "4h"
