@@ -165,6 +165,7 @@ rule add_gene_annotation:
         transcripts (str): Path to RDS object of reference transcripts.
         gene2hgnc (str): Path to gene to HGNC (gene name) mapping.
         tx2gene (str): Path to transcript to gene mapping.
+        rmsk (str): Path to RepeatMasker annotation.
     output:
         annotated_sj (str): Path to splice junction table with feature annotation.
         annotated_sj_problematic (str): Path to table with splice junctions
@@ -175,7 +176,8 @@ rule add_gene_annotation:
         parsed_sj = rules.filter_mappability.output.parsed_sj,
         transcripts = config['reference']['ref_transcripts'],
         tx2gene = config['reference']['tx2gene'],
-        gene2hgnc = config['reference']['gene2symbol']
+        gene2hgnc = config['reference']['gene2symbol'],
+        rmsk = config['reference']['rmsk']
     output:
         annotated_sj = "results/{sample}/fetchdata/splice2neo/gene_annot/sj_gene_transcript_overlap.tsv",
         annotated_sj_problematic = "results/{sample}/fetchdata/splice2neo/gene_annot/sj_no_transcript_overlap.tsv"
