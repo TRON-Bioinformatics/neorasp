@@ -191,21 +191,19 @@ rule star:
         r1 = "results/{sample}/fastp/{sample}_R1.fastq.gz",
         r2 = "results/{sample}/fastp/{sample}_R2.fastq.gz"
     output:
-        bam = temp("results/{sample}/star/Aligned.sortedByCoord.out.bam"),
+        bam = temp("results/{sample}/star/Aligned.out.bam"),
         log = "results/{sample}/star/Log.out",
         sj = "results/{sample}/star/SJ.out.tab",
         chim_junc = "results/{sample}/star/Chimeric.out.junction",
         log_final = "results/{sample}/star/Log.final.out",
         transcriptome_bam = temp("results/{sample}/star/Aligned.toTranscriptome.out.bam"),
-        forward_wig = "results/{sample}/star/Signal.Unique.str1.out.bg",
-        reverse_wig = "results/{sample}/star/Signal.Unique.str2.out.bg",
         unmapped_fq1 = "results/{sample}/star/Unmapped.out.mate1",
         unmapped_fq2 = "results/{sample}/star/Unmapped.out.mate2"
     log:
         "results/{sample}/log/star.log",
     params:
         # ENCODE3 RNA-seq options
-        extra=' '.join(['--outSAMtype BAM SortedByCoordinate', 
+        extra=' '.join(['--outSAMtype BAM Unsorted', 
                         '--outFilterType BySJout',
                         '--alignSJoverhangMin 8',
                         '--alignSJDBoverhangMin 1',
@@ -216,10 +214,7 @@ rule star:
                         '--outSAMstrandField intronMotif',
                         '--chimSegmentMin 20',
                         '--quantMode TranscriptomeSAM',
-                        '--outWigType bedGraph ',
-                        '--outWigStrand Stranded',
-                        '--outReadsUnmapped Fastx',
-                        '--limitBAMsortRAM 48000000000']),
+                        '--outReadsUnmapped Fastx']),
         prefix = lambda wildcards, output: os.path.dirname(output.bam),
         index = config['star']['ref'],
         read_cmd =
@@ -240,42 +235,42 @@ rule star:
         '{params.extra} '
         '--outFileNamePrefix {params.prefix}/ &> {log}'
 
-rule bedgraph_to_bigwig:
-    """BigWig creation
-    
-    Convert coverage bedGraph files from STAR to binary
-    BigWig for genome wide coverage in IGV.
-
-    input:
-        bedGraph_forward (str): Coverage of forward strand in bedGraph format.
-        bedGraph_reverse (str): Coverage of reverse strand in bedGraph format.
-        chromsizes (str): Path to TSV file describing chromosome sizes.
-    output:
-        bw_forward (str): Coverage of forward strand in BigWig format.
-        bw_reverse (str): Coverage of reverse strand in BigWig format.
-    params: 
-        extra (str): Additional parameters passed to bedGraphToBigWig.
-    """
-    input:
-        bedGraph_forward = rules.star.output.forward_wig,
-        bedGraph_reverse = rules.star.output.reverse_wig,
-        chromsizes = config['reference']['chromsizes']
-    output:
-        bw_forward = "results/{sample}/star/Signal.Unique.str1.bw",
-        bw_reverse = "results/{sample}/star/Signal.Unique.str2.bw"
-    log:
-        "results/{sample}/log/bedgraph2bigwig.log"
-    params:
-        extra = "" # optional params string
-    container:
-        'docker://quay.io/biocontainers/ucsc-bedgraphtobigwig:472--h9b8f530_1'
-    conda:
-        '../envs/ucsc_bedgraph_to_bigwig.yaml'
-    shell:
-        '''
-        bedGraphToBigWig {params.extra} {input.bedGraph_forward} {input.chromsizes} {output.bw_forward} &> {log}
-        bedGraphToBigWig {params.extra} {input.bedGraph_reverse} {input.chromsizes} {output.bw_reverse} &>> {log}
-        '''
+#rule bedgraph_to_bigwig:
+#    """BigWig creation
+#    
+#    Convert coverage bedGraph files from STAR to binary
+#    BigWig for genome wide coverage in IGV.
+#
+#    input:
+#        bedGraph_forward (str): Coverage of forward strand in bedGraph format.
+#        bedGraph_reverse (str): Coverage of reverse strand in bedGraph format.
+#        chromsizes (str): Path to TSV file describing chromosome sizes.
+#    output:
+#        bw_forward (str): Coverage of forward strand in BigWig format.
+#        bw_reverse (str): Coverage of reverse strand in BigWig format.
+#    params: 
+#        extra (str): Additional parameters passed to bedGraphToBigWig.
+#    """
+#    input:
+#        bedGraph_forward = rules.star.output.forward_wig,
+#        bedGraph_reverse = rules.star.output.reverse_wig,
+#        chromsizes = config['reference']['chromsizes']
+#    output:
+#        bw_forward = "results/{sample}/star/Signal.Unique.str1.bw",
+#        bw_reverse = "results/{sample}/star/Signal.Unique.str2.bw"
+#    log:
+#        "results/{sample}/log/bedgraph2bigwig.log"
+#    params:
+#        extra = "" # optional params string
+#    container:
+#        'docker://quay.io/biocontainers/ucsc-bedgraphtobigwig:472--h9b8f530_1'
+#    conda:
+#        '../envs/ucsc_bedgraph_to_bigwig.yaml'
+#    shell:
+#        '''
+#        bedGraphToBigWig {params.extra} {input.bedGraph_forward} {input.chromsizes} {output.bw_forward} &> {log}
+#        bedGraphToBigWig {params.extra} {input.bedGraph_reverse} {input.chromsizes} {output.bw_reverse} &>> {log}
+#        '''
 
 rule samtools:
     """Samtools
@@ -283,15 +278,17 @@ rule samtools:
     Create index of BAM file for random access.
 
     input:
-        bam (str): Path to coordinate sorted BAM file.
+        bam (str): Path to name sorted BAM file.
     output:
+        bam (str): 
         bai (str): Path to corresponding BAI index file.
 
     """
     input:
-        bam = "results/{sample}/star/Aligned.sortedByCoord.out.bam"
+        bam = "results/{sample}/star/Aligned.out.bam"
     output:
-        bai = "results/{sample}/star/Aligned.sortedByCoord.out.bam.bai"
+        bam = temp("results/{sample}/star/Aligned.sortedByCoord.out.bam"),
+        bai = temp("results/{sample}/star/Aligned.sortedByCoord.out.bam.bai")
     container:
         'docker://quay.io/biocontainers/samtools:1.20--h50ea8bc_0'
     conda:
@@ -302,7 +299,8 @@ rule samtools:
     shell:
         """
         exec 2> {log}
-        samtools index {input.bam}
+        samtools sort -o {output.bam} {input.bam}
+        samtools index {output.bam}
         """
 
 rule bam2cram:
@@ -360,7 +358,7 @@ rule qualimap:
     
     """
     input:
-        bam = rules.star.output.bam,
+        bam = rules.samtools.output.bam,
         bai = rules.samtools.output.bai,
         # GTF containing transcript, gene, and exon data
         gtf = config['reference']['annotation']
@@ -409,7 +407,7 @@ rule insert_size:
 
     """
     input:
-        aln = rules.star.output.bam,
+        aln = rules.samtools.output.bam,
         bai = rules.samtools.output.bai,
         refgene = config['reference']['annotation_bed']
     output:
@@ -434,6 +432,106 @@ rule insert_size:
         "--out-prefix {params.out_prefix} "
         "&> {log} "
 
+rule junction_saturation:
+    """
+    RSeQC
+
+    Assess junction saturation by downsampling aligned RNA-seq reads
+    and counting detected splice junctions at increasing depths.
+    This helps evaluate sequencing depth sufficiency.
+    """
+    input:
+        aln = rules.samtools.output.bam,
+        bai = rules.samtools.output.bai,
+        refgene = config['reference']['annotation_bed']
+    output:
+        pdf = "results/{sample}/metrics/{sample}.junctionSaturation_plot.pdf",
+        rscript = "results/{sample}/metrics/{sample}.junctionSaturation_plot.r"
+    log:
+        "results/{sample}/log/junction_saturation.log"
+    params:
+        extra = "-s 10",  # steps of 10% increments up to 100%
+        out_prefix = lambda wildcards, output: output.pdf.removesuffix(".junctionSaturation_plot.pdf")
+    container:
+        "docker://tronbioinformatics/tron_data_utils:0.0.1"
+    conda:
+        "../envs/rseqc.yaml"
+    shell:
+        "junction_saturation.py "
+        "{params.extra} "
+        "--input-file {input.aln} "
+        "--refgene {input.refgene} "
+        "--out-prefix {params.out_prefix} "
+        "-q 255 -v 5 "
+        "&> {log}"
+
+rule featurecounts:
+    """
+    Subread featureCounts
+
+    Quantify aligned RNA-seq reads over annotated gene features.
+    Uses exon features grouped by a GTF attribute (e.g. gene_type or gene_id).
+    Paired-end mode is enabled by default.
+    """
+    input:
+        bam = rules.samtools.output.bam,
+        bai = rules.samtools.output.bai,
+        gtf = config['reference']['annotation']
+    output:
+        counts = "results/{sample}/metrics/{sample}.featureCounts.txt",
+        summary = "results/{sample}/metrics/{sample}.featureCounts.txt.summary"
+    log:
+        "results/{sample}/log/featurecounts.log"
+    params:
+        threads = 4,
+        feature_type = "exon",
+        attribute_type = "gene_type",
+        prefix = lambda wildcards, output: output.counts.removesuffix(".featureCounts.txt")
+    container:
+        "docker://quay.io/biocontainers/subread:2.1.1--h577a1d6_0"
+    conda:
+        "../envs/subread.yaml"
+    threads: 4
+    shell:
+        "featureCounts "
+        "-T {params.threads} "
+        "-a {input.gtf} "
+        "-o {params.prefix}.featureCounts.txt "
+        "-g {params.attribute_type} "
+        "-t {params.feature_type} "
+        "-p -B -C "
+        "{input.bam} "
+        "&> {log}"
+
+#rule tin_score:
+#    """
+#    RSeQC Transcript integrity estimation
+#
+#    Estimate Transcript Integrity Number (TIN) scores for each transcript
+#    based on RNA-seq coverage across exon regions.
+#    """
+#    input:
+#        bam = rules.samtools.output.bam,
+#        bai = rules.samtools.output.bai,
+#        gtf = config["reference"]["annotation"]
+#    output:
+#        tin = "results/{sample}/metrics/{sample}.tin.xls",
+#        summary = "results/{sample}/metrics/{sample}.summary.xls"
+#    log:
+#        "results/{sample}/log/tin_score.log"
+#    params:
+#        extra = ""
+#    container:
+#        "docker://tronbioinformatics/tron_data_utils:0.0.1"
+#    conda:
+#        "../envs/rseqc.yaml"
+#    shell:
+#        "tin.py "
+#        "{params.extra} "
+#        "-i {input.bam} "
+#        "-r {input.gtf} "
+#        "&> {log}"
+#
 rule salmon:
     """Salmon
 

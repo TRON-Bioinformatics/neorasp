@@ -95,7 +95,7 @@ rule bowtie_index:
         'bowtie2-build '
         '--threads {threads} '
         '{input.context_fa} '
-        '{params.prefix} 2>&1 | tee {log}'
+        '{params.prefix} 2>&1 1>{log}'
         
 
 rule bowtie_align:

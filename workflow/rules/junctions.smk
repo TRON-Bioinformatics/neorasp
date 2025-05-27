@@ -18,14 +18,13 @@ rule fraser:
     """
 
     input:
-        bam = rules.star.output.bam,
+        bam = rules.samtools.output.bam,
         bai = rules.samtools.output.bai,
     params:
         working_dir = 
             lambda wildcards, output: os.path.dirname(output.psi_table),
         min_read = config['fraser'].get('min_read', 5),
-        mapq_filter = config['fraser'].get('mapq_filter', 255),
-        exe = workflow.source_path('../scripts/fraser.R')
+        mapq_filter = config['fraser'].get('mapq_filter', 255)
     log:  "results/{sample}/log/fraser.log"
     output:
         psi_table = "results/{sample}/fraser/junctions_psi.tsv"
