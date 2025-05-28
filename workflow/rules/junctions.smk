@@ -18,14 +18,13 @@ rule fraser:
     """
 
     input:
-        bam = rules.star.output.bam,
+        bam = rules.samtools.output.bam,
         bai = rules.samtools.output.bai,
     params:
         working_dir = 
             lambda wildcards, output: os.path.dirname(output.psi_table),
         min_read = config['fraser'].get('min_read', 5),
-        mapq_filter = config['fraser'].get('mapq_filter', 255),
-        exe = workflow.source_path('../scripts/fraser.R')
+        mapq_filter = config['fraser'].get('mapq_filter', 255)
     log:  "results/{sample}/log/fraser.log"
     output:
         psi_table = "results/{sample}/fraser/junctions_psi.tsv"
@@ -165,6 +164,7 @@ rule add_gene_annotation:
         transcripts (str): Path to RDS object of reference transcripts.
         gene2hgnc (str): Path to gene to HGNC (gene name) mapping.
         tx2gene (str): Path to transcript to gene mapping.
+        rmsk (str): Path to RepeatMasker annotation.
     output:
         annotated_sj (str): Path to splice junction table with feature annotation.
         annotated_sj_problematic (str): Path to table with splice junctions
@@ -175,11 +175,12 @@ rule add_gene_annotation:
         parsed_sj = rules.filter_mappability.output.parsed_sj,
         transcripts = config['reference']['ref_transcripts'],
         tx2gene = config['reference']['tx2gene'],
-        gene2hgnc = config['reference']['gene2symbol']
+        gene2hgnc = config['reference']['gene2symbol'],
+        rmsk = config['reference']['rmsk']
     output:
         annotated_sj = "results/{sample}/fetchdata/splice2neo/gene_annot/sj_gene_transcript_overlap.tsv",
         annotated_sj_problematic = "results/{sample}/fetchdata/splice2neo/gene_annot/sj_no_transcript_overlap.tsv"
-    threads: 1
+    threads: 4
     resources:
         mem_mb = 20000
     params:
@@ -250,7 +251,7 @@ rule add_context_sequence:
         genome = config['reference']['2bit']
     output:
         annotated_sj = "results/{sample}/fetchdata/splice2neo/cts/sj_annotated_cts.tsv",
-    threads: 1
+    threads: 4
     resources:
         mem_mb = 20000
     params:

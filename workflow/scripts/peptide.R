@@ -6,7 +6,11 @@ suppressMessages({
   library(argparse)
   library(splice2neo)
   library(rtracklayer)
+  #library(furrr)
+  #library(purrr)
 })
+#options(future.fork.enable = TRUE)
+#plan(multicore, workers = as.integer(snakemake@threads))
 
 df <- readr::read_tsv(snakemake@input[['sj']], show_col_types = FALSE)
 cds <- base::readRDS(snakemake@input[['cds']])
@@ -18,6 +22,11 @@ peptide_annot <- df %>%
 
 alt_peptides <- peptide_annot %>%
   splice2neo::add_peptide(cds = cds, flanking_size = 13, bsg = bsg)
+  #base::split(.$tx_id) %>%
+  #furrr::future_map(
+  #  ~splice2neo::add_peptide(.x, cds = cds, flanking_size = 13, bsg = bsg)
+  #)
+#alt_peptides <- dplyr::bind_rows(discard(alt_peptides, ~nrow(.x) == 0))
 
 df <- df %>% 
   dplyr::left_join(alt_peptides) %>%
