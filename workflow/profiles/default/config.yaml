@@ -1,5 +1,3 @@
-jobs: 16
-local-cores: 16
 latency-wait: 120
 keep-going: True
 printshellcmds: True
@@ -7,16 +5,18 @@ rerun-incomplete: True
 default-resources:
   mem_mb: 4096
   threads: 1
-  runtime: 3600
+  runtime: "2h"
 
 set-threads:
   salmon: 4
   qualimap: 4
   star: 18
+  samtools: 1
+  bam2cram: 4
   fastp: 4
   bedGraphToBigWig: 1
   get_fastq_SRA: 2
-  samtools_index: 1
+  samtools: 1
   fraser: 4
   parse_junctions: 1
   filter_mapability: 1
@@ -30,6 +30,8 @@ set-threads:
   add_quant_counts: 1
   find_cts_matching_wt: 8
   insert_size: 1
+  junction_saturation: 1
+  filter_reliable_calls: 1
 
 set-resources:
   salmon:
@@ -41,17 +43,20 @@ set-resources:
   star:
     mem_mb: 48000 + ((attempt - 1) * 10000)
     runtime: "8h"
+  samtools:
+    mem_mb: 8000 + ((attempt - 1) * 2000)
+    runtime: "1h"
+  bam2cram:
+    mem_mb: 8000 + ((attempt - 1) * 2000)
+    runtime: "1h"
   fastp:
     mem_mb: 8000 + ((attempt - 1) * 5000)
     runtime: "1h"
   bedGraphToBigWig:
     mem_mb: 4000 + ((attempt - 1) * 2000)
     runtime: "1h"
-  get_fastq_SRA:
-    mem_mb: 8000 + ((attempt - 1) * 2000)
-    runtime: "2h"
-  samtools_index:
-    mem_mb: 2000 + ((attempt - 1) * 500)
+  samtools:
+    mem_mb: 4000 + ((attempt - 1) * 500)
     runtime: "1h"
   insert_size:
     mem_mb: 4000 + ((attempt - 1) * 2000)
@@ -87,5 +92,17 @@ set-resources:
     mem_mb: 8000 + ((attempt - 1) * 2000)
     runtime: "4h"
   add_quant_counts:
-    mem_mb: 4000 * attempt
+    mem_mb: 4000 + ((attempt - 1) * 2000)
+    runtime: "1h"
+  featurecounts:
+    mem_mb: 8000 + ((attempt - 1) * 2000)
+    runtime: "1h"
+  junction_saturation:
+    mem_mb: 2000 + ((attempt - 1) * 2000)
+    runtime: "1h"
+  read_distribution:
+    mem_mb: 2000 + ((attempt - 1) * 2000)
+    runtime: "1h"
+  filter_reliable_calls:
+    mem_mb: 8000 + ((attempt - 1) * 2000)
     runtime: "1h"

@@ -465,6 +465,37 @@ rule junction_saturation:
         "-q 255 -v 5 "
         "&> {log}"
 
+rule read_distribution:
+    """
+    RSeQC
+
+    Analyze genomic distribution of mapped reads across functional categories
+    such as exons, introns, UTRs, promoters, and intergenic regions.
+    Requires a BED12-format reference annotation.
+    """
+    input:
+        bam = rules.samtools.output.bam,
+        bai = rules.samtools.output.bai,
+        refgene = config["reference"]["annotation_bed"]
+    output:
+        txt = "results/{sample}/metrics/{sample}.read_distribution.txt"
+    log:
+        "results/{sample}/log/read_distribution.log"
+    params:
+        extra = ""  # optional additional args (e.g., -l for read length)
+    container:
+        "docker://tronbioinformatics/tron_data_utils:0.0.1"
+    conda:
+        "../envs/rseqc.yaml"
+    shell:
+        "read_distribution.py "
+        "{params.extra} "
+        "-i {input.bam} "
+        "-r {input.refgene} "
+        "> {output.txt} "
+        "2> {log}"
+
+
 rule featurecounts:
     """
     Subread featureCounts

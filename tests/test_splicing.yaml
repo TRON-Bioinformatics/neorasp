@@ -8,3 +8,9 @@
     - path: "results/Hugo_Pt10/fetchdata/sj_final.tsv"
     - path: "results/Hugo_Pt10/fetchdata/sj_final_neofox_annotation.tsv"
     - path: "results/Hugo_Pt10/metrics/Hugo_Pt10.inner_distance.txt"
+    - path: "results/Hugo_Pt10/fetchdata/splice2neo/sj_fail_reliable_call.tsv"
+    - path: "results/Hugo_Pt10/metrics/Hugo_Pt10.featureCounts.txt"
+    - path: "results/Hugo_Pt10/metrics/Hugo_Pt10.junctionSaturation_plot.r"
+    - path: "results/Hugo_Pt10/metrics/Hugo_Pt10.read_distribution.txt"
+    - path: "results/Hugo_Pt10/qualimap/rnaseq_qc_results.txt"
+

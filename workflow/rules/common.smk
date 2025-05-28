@@ -30,9 +30,9 @@ def get_final_output():
             collect("results/{sample}/metrics/{sample}.junctionSaturation_plot.pdf", sample = sample.sample_name)
         )
         #results/{sample}/metrics/{sample}.summary.xls
-        #final_files.extend(
-        #   collect("results/{sample}/metrics/{sample}.summary.xls", sample = sample.sample_name)
-        #)
+        final_files.extend(
+           collect("results/{sample}/metrics/{sample}.read_distribution.txt", sample = sample.sample_name)
+        )
         final_files.extend(
            collect("results/{sample}/metrics/{sample}.featureCounts.txt", sample = sample.sample_name)
         )
