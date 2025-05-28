@@ -95,7 +95,7 @@ rule bowtie_index:
         'bowtie2-build '
         '--threads {threads} '
         '{input.context_fa} '
-        '{params.prefix} 2>&1 | tee {log}'
+        '{params.prefix} 2>&1 1>{log}'
         
 
 rule bowtie_align:
@@ -262,9 +262,9 @@ rule translate_to_peptide:
         junctions = "results/{sample}/fetchdata/sj_final.tsv",
         neofox_annotation = "results/{sample}/fetchdata/sj_final_neofox_annotation.tsv"
     log:  "results/{sample}/log/add_peptide_annotation.log"
-    threads: 1
+    threads: 4
     resources:
-        mem_mb = 16000
+        mem_mb = 20000
     container:
         'docker://tronbioinformatics/splice2neo:0.6.13'
     conda:
