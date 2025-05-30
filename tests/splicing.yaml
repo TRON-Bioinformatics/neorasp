@@ -17,6 +17,10 @@ requantify:
   bowtie_k_threshold: 200
   cts_size: 1000
 
+reliable_calls:
+  min_junction_usage: 0.01
+  min_junction_cpm: 0.1
+
 reference:
   genome: 'tests/resources/GRCh38v45_minigenome/ref_genome.fa'
   annotation: 'tests/resources/GRCh38v45_minigenome/ref_annot.gtf'
@@ -31,3 +35,4 @@ reference:
   gene2symbol: 'tests/resources/GRCh38v45_minigenome/hgnc2ensembl_id.tsv.gz'
   2bit: 'tests/resources/GRCh38v45_minigenome/ref_genome.2bit'
   canonical_juncs: tests/resources/GRCh38v45_minigenome/canonical_junctions.tsv
+  rmsk: tests/resources/GRCh38v45_minigenome/ref_rmsk.Rds

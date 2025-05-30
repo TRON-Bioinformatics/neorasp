@@ -1,0 +1,14 @@
+exclude_gene_pattern	exclude_pattern_intention
+^MT-	Mitochondrial gene
+^HLA-	HLA gene
+^IGH[VDJCG]?	Immunoglobulin gene
+^IGHA[12]	Immunoglobulin gene
+^IGHM	Immunoglobulin gene
+^IGHE	Immunoglobulin gene
+^IGHEP[12]	Immunoglobulin gene
+^IGK[VJC]?	Immunoglobulin gene
+^IGL[VJC]?	Immunoglobulin gene
+^TRA	T cell receptor alpha
+^TRB	T cell receptor beta
+^TRD	T cell receptor delta
+^TRG	T cell receptor gamma

@@ -1,0 +1,71 @@
+name: CI Pipeline
+
+on:
+  push:
+    branches: ["**"]
+  pull_request:
+
+jobs:
+  syntaxcheck:
+    name: Syntax Check
+    runs-on: ubuntu-latest
+    container:
+      image: condaforge/miniforge3:24.9.2-0
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Setup Conda Environment
+        run: |
+          mamba env create -n tronmake -f environment.yaml
+          git config --global --add safe.directory "$(pwd)"
+          conda run -n tronmake pytest --tag dryrun --git-aware --symlink --stderr-bytes 100000 --kwd --basetemp /tmp/test
+
+  linting:
+    name: Linting
+    runs-on: ubuntu-latest
+    container:
+      image: condaforge/miniforge3:24.9.2-0
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Install libmagic1
+        run: apt update && apt install -y libmagic1
+
+      - name: Run Snakemake Lint
+        run: |
+          mamba env create -n tronmake -f environment.yaml
+          git config --global --add safe.directory "$(pwd)"
+          conda run -n tronmake snakemake --lint
+
+  integration:
+    name: Integration Tests
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    env:
+      XDG_CACHE_HOME: ${{ github.workspace }}/.cache
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+      - uses: eWaterCycle/setup-apptainer@v2
+        with:
+          apptainer-version: 1.4.1
+      - uses: conda-incubator/setup-miniconda@v3
+        with:
+          miniforge-version: latest
+          auto-update-conda: true
+          channels: conda-forge,bioconda
+          environment-file: environment.yaml
+          activate-environment: tronmake
+
+      - name: Trust Git directory
+        run: git config --global --add safe.directory "$(pwd)"
+
+      - name: Run Integration Tests
+        shell: bash -l {0}
+        run: |
+          conda run -n tronmake pytest --tag integrationtest --git-aware --symlink --stderr-bytes 100000

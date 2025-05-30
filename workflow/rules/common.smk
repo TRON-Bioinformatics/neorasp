@@ -11,12 +11,12 @@ def get_final_output():
             collect("results/{sample}/qualimap", sample = sample.sample_name)
         )
         # BigWig of STAR alignment
-        final_files.extend(
-            collect("results/{sample}/star/Signal.Unique.str1.bw", sample = sample.sample_name)
-        )
-        final_files.extend(
-            collect("results/{sample}/star/Signal.Unique.str2.bw", sample = sample.sample_name)
-        )
+        #final_files.extend(
+        #    collect("results/{sample}/star/Signal.Unique.str1.bw", sample = sample.sample_name)
+        #)
+        #final_files.extend(
+        #    collect("results/{sample}/star/Signal.Unique.str2.bw", sample = sample.sample_name)
+        #)
         final_files.extend(
             collect("results/{sample}/fetchdata/sj_final.tsv", sample = sample.sample_name)
         )
@@ -25,6 +25,16 @@ def get_final_output():
         )
         final_files.extend(
             collect("results/{sample}/metrics/{sample}.inner_distance.txt", sample = sample.sample_name)
+        )
+        final_files.extend(
+            collect("results/{sample}/metrics/{sample}.junctionSaturation_plot.pdf", sample = sample.sample_name)
+        )
+        #results/{sample}/metrics/{sample}.summary.xls
+        final_files.extend(
+           collect("results/{sample}/metrics/{sample}.read_distribution.txt", sample = sample.sample_name)
+        )
+        final_files.extend(
+           collect("results/{sample}/metrics/{sample}.featureCounts.txt", sample = sample.sample_name)
         )
         # Cram files
         final_files.extend(
