@@ -1,11 +1,8 @@
-# NeoRasp
+# NeoRasp 🍓🐍
 
 <!-- badges: start -->
-
-[![Release](https://gitlab.rlp.net/tron/tronmake-rna-splicing/-/badges/release.svg)](https://gitlab.rlp.net/tron/tronmake-rna-splicing/-/releases)
 [![Snakemake](https://img.shields.io/badge/snakemake-9.1.3-brightgreen.svg?style=flat)](https://snakemake.readthedocs.io)
-[![pipeline status](https://gitlab.rlp.net/tron/tronmake-rna-splicing/badges/dev/pipeline.svg)](https://gitlab.rlp.net/tron/tronmake-rna-splicing/commits/main)
-
+[![CI](https://github.com/TRON-Private/tronmake-rna-splicing/actions/workflows/ci.yml/badge.svg)](https://github.com/TRON-Private/tronmake-rna-splicing/actions/workflows/ci.yml/badge.svg)
 <!-- badges: end -->
 
 **(Neo)antigens from (R)n(a)-(sp)licing**

@@ -6,6 +6,7 @@ suppressMessages({
   library(splice2neo)
   library(GenomicFeatures)
   library(furrr)
+  library(purrr)
 })
 options(future.fork.enable = TRUE)
 plan(multicore, workers = as.integer(snakemake@threads))
@@ -24,9 +25,13 @@ gene2hgnc <- readr::read_tsv(snakemake@input[['gene2hgnc']], show_col_types = FA
   dplyr::rename(gene_id = `Gene stable ID version`, hgnc = `Gene name`) %>%
   dplyr::distinct()
 
+# Read RMSK annotation
+rmsk <- base::readRDS(snakemake@input[['rmsk']])
+
 # Annotate with possible transcripts
 df <- df %>%
-    splice2neo::add_tx(transcripts = transcripts)
+    splice2neo::add_tx(transcripts = transcripts) %>%
+    splice2neo::annotate_potential_jet(., rmsk)
 
 df_without_tx <- df %>%
     filter(is.na(tx_id)) %>%

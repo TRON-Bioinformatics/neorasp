@@ -18,14 +18,13 @@ rule fraser:
     """
 
     input:
-        bam = rules.star.output.bam,
+        bam = rules.samtools.output.bam,
         bai = rules.samtools.output.bai,
     params:
         working_dir = 
             lambda wildcards, output: os.path.dirname(output.psi_table),
         min_read = config['fraser'].get('min_read', 5),
-        mapq_filter = config['fraser'].get('mapq_filter', 255),
-        exe = workflow.source_path('../scripts/fraser.R')
+        mapq_filter = config['fraser'].get('mapq_filter', 255)
     log:  "results/{sample}/log/fraser.log"
     output:
         psi_table = "results/{sample}/fraser/junctions_psi.tsv"
@@ -96,16 +95,11 @@ rule calculate_junction_cpm:
     output:
         star_sj_cpm (str): Path to normalised SJ counts
 
-    params:
-       exe (str): Path to python script
-
     """
     input:
         star_sj = rules.star.output.sj
     output:
         star_sj_cpm = "results/{sample}/fetchdata/parsing/sj_out_tab_cpm.tsv"
-    params:
-        exe = workflow.source_path('../scripts/normalize_star_cpm.py')
     log: "results/{sample}/log/sj_cpm.log"
     threads: 1
     resources:
@@ -113,10 +107,8 @@ rule calculate_junction_cpm:
     conda: '../envs/python.yaml'
     container:
         'docker://tronbioinformatics/tron_data_utils:0.0.1'
-    shell:
-        'python {params.exe} '
-        '-i {input.star_sj} '
-        '-o {output.star_sj_cpm} 2>&1 | tee {log}'
+    script:
+	    '../scripts/normalize_star_cpm.py'
 
 rule filter_mappability:
     """Mapability filter
@@ -165,6 +157,7 @@ rule add_gene_annotation:
         transcripts (str): Path to RDS object of reference transcripts.
         gene2hgnc (str): Path to gene to HGNC (gene name) mapping.
         tx2gene (str): Path to transcript to gene mapping.
+        rmsk (str): Path to RepeatMasker annotation.
     output:
         annotated_sj (str): Path to splice junction table with feature annotation.
         annotated_sj_problematic (str): Path to table with splice junctions
@@ -175,11 +168,12 @@ rule add_gene_annotation:
         parsed_sj = rules.filter_mappability.output.parsed_sj,
         transcripts = config['reference']['ref_transcripts'],
         tx2gene = config['reference']['tx2gene'],
-        gene2hgnc = config['reference']['gene2symbol']
+        gene2hgnc = config['reference']['gene2symbol'],
+        rmsk = config['reference']['rmsk']
     output:
         annotated_sj = "results/{sample}/fetchdata/splice2neo/gene_annot/sj_gene_transcript_overlap.tsv",
         annotated_sj_problematic = "results/{sample}/fetchdata/splice2neo/gene_annot/sj_no_transcript_overlap.tsv"
-    threads: 1
+    threads: 4
     resources:
         mem_mb = 20000
     params:
@@ -250,7 +244,7 @@ rule add_context_sequence:
         genome = config['reference']['2bit']
     output:
         annotated_sj = "results/{sample}/fetchdata/splice2neo/cts/sj_annotated_cts.tsv",
-    threads: 1
+    threads: 4
     resources:
         mem_mb = 20000
     params:
@@ -302,5 +296,35 @@ rule add_transcript_expression:
     log:  "results/{sample}/log/add_expression_estimates.log"
     script:
         '../scripts/add_tpm.R'
+
+rule filter_reliable_calls:
+    """Filter novel junctions based on expression by user
+
+    input:
+        annotated_sj (str):  Path to splice junction table.
+    output:
+        sj_expression (str): Path to splice junction table with relibale calls.
+        sj_low_expression (str): Path to splice junction table failing relibale call parameter.
+
+    """
+    input:
+        annotated_sj = rules.add_transcript_expression.output.sj_expression,
+    output:
+        sj_expression = temp("results/{sample}/fetchdata/splice2neo/sj_annotated_expression_reliable.tsv"),
+        sj_low_expression = "results/{sample}/fetchdata/splice2neo/sj_fail_reliable_call.tsv"
+    params:
+        exe = workflow.source_path('../scripts/filter_reliable_calls.R'),
+        min_junction_usage = config['reliable_calls'].get('min_junction_usage', 0.01),
+        min_junction_cpm = config['reliable_calls'].get('min_junction_cpm', 0.1)
+    threads: 1
+    resources:
+        mem_mb = 8000
+    container:
+        'docker://tronbioinformatics/splice2neo:0.6.13'
+    conda:
+        '../envs/R.yaml'
+    log: 'results/{sample}/log/filter_reliable_calls.log'
+    script:
+        '../scripts/filter_reliable_calls.R'
 
 

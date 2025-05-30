@@ -13,7 +13,7 @@ rule prepare_requant:
         genes_of_interest (str): A file with gene ids.
     """
     input:
-        sj = rules.add_transcript_expression.output.sj_expression
+        sj = rules.filter_reliable_calls.output.sj_expression
     output:
         easyquant_table = "results/{sample}/easyquant/context_seq.tsv",
         genes_of_interest = "results/{sample}/easyquant/genes_of_interest.txt"
@@ -95,7 +95,7 @@ rule bowtie_index:
         'bowtie2-build '
         '--threads {threads} '
         '{input.context_fa} '
-        '{params.prefix} 2>&1 | tee {log}'
+        '{params.prefix} 2>&1 1>{log}'
         
 
 rule bowtie_align:
@@ -221,7 +221,7 @@ rule add_quant_counts:
         requant_dir (str):  Path to working directory of easyquant.
     """
     input:
-        sj = rules.add_transcript_expression.output.sj_expression,
+        sj = rules.filter_reliable_calls.output.sj_expression,
         quantification = rules.requantify.output.quant
     output:
         requantified_sj = temp("results/{sample}/fetchdata/splice2neo/sj_annotated_requantified.tsv")
@@ -262,9 +262,9 @@ rule translate_to_peptide:
         junctions = "results/{sample}/fetchdata/sj_final.tsv",
         neofox_annotation = "results/{sample}/fetchdata/sj_final_neofox_annotation.tsv"
     log:  "results/{sample}/log/add_peptide_annotation.log"
-    threads: 1
+    threads: 4
     resources:
-        mem_mb = 16000
+        mem_mb = 20000
     container:
         'docker://tronbioinformatics/splice2neo:0.6.13'
     conda:
