@@ -1,0 +1,19 @@
+### STAR   --runMode genomeGenerate      --runThreadN 4   --genomeDir indices/star   --genomeFastaFiles resources/ref_genome.fasta      --genomeSAindexNbases 9   --limitGenomeGenerateRAM 48000000000   --sjdbGTFfile resources/ref_annot.gtf
+### GstrandBit 32
+versionGenome	2.7.4a
+genomeType	Full
+genomeFastaFiles	resources/ref_genome.fasta 
+genomeSAindexNbases	9
+genomeChrBinNbits	18
+genomeSAsparseD	1
+genomeTransformType	None
+genomeTransformVCF	-
+sjdbOverhang	100
+sjdbFileChrStartEnd	- 
+sjdbGTFfile	resources/ref_annot.gtf
+sjdbGTFchrPrefix	-
+sjdbGTFfeatureExon	exon
+sjdbGTFtagExonParentTranscript	transcript_id
+sjdbGTFtagExonParentGene	gene_id
+sjdbInsertSave	Basic
+genomeFileSizes	3999093 31077786

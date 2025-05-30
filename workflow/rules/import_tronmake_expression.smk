@@ -197,8 +197,8 @@ rule star:
         chim_junc = "results/{sample}/star/Chimeric.out.junction",
         log_final = "results/{sample}/star/Log.final.out",
         transcriptome_bam = temp("results/{sample}/star/Aligned.toTranscriptome.out.bam"),
-        unmapped_fq1 = "results/{sample}/star/Unmapped.out.mate1",
-        unmapped_fq2 = "results/{sample}/star/Unmapped.out.mate2"
+        unmapped_fq1 = "results/{sample}/star/Unmapped.out.mate1.gz",
+        unmapped_fq2 = "results/{sample}/star/Unmapped.out.mate2.gz"
     log:
         "results/{sample}/log/star.log",
     params:
@@ -233,7 +233,9 @@ rule star:
         '--genomeDir {params.index} '
         '--readFilesIn {input.r1} {input.r2} '
         '{params.extra} '
-        '--outFileNamePrefix {params.prefix}/ &> {log}'
+        '--outFileNamePrefix {params.prefix}/ &> {log} ; '
+        'test -f {params.prefix}/Unmapped.out.mate1 && gzip {params.prefix}/Unmapped.out.mate1 ; '
+        'test -f {params.prefix}/Unmapped.out.mate2 && gzip {params.prefix}/Unmapped.out.mate2'
 
 #rule bedgraph_to_bigwig:
 #    """BigWig creation
