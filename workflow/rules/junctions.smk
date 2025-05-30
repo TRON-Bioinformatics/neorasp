@@ -95,16 +95,11 @@ rule calculate_junction_cpm:
     output:
         star_sj_cpm (str): Path to normalised SJ counts
 
-    params:
-       exe (str): Path to python script
-
     """
     input:
         star_sj = rules.star.output.sj
     output:
         star_sj_cpm = "results/{sample}/fetchdata/parsing/sj_out_tab_cpm.tsv"
-    params:
-        exe = workflow.source_path('../scripts/normalize_star_cpm.py')
     log: "results/{sample}/log/sj_cpm.log"
     threads: 1
     resources:
@@ -112,10 +107,8 @@ rule calculate_junction_cpm:
     conda: '../envs/python.yaml'
     container:
         'docker://tronbioinformatics/tron_data_utils:0.0.1'
-    shell:
-        'python {params.exe} '
-        '-i {input.star_sj} '
-        '-o {output.star_sj_cpm} 2>&1 | tee {log}'
+    script:
+	    '../scripts/normalize_star_cpm.py'
 
 rule filter_mappability:
     """Mapability filter
