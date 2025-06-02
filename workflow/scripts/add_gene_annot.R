@@ -21,8 +21,7 @@ tx2gene <- readr::read_tsv(snakemake@input[['tx2gene']], show_col_types = FALSE)
 
 # Read gene to HGNC mapping
 gene2hgnc <- readr::read_tsv(snakemake@input[['gene2hgnc']], show_col_types = FALSE) %>%
-  dplyr::select(`Gene stable ID version`, `Gene name`) %>%
-  dplyr::rename(gene_id = `Gene stable ID version`, hgnc = `Gene name`) %>%
+  dplyr::rename(hgnc = gene_symbol) %>%
   dplyr::distinct()
 
 # Read RMSK annotation
