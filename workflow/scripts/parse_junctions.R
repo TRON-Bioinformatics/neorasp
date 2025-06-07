@@ -9,7 +9,7 @@ suppressMessages({
   library(fs)
 })
 
-parse_star_junctions <- function(star_sj, fraser_sj, canonical_junctions, read_support) {
+parse_star_junctions <- function(star_sj, fraser_sj, canonical_junctions, read_support, cpm_sj) {
   df_fraser <-
     readr::read_tsv(fraser_sj, 
                      col_types = cols(Start = col_integer(), End = col_integer(), Strand=col_character()),
@@ -32,9 +32,12 @@ parse_star_junctions <- function(star_sj, fraser_sj, canonical_junctions, read_s
     ) %>% tidyr::separate_rows(junc_id, sep=";")
 
   canonical_juncs <- readr::read_tsv(canonical_junctions, show_col_types = FALSE)
+  
+  cpm_sj <- readr::read_tsv(cpm_sj, show_col_types = FALSE)
 
   df_star <- splice2neo::parse_star_sj(path = star_sj) %>%
-    dplyr::mutate(is_canonical = junc_id %in% canonical_juncs$junc_id) 
+    dplyr::mutate(is_canonical = junc_id %in% canonical_juncs$junc_id) %>%
+    dplyr::left_join(cpm_sj) 
 
   filtered_junctions <- df_star %>%
     dplyr::filter(is_canonical) %>%
@@ -56,7 +59,8 @@ junctions <- parse_star_junctions(
     star_sj = snakemake@input[['star_sj']],
     fraser_sj = snakemake@input[['fraser_psi']],
     canonical_junctions = snakemake@input[['canonical_junctions']],
-    read_support = snakemake@params[['read_support']]
+    read_support = snakemake@params[['read_support']],
+    cpm_sj = snakemake@input[['star_cpm']]
 )
 
 junctions$novel_junctions %>%
