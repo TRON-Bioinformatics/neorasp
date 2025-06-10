@@ -22,7 +22,7 @@ reliable_calls:
   min_junction_cpm: 0.1
 
 reference:
-  genome: 'tests/resources/tron_genome_lib/resources/ref_genome.fa'
+  genome: 'tests/resources/tron_genome_lib/resources/ref_genome.fasta'
   annotation: 'tests/resources/tron_genome_lib/resources/ref_annot.gtf'
   annotation_bed: 'tests/resources/tron_genome_lib/resources/ref_annot.bed'
   cdna: 'tests/resources/tron_genome_lib/resources/ref_transcripts.fasta'
