@@ -19,7 +19,7 @@ df <- df %>%
   splice2neo::add_context_seq(.,
       transcripts = transcripts,
       size = snakemake@params[['cts_size']],
-      bsg = bsg)
+      bsg = bsg
   )
 
 df %>% readr::write_tsv(snakemake@output[['annotated_sj']])
