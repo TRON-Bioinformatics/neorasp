@@ -2,7 +2,7 @@
   tags:
     - integrationtest
   command: >
-    snakemake -p --sdm apptainer -j 4 --configfile tests/splicing.yaml --apptainer-args "--bind /tmp --bind ${GITHUB_WORKSPACE} --bind ${XDG_CACHE_HOME}/snakemake/"
+    snakemake -p --sdm apptainer -j 4 --configfile tests/splicing.yaml --apptainer-args "--bind /tmp --bind ${GITHUB_WORKSPACE} --bind ${XDG_CACHE_HOME}/snakemake/" --apptainer-prefix ~/.apptainer/cache
   files:
     - path: "results/Hugo_Pt10/star/Aligned.sortedByCoord.out.cram"
     - path: "results/Hugo_Pt10/fetchdata/sj_final.tsv"
