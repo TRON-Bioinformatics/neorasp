@@ -13,7 +13,7 @@ rule prepare_requant:
         genes_of_interest (str): A file with gene ids.
     """
     input:
-        sj = rules.filter_reliable_calls.output.sj_expression
+        sj = rules.add_transcript_expression.output.sj_expression
     output:
         easyquant_table = "results/{sample}/easyquant/context_seq.tsv",
         genes_of_interest = "results/{sample}/easyquant/genes_of_interest.txt"
@@ -126,7 +126,6 @@ rule bowtie_align:
         r1 = "results/{sample}/fastp/{sample}_R1.fastq.gz",
         r2 = "results/{sample}/fastp/{sample}_R2.fastq.gz",
         bowtie_index = rules.bowtie_index.output.bowtie_index
-    log: "results/logs/{sample}_bowtie.txt"
     params:
         index_prefix = lambda wildcards, input: input.bowtie_index[0].removesuffix(".1.bt2"),
         report_threshold = '-a' if config["requantify"].get('bowtie_k_threshold', 200) == 'all' \
@@ -188,7 +187,6 @@ rule requantify:
     output:
         quant = "results/{sample}/easyquant/quantification.tsv",
         read_info = "results/{sample}/easyquant/read_info.tsv.gz"
-    log: "results/logs/{sample}_requantify.log"
     threads: 1
     resources:
         mem_mb = 8000
@@ -221,7 +219,7 @@ rule add_quant_counts:
         requant_dir (str):  Path to working directory of easyquant.
     """
     input:
-        sj = rules.filter_reliable_calls.output.sj_expression,
+        sj = rules.add_transcript_expression.output.sj_expression,
         quantification = rules.requantify.output.quant
     output:
         requantified_sj = temp("results/{sample}/fetchdata/splice2neo/sj_annotated_requantified.tsv")

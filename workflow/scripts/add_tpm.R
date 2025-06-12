@@ -15,12 +15,9 @@ gene <- readr::read_tsv(snakemake@input[['gene_expression']], show_col_types = F
   dplyr::rename(gene_id = Name, gene_expression_tpm=TPM) %>%
   dplyr::select(gene_id, gene_expression_tpm)
 
-jx <- readr::read_tsv(snakemake@input[['junction_expression']], show_col_types = FALSE)
-
 df <- df %>%
   dplyr::left_join(tx) %>%
-  dplyr::left_join(gene) %>%
-  dplyr::left_join(jx)
+  dplyr::left_join(gene)
 
 df %>% 
   readr::write_tsv(snakemake@output[['sj_expression']])
