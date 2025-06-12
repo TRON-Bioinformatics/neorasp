@@ -1,1 +1,44 @@
 
+
+
+
+```
+
+# Input file section
+sample_sheet: 'tests/pep/samples.tsv'
+# Reference genome
+reference:
+  genome: 'tests/resources/GRCh38v45_minigenome/ref_genome.fa'
+  annotation: 'tests/resources/GRCh38v45_minigenome/ref_annot.gtf'
+  annotation_bed: 'tests/resources/GRCh38v45_minigenome/ref_annot.bed'
+  cdna: 'tests/resources/GRCh38v45_minigenome/ref_cdna.fa'
+  chromsizes: 'tests/resources/GRCh38v45_minigenome/ref_genome.chrom.sizes'
+  encode_mapability: 'tests/resources/GRCh38v45_minigenome/mappability/encode_blacklist.bed'
+  ucsc_mapability: 'tests/resources/GRCh38v45_minigenome/mappability/ucsc_unusal.bed'
+  ref_transcripts: 'tests/resources/GRCh38v45_minigenome/ref_transcripts.RDS'
+  ref_cds: 'tests/resources/GRCh38v45_minigenome/ref_cds.RDS'
+  tx2gene: 'tests/resources/GRCh38v45_minigenome/tx2gene.tsv'
+  gene2symbol: 'tests/resources/GRCh38v45_minigenome/hgnc2ensembl_id.tsv.gz'
+  2bit: 'tests/resources/GRCh38v45_minigenome/ref_genome.2bit'
+  canonical_juncs: tests/resources/GRCh38v45_minigenome/canonical_junctions.tsv
+  rmsk: tests/resources/GRCh38v45_minigenome/ref_rmsk.Rds
+
+# Tool configuration
+fraser:
+  min_read: 5
+  mapq_filter: 255
+
+star:
+  min_read: 5
+  ref: tests/resources/GRCh38v45_minigenome/indices/star
+
+requantify:
+  interval_mode: true
+  allow_mismatches: false
+  bowtie_k_threshold: 200
+  cts_size: 1000
+
+reliable_calls:
+  min_junction_usage: 0.01
+  min_junction_cpm: 0.1
+```
