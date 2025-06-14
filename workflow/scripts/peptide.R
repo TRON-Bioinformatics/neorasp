@@ -6,6 +6,7 @@ suppressMessages({
   library(argparse)
   library(splice2neo)
   library(rtracklayer)
+  library(Biostrings)
   #library(furrr)
   #library(purrr)
 })
@@ -59,3 +60,7 @@ dat_for_neofox <- df %>%
 
 df %>% readr::write_tsv(snakemake@output[['junctions']])
 dat_for_neofox %>% readr::write_tsv(snakemake@output[['neofox_annotation']])
+
+peptides <- AAStringSet(dat_for_neofox$mutatedXmer)
+names(peptides) <- paste(dat_for_neofox$patientIdentifier, dat_for_neofox$junc_id, dat_for_neofox$tx_id, sep="|")
+writeXStringSet(peptides, snakemake@output[["peptide_fasta"]])
