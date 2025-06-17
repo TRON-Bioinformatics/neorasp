@@ -7,6 +7,7 @@ suppressMessages({
   library(splice2neo)
   library(rtracklayer)
   library(Biostrings)
+  library(stringr)
   #library(furrr)
   #library(purrr)
 })
@@ -66,11 +67,11 @@ df <- df %>%
   dplyr::mutate(
     fasta_header = paste0(
       "db_rna|",
-      protein_id,
+      stringr::str_c("splice_", protein_id),
       "|",
       hgnc,
       " ",
-      protein_id,
+      stringr::str_c("splice_", protein_id),
       " OS=Homo sapiens OX=9606 GN=",
       hgnc
     )
