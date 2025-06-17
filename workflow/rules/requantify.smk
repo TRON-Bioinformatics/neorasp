@@ -258,9 +258,10 @@ rule translate_to_peptide:
         genome = config['reference']['2bit']
     output:
         junctions = "results/{sample}/fetchdata/sj_final.tsv",
-        neofox_annotation = "results/{sample}/fetchdata/sj_final_neofox_annotation.tsv"
+        neofox_annotation = "results/{sample}/fetchdata/sj_final_neofox_annotation.tsv",
+        peptide_fasta = "results/{sample}/fetchdata/sj_final_peptides.fasta"
     log:  "results/{sample}/log/add_peptide_annotation.log"
-    threads: 4
+    threads: 1
     resources:
         mem_mb = 20000
     container:

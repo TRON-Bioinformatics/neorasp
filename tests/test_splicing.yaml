@@ -7,6 +7,10 @@
     - path: "results/Hugo_Pt10/star/Aligned.sortedByCoord.out.cram"
     - path: "results/Hugo_Pt10/fetchdata/sj_final.tsv"
     - path: "results/Hugo_Pt10/fetchdata/sj_final_neofox_annotation.tsv"
+    - path: "results/Hugo_Pt10/fetchdata/sj_final_peptides.fasta"
+      contains:
+        - ">db_rna|splice_8760f9325ca45b33c224399f28e374ea|DNAI7 splice_8760f9325ca45b33c224399f28e374ea OS=Homo sapiens OX=9606 GN=DNAI7"
+        - "TLYVWANLKKNPRVLLRKNLKP"
     - path: "results/Hugo_Pt10/metrics/Hugo_Pt10.inner_distance.txt"
     - path: "results/Hugo_Pt10/fetchdata/splice2neo/reliable_call/sj_fail_reliable_call.tsv"
     - path: "results/Hugo_Pt10/metrics/Hugo_Pt10.featureCounts.txt"
