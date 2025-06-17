@@ -24,6 +24,9 @@ def get_final_output():
             collect("results/{sample}/fetchdata/sj_final_neofox_annotation.tsv", sample = sample.sample_name)
         )
         final_files.extend(
+            collect("results/{sample}/fetchdata/sj_final_peptides.fasta", sample = sample.sample_name)
+        )
+        final_files.extend(
             collect("results/{sample}/metrics/{sample}.inner_distance.txt", sample = sample.sample_name)
         )
         final_files.extend(
