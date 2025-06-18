@@ -18,14 +18,13 @@ rule fraser:
     """
 
     input:
-        bam = rules.star.output.bam,
+        bam = rules.samtools.output.bam,
         bai = rules.samtools.output.bai,
     params:
         working_dir = 
             lambda wildcards, output: os.path.dirname(output.psi_table),
         min_read = config['fraser'].get('min_read', 5),
-        mapq_filter = config['fraser'].get('mapq_filter', 255),
-        exe = workflow.source_path('../scripts/fraser.R')
+        mapq_filter = config['fraser'].get('mapq_filter', 255)
     log:  "results/{sample}/log/fraser.log"
     output:
         psi_table = "results/{sample}/fraser/junctions_psi.tsv"
@@ -38,48 +37,6 @@ rule fraser:
         '../envs/fraser.yaml'
     script:
         '../scripts/fraser.R'
-
-rule parse_junctions:
-    """Parse junctions
-
-    Rule to parse STAR and FRASER results into standardized splice junction format based on genomic
-    coordinates.
-
-    input:
-        star_sj (str): Path to STAR high confidence SJ.out.tab
-        fraser_psi (str): Path to FRASER metric table
-        canonical_junctions (str): Path to canonical junction filter file
-
-    output:
-        parsed_sj (str): Path to parsed junction table containing 
-            STAR and FRASER junctions
-        removed_junction (str): Path to expressed canonical junctions
-
-    params:
-        read_support (int): Minimum number of unique alignments to report junction. 
-            Defaults to 5
-
-    """
-    input:
-        star_sj = rules.star.output.sj,
-        fraser_psi = rules.fraser.output.psi_table,
-        canonical_junctions = os.path.join(config['index_dir'], 'canonical_junctions.tsv')
-    output:
-        parsed_sj = "results/{sample}/fetchdata/parsing/parsed_sj_star_fraser.tsv",
-        removed_junction = "results/{sample}/fetchdata/detected_sj_canonical.tsv"
-    params:
-        read_support = config['fraser'].get('min_read', 5),
-    log: "results/{sample}/log/sj_parsing.log"
-    threads: 1
-    resources:
-        mem_mb = 8000
-    container:
-        'docker://tronbioinformatics/splice2neo:0.6.12'
-    conda:
-        '../envs/R.yaml'
-    script:
-        '../scripts/parse_junctions.R'
-
 
 rule calculate_junction_cpm:
     """CPM calculation
@@ -96,16 +53,11 @@ rule calculate_junction_cpm:
     output:
         star_sj_cpm (str): Path to normalised SJ counts
 
-    params:
-       exe (str): Path to python script
-
     """
     input:
         star_sj = rules.star.output.sj
     output:
         star_sj_cpm = "results/{sample}/fetchdata/parsing/sj_out_tab_cpm.tsv"
-    params:
-        exe = workflow.source_path('../scripts/normalize_star_cpm.py')
     log: "results/{sample}/log/sj_cpm.log"
     threads: 1
     resources:
@@ -113,10 +65,52 @@ rule calculate_junction_cpm:
     conda: '../envs/python.yaml'
     container:
         'docker://tronbioinformatics/tron_data_utils:0.0.1'
-    shell:
-        'python {params.exe} '
-        '-i {input.star_sj} '
-        '-o {output.star_sj_cpm} 2>&1 | tee {log}'
+    script:
+	    '../scripts/normalize_star_cpm.py'
+
+rule parse_junctions:
+    """Parse junctions
+
+    Rule to parse STAR and FRASER results into standardized splice junction format based on genomic
+    coordinates.
+
+    input:
+        star_sj (str): Path to STAR high confidence SJ.out.tab
+        fraser_psi (str): Path to FRASER metric table
+        canonical_junctions (str): Path to canonical junction filter file
+        star_cpm (str): Path to CPM normalised splice junction counts.
+
+    output:
+        parsed_sj (str): Path to parsed junction table containing 
+            STAR and FRASER junctions
+        removed_junction (str): Path to expressed canonical junctions
+
+    params:
+        read_support (int): Minimum number of unique alignments to report junction. 
+            Defaults to 5
+
+    """
+    input:
+        star_sj = rules.star.output.sj,
+        fraser_psi = rules.fraser.output.psi_table,
+        star_cpm = rules.calculate_junction_cpm.output.star_sj_cpm,
+        canonical_junctions = config['reference']['canonical_juncs']
+    output:
+        parsed_sj = "results/{sample}/fetchdata/parsing/parsed_sj_star_fraser.tsv",
+        removed_junction = "results/{sample}/fetchdata/detected_sj_canonical.tsv"
+    params:
+        read_support = config['fraser'].get('min_read', 5),
+    log: "results/{sample}/log/sj_parsing.log"
+    threads: 1
+    resources:
+        mem_mb = 8000
+    container:
+        'docker://tronbioinformatics/splice2neo:0.6.13'
+    conda:
+        '../envs/R.yaml'
+    script:
+        '../scripts/parse_junctions.R'
+
 
 rule filter_mappability:
     """Mapability filter
@@ -137,8 +131,8 @@ rule filter_mappability:
     """
     input:
         parsed_sj = rules.parse_junctions.output.parsed_sj,
-        encode_regions = os.path.join(config['index_dir'], 'mappability', 'encode_blacklist.bed'),
-        ucsc_regions = os.path.join(config['index_dir'], 'mappability', 'ucsc_unusal.bed')
+        encode_regions = config['reference']['encode_mapability'],
+        ucsc_regions = config['reference']['ucsc_mapability']
     output:
         parsed_sj = "results/{sample}/fetchdata/mappability/sj_passing_mappability.tsv",
         failed_sj = "results/{sample}/fetchdata/mappability/sj_problematic_mappability.tsv"
@@ -146,12 +140,41 @@ rule filter_mappability:
     resources:
         mem_mb = 8000
     container:
-        'docker://tronbioinformatics/splice2neo:0.6.12'
+        'docker://tronbioinformatics/splice2neo:0.6.13'
     conda:
         '../envs/R.yaml'
     log: "results/{sample}/log/mappability_filter.log"
     script:
         '../scripts/filter_mapability.R'
+
+rule filter_reliable_calls:
+    """Filter novel junctions based on expression by user
+
+    input:
+        annotated_sj (str):  Path to splice junction table.
+    output:
+        sj_expression (str): Path to splice junction table with relibale calls.
+        sj_low_expression (str): Path to splice junction table failing relibale call parameter.
+
+    """
+    input:
+        annotated_sj = rules.filter_mappability.output.parsed_sj,
+    output:
+        sj_expression = temp("results/{sample}/fetchdata/splice2neo/reliable_call/sj_reliable_call.tsv"),
+        sj_low_expression =  "results/{sample}/fetchdata/splice2neo/reliable_call/sj_fail_reliable_call.tsv"
+    params:
+        min_junction_usage = config['reliable_calls'].get('min_junction_usage', 0.01),
+        min_junction_cpm = config['reliable_calls'].get('min_junction_cpm', 0.1)
+    threads: 1
+    resources:
+        mem_mb = 8000
+    container:
+        'docker://tronbioinformatics/splice2neo:0.6.13'
+    conda:
+        '../envs/R.yaml'
+    log: 'results/{sample}/log/filter_reliable_calls.log'
+    script:
+        '../scripts/filter_reliable_calls.R'
 
 rule add_gene_annotation:
     """Annotation
@@ -165,6 +188,7 @@ rule add_gene_annotation:
         transcripts (str): Path to RDS object of reference transcripts.
         gene2hgnc (str): Path to gene to HGNC (gene name) mapping.
         tx2gene (str): Path to transcript to gene mapping.
+        rmsk (str): Path to RepeatMasker annotation.
     output:
         annotated_sj (str): Path to splice junction table with feature annotation.
         annotated_sj_problematic (str): Path to table with splice junctions
@@ -172,20 +196,21 @@ rule add_gene_annotation:
 
     """
     input:
-        parsed_sj = rules.filter_mappability.output.parsed_sj,
-        transcripts = os.path.join(config['index_dir'], 'ref_transcripts.RDS'),
-        tx2gene = os.path.join(config['index_dir'], 'tx2gene.tsv'),
-        gene2hgnc = os.path.join(config['index_dir'], 'hgnc2ensembl_id.tsv.gz')
+        parsed_sj = rules.filter_reliable_calls.output.sj_expression,
+        transcripts = config['reference']['ref_transcripts'],
+        tx2gene = config['reference']['tx2gene'],
+        gene2hgnc = config['reference']['gene2symbol'],
+        rmsk = config['reference']['rmsk']
     output:
         annotated_sj = "results/{sample}/fetchdata/splice2neo/gene_annot/sj_gene_transcript_overlap.tsv",
         annotated_sj_problematic = "results/{sample}/fetchdata/splice2neo/gene_annot/sj_no_transcript_overlap.tsv"
-    threads: 1
+    threads: 4
     resources:
         mem_mb = 20000
     params:
         extra = "",
     container:
-        'docker://tronbioinformatics/splice2neo:0.6.12'
+        'docker://tronbioinformatics/splice2neo:0.6.13'
     conda:
         '../envs/R.yaml'
     log:  "results/{sample}/log/add_gene_transcript.log"
@@ -246,18 +271,18 @@ rule add_context_sequence:
     """
     input:
         parsed_sj = rules.filter_gene_hgnc.output.sj_passed_gene,
-        transcripts = os.path.join(config['index_dir'], 'ref_transcripts.RDS'),
-        genome = os.path.join(config['index_dir'], 'ref_genome.2bit')
+        transcripts = config['reference']['ref_transcripts'],
+        genome = config['reference']['2bit']
     output:
         annotated_sj = "results/{sample}/fetchdata/splice2neo/cts/sj_annotated_cts.tsv",
-    threads: 1
+    threads: 4
     resources:
         mem_mb = 20000
     params:
         extra = "",
         cts_size = config['requantify'].get('cts_size', 1000)
     container:
-        'docker://tronbioinformatics/splice2neo:0.6.12'
+        'docker://tronbioinformatics/splice2neo:0.6.13'
     conda:
         '../envs/R.yaml'
     log:  "results/{sample}/log/add_cts.log"
@@ -269,16 +294,12 @@ rule add_transcript_expression:
     """Add transcript/gene expression
 
     Rule to annotate splice junction candidate with transcript and 
-    gene expression determined with salmon. Moreover, CPM normalized
-    junction counts are added in this step. Note, in this
-    step the table is annotated also with the SJ di-nucleotide
-    motif.
+    gene expression determined with salmon.
 
     input:
         annotated_sj (str):  Path to splice junction table.
         transcript_expression (str): Path to salmon transcript level quantification.
         gene_expression (str): Path to salmon gene level quantification.
-        junction_expression (str): Path to CPM normalised splice junction counts.
     output:
         sj_expression (str): Path to splice junction table with expression estimates added.
 
@@ -286,8 +307,7 @@ rule add_transcript_expression:
     input:
         annotated_sj = rules.add_context_sequence.output.annotated_sj,
         transcript_expression =  'results/{sample}/salmon_bam/quant.sf',
-        gene_expression = 'results/{sample}/salmon_bam/quant.genes.sf',
-        junction_expression = rules.calculate_junction_cpm.output.star_sj_cpm
+        gene_expression = 'results/{sample}/salmon_bam/quant.genes.sf'
     output:
         sj_expression = temp("results/{sample}/fetchdata/splice2neo/sj_annotated_expression.tsv")
     params:
@@ -296,11 +316,10 @@ rule add_transcript_expression:
     resources:
         mem_mb = 8000
     container:
-        'docker://tronbioinformatics/splice2neo:0.6.12'
+        'docker://tronbioinformatics/splice2neo:0.6.13'
     conda:
         '../envs/R.yaml'
     log:  "results/{sample}/log/add_expression_estimates.log"
     script:
         '../scripts/add_tpm.R'
-
 
