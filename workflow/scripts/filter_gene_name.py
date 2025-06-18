@@ -29,7 +29,7 @@ epilog = "Copyright (c) 2024 TRON gGmbH (See LICENSE for licensing details)"
 
 class FilterGene:
     # Default regex
-    exclude_genes = {
+    exclude_genes_homo_sapiens = {
         "^MT-": "Mitochondrial gene",
         "^HLA-": "HLA gene",
         "^IGH[VDJCG]?": "Immunoglobulin gene",
@@ -40,21 +40,35 @@ class FilterGene:
         "^IGK[VJC]?": "Immunoglobulin gene",
         "^IGL[VJC]?": "Immunoglobulin gene",
     }
+    exclude_genes_mus_musculus = {
+        "mt-": "Mitochondrial gene",
+        "^H2-": "MHC gene",
+        "^Igh[vmdjmgea]?": "Immunoglobulin gene"
+    }
 
-    def __init__(self, junction_table, output_path) -> None:
+    def __init__(self, junction_table, output_path, organism="human", verbose=False) -> None:
         """Parameter initialization"""
         self.df = self._read_tab(junction_table)
         assert all(
             [x in self.df.columns for x in ["junc_id", "hgnc"]]
         ), "File is missing required columns"
         self.output_path = output_path
-        self.filter_regex = FilterGene.exclude_genes
+        self.organism = organism
+        self.filter_regex = FilterGene.exclude_genes_homo_sapiens
+        if self.organism == "mouse":
+            logger.debug(f"-> Organism set to {self.organism}. Applying corresponding gene filters.")
+            self.filter_regex = FilterGene.exclude_genes_mus_musculus
+            self._log_genes()
 
     @staticmethod
     def _read_tab(table) -> pd.DataFrame:
         logger.info("-> Reading input table")
         df = pd.read_csv(table, sep="\t")
         return df
+
+    def _log_genes(self) -> None:
+        for this_key, this_value in self.filter_regex.items():
+            logger.debug(f"-> Applying {this.key} to remove {this.value}")
 
     def _annotate_with_gene_regex(self):
         """
@@ -92,7 +106,7 @@ class FilterGene:
 
 
 def main():
-    filter = FilterGene(snakemake.input["parsed_sj"], snakemake.params["working_dir"])
+    filter = FilterGene(snakemake.input["parsed_sj"], snakemake.params["working_dir"], organism=snakemake.params["organism"])
     filter.run()
 
 
