@@ -54,7 +54,7 @@ def read_sample_sheet(file):
         replicate_df = replicate_df + 1
         # Merge back to expanded df
         df = pd.concat([df, replicate_df], axis=1).rename(columns={0 : "replicate"})
-        df["replicate"] = "Rep" + df["replicate"].astype(str)
+        df["replicate"] = df["replicate"].astype(str).apply(lambda x: f"Rep{x}")
 
     return df
 
