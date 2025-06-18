@@ -10,22 +10,31 @@ def get_final_output():
         final_files.extend(
             collect("results/{sample}/qualimap", sample = sample.sample_name)
         )
-        # BigWig of STAR alignment
-        final_files.extend(
-            collect("results/{sample}/star/Signal.Unique.str1.bw", sample = sample.sample_name)
-        )
-        final_files.extend(
-            collect("results/{sample}/star/Signal.Unique.str2.bw", sample = sample.sample_name)
-        )
         final_files.extend(
             collect("results/{sample}/fetchdata/sj_final.tsv", sample = sample.sample_name)
         )
         final_files.extend(
             collect("results/{sample}/fetchdata/sj_final_neofox_annotation.tsv", sample = sample.sample_name)
         )
-        #"results/{sample}/metrics/{sample}.inner_distance.txt",
+        final_files.extend(
+            collect("results/{sample}/fetchdata/sj_final_peptides.fasta", sample = sample.sample_name)
+        )
         final_files.extend(
             collect("results/{sample}/metrics/{sample}.inner_distance.txt", sample = sample.sample_name)
+        )
+        final_files.extend(
+            collect("results/{sample}/metrics/{sample}.junctionSaturation_plot.pdf", sample = sample.sample_name)
+        )
+        #results/{sample}/metrics/{sample}.summary.xls
+        final_files.extend(
+           collect("results/{sample}/metrics/{sample}.read_distribution.txt", sample = sample.sample_name)
+        )
+        final_files.extend(
+           collect("results/{sample}/metrics/{sample}.featureCounts.txt", sample = sample.sample_name)
+        )
+        # Cram files
+        final_files.extend(
+            collect("results/{sample}/star/Aligned.sortedByCoord.out.cram", sample = sample.sample_name)
         )
     return final_files
 
@@ -41,10 +50,12 @@ def read_sample_sheet(file):
         
         # Check for replicates in input
         # cumcount starts with 0 therefore we add 1
-        replicate_df = df.groupby("sample")["sample"].cumcount()
+        replicate_df = df.groupby("sample_name")["sample_name"].cumcount()
         replicate_df = replicate_df + 1
         # Merge back to expanded df
         df = pd.concat([df, replicate_df], axis=1).rename(columns={0 : "replicate"})
+        df["replicate"] = df["replicate"].astype(str)
+
     return df
 
 def get_fq(wildcards):
@@ -63,7 +74,7 @@ def get_replicates(wildcards):
     """Return the replicate names for a specific sample.
     """
     # use the sample ID to get the replicate rows in the subsample table and return the replicate names
-    return samples.query('sample_name == @wildcards.sample_name').get('replicate', None).values
+    return samples.query('sample_name == @wildcards.sample').get('replicate', None).values
 
 
 def get_star_input(wildcards):
@@ -74,15 +85,15 @@ def get_star_input(wildcards):
     """
     replicates = get_replicates(wildcards)
     return {
-        'fq1': ["results/{sample}/fastp/{rep}/{sample}_R1.fastq.gz for rep in replicates],
-        'fq2': ["results/{sample}/fastp/{rep}/{sample}_R2.fastq.gz for rep in replicates]
+        'fq1': [f"results/{wildcards.sample}/fastp/{rep}/{wildcards.sample}_R1.fastq.gz" for rep in replicates],
+        'fq2': [f"results/{wildcards.sample}/fastp/{rep}/{wildcards.sample}_R2.fastq.gz" for rep in replicates]
     }
 
 def get_rg_star(wildcards):
     """Get the read group line for STAR, where multiple replicates are handled
     """
     replicates = get_replicates(wildcards)
-    return ' , '.join([f'ID:{wildcards.sample_name}_{rep}\tSM:{wildcards.sample_name}\tPL:ILLUMINA' for rep in replicates])
+    return ' , '.join([f'ID:{wildcards.sample}_{rep}\tSM:{wildcards.sample}\tPL:ILLUMINA' for rep in replicates])
 
 
 def determine_star_read_command(wildcards, read):

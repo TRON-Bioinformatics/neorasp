@@ -21,7 +21,7 @@ rule prepare_requant:
     resources:
         mem_mb = 8000
     container:
-        'docker://tronbioinformatics/splice2neo:0.6.12'
+        'docker://tronbioinformatics/splice2neo:0.6.13'
     conda:
         '../envs/R.yaml'
     log:  "results/{sample}/log/prepare_requantification.log"
@@ -95,7 +95,7 @@ rule bowtie_index:
         'bowtie2-build '
         '--threads {threads} '
         '{input.context_fa} '
-        '{params.prefix} 2>&1 | tee {log}'
+        '{params.prefix} 2>&1 1>{log}'
         
 
 rule bowtie_align:
@@ -123,14 +123,14 @@ rule bowtie_align:
     
     """
     input:
-        r1 = "results/{sample}/fastp/{sample}_R1.fastq.gz",
-        r2 = "results/{sample}/fastp/{sample}_R2.fastq.gz",
+        unpack(get_star_input),
         bowtie_index = rules.bowtie_index.output.bowtie_index
-    log: "results/logs/{sample}_bowtie.txt"
     params:
         index_prefix = lambda wildcards, input: input.bowtie_index[0].removesuffix(".1.bt2"),
         report_threshold = '-a' if config["requantify"].get('bowtie_k_threshold', 200) == 'all' \
             else f'-k {config["requantify"].get("bowtie_k_threshold", 200)}',
+        input_str_fq1 = lambda wildcards, input: ','.join(input.fq1),
+        input_str_fq2 = lambda wildcards, input: ','.join(input.fq2),
     output:
         sam = temp("results/{sample}/easyquant/alignment/bowtie_Aligned.out.sam")
     threads: 4
@@ -150,7 +150,7 @@ rule bowtie_align:
         "--no-discordant "
         "--no-mixed "
         "--dpad 0 --gbar 99999999 --mp 1,1 --np 1 --score-min L,0,-0.01 "
-        "-1 {input.r1} -2 {input.r2} "
+        "-1 {params.input_str_fq1} -2 {params.input_str_fq2} "
         "> {output.sam} "
         "2> {log}"
 
@@ -188,7 +188,6 @@ rule requantify:
     output:
         quant = "results/{sample}/easyquant/quantification.tsv",
         read_info = "results/{sample}/easyquant/read_info.tsv.gz"
-    log: "results/logs/{sample}_requantify.log"
     threads: 1
     resources:
         mem_mb = 8000
@@ -232,7 +231,7 @@ rule add_quant_counts:
     resources:
         mem_mb = 8000
     container:
-        'docker://tronbioinformatics/splice2neo:0.6.12'
+        'docker://tronbioinformatics/splice2neo:0.6.13'
     conda:
         '../envs/R.yaml'
     script:
@@ -256,17 +255,18 @@ rule translate_to_peptide:
     """
     input:
         sj = rules.add_quant_counts.output.requantified_sj,
-        cds = os.path.join(config['index_dir'], 'ref_cds.RDS'),
-        genome = os.path.join(config['index_dir'], 'ref_genome.2bit')
+        cds = config['reference']['ref_cds'],
+        genome = config['reference']['2bit']
     output:
         junctions = "results/{sample}/fetchdata/sj_final.tsv",
-        neofox_annotation = "results/{sample}/fetchdata/sj_final_neofox_annotation.tsv"
+        neofox_annotation = "results/{sample}/fetchdata/sj_final_neofox_annotation.tsv",
+        peptide_fasta = "results/{sample}/fetchdata/sj_final_peptides.fasta"
     log:  "results/{sample}/log/add_peptide_annotation.log"
     threads: 1
     resources:
-        mem_mb = 16000
+        mem_mb = 20000
     container:
-        'docker://tronbioinformatics/splice2neo:0.6.12'
+        'docker://tronbioinformatics/splice2neo:0.6.13'
     conda:
         '../envs/R.yaml'
     script:

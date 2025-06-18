@@ -9,7 +9,6 @@ include: "rules/common.smk"
 include: "rules/import_tronmake_expression.smk"
 include: "rules/junctions.smk"
 include: "rules/requantify.smk"
-include: "rules/filtering.smk"
 
 samples = read_sample_sheet(config['sample_sheet'])
 

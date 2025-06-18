@@ -5,7 +5,11 @@ suppressMessages({
   library(magrittr)
   library(splice2neo)
   library(GenomicFeatures)
+  library(furrr)
+  library(purrr)
 })
+options(future.fork.enable = TRUE)
+plan(multicore, workers = as.integer(snakemake@threads))
 
 transcripts <- base::readRDS(snakemake@input[['transcripts']])
 
@@ -17,20 +21,27 @@ tx2gene <- readr::read_tsv(snakemake@input[['tx2gene']], show_col_types = FALSE)
 
 # Read gene to HGNC mapping
 gene2hgnc <- readr::read_tsv(snakemake@input[['gene2hgnc']], show_col_types = FALSE) %>%
-  dplyr::select(`Gene stable ID version`, `Gene name`) %>%
-  dplyr::rename(gene_id = `Gene stable ID version`, hgnc = `Gene name`) %>%
+  dplyr::rename(hgnc = gene_symbol) %>%
   dplyr::distinct()
+
+# Read RMSK annotation
+rmsk <- base::readRDS(snakemake@input[['rmsk']])
 
 # Annotate with possible transcripts
 df <- df %>%
-    splice2neo::add_tx(transcripts = transcripts)
+    splice2neo::add_tx(transcripts = transcripts) %>%
+    splice2neo::annotate_potential_jet(., rmsk)
 
 df_without_tx <- df %>%
     filter(is.na(tx_id)) %>%
     dplyr::mutate(hgnc="", gene_id="")
 
+# Apply choose_tx in parallel to fix issue in splice2neo with large dataframes.
 df <- df %>%
-  splice2neo::choose_tx()
+  dplyr::filter(!is.na(tx_id)) %>%
+  base::split(.$junc_id) %>% 
+  furrr::future_map(~splice2neo::choose_tx(.x))
+df <- dplyr::bind_rows(discard(df, ~nrow(.x) == 0))
 
 # Select likely transcripts and annotate with ENSEMBL gene id and HGNC symbol
 df <- df %>%
