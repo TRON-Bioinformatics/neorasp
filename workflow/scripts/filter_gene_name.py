@@ -46,7 +46,7 @@ class FilterGene:
         "^Igh[vmdjmgea]?": "Immunoglobulin gene"
     }
 
-    def __init__(self, junction_table, output_path, organism="human", verbose=false) -> None:
+    def __init__(self, junction_table, output_path, organism="human", verbose=False) -> None:
         """Parameter initialization"""
         self.df = self._read_tab(junction_table)
         assert all(
