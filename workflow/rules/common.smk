@@ -10,18 +10,14 @@ def get_final_output():
         final_files.extend(
             collect("results/{sample}/qualimap", sample = sample.sample_name)
         )
-        # BigWig of STAR alignment
-        #final_files.extend(
-        #    collect("results/{sample}/star/Signal.Unique.str1.bw", sample = sample.sample_name)
-        #)
-        #final_files.extend(
-        #    collect("results/{sample}/star/Signal.Unique.str2.bw", sample = sample.sample_name)
-        #)
         final_files.extend(
             collect("results/{sample}/fetchdata/sj_final.tsv", sample = sample.sample_name)
         )
         final_files.extend(
             collect("results/{sample}/fetchdata/sj_final_neofox_annotation.tsv", sample = sample.sample_name)
+        )
+        final_files.extend(
+            collect("results/{sample}/fetchdata/sj_final_peptides.fasta", sample = sample.sample_name)
         )
         final_files.extend(
             collect("results/{sample}/metrics/{sample}.inner_distance.txt", sample = sample.sample_name)
@@ -46,23 +42,21 @@ def read_sample_sheet(file):
     """
     Read sample sheet with either SRA accessions, fastq or BAM files
     """
-    file_content = []
-    sra_mode = config['sra_mode']
-    interleaved_fastq = config['interleaved_input']
-    bam_input = config['bam_input']
     with open(file, "r") as file_handle:
-        if sra_mode:
-            samples = pd.read_table(file_handle, names=['sample_name'])
-            samples = samples[samples.sample_name.str.startswith('SRR') | samples.sample_name.str.startswith('ERR') | samples.sample_name.str.startswith('DRR')]
-        else:
-            # When input are interleaved fastq files read table with single fastq
-            if interleaved_fastq:
-                samples = pd.read_csv(file_handle, sep="\t", names=["sample_name", "fq"])
-            elif bam_input:
-                samples = pd.read_csv(file_handle, sep="\t", names=["sample_name", "bam"])
-            else:
-                samples = pd.read_csv(file_handle, sep="\t", names=["sample_name", "fq1", "fq2"])
-    return samples
+        df = pd.read_csv(file_handle, sep="\t", names=["sample_name", "fq1", "fq2"])
+        df["fq1"] = df.fq1.str.split(",")
+        df["fq2"] = df.fq2.str.split(",")
+        df = df.explode(["fq1","fq2"])
+        
+        # Check for replicates in input
+        # cumcount starts with 0 therefore we add 1
+        replicate_df = df.groupby("sample_name")["sample_name"].cumcount()
+        replicate_df = replicate_df + 1
+        # Merge back to expanded df
+        df = pd.concat([df, replicate_df], axis=1).rename(columns={0 : "replicate"})
+        df["replicate"] = df["replicate"].astype(str).apply(lambda x: f"Rep{x}")
+
+    return df
 
 def get_fq(wildcards):
     """
@@ -70,42 +64,37 @@ def get_fq(wildcards):
 
     Paths are determined based on local or SRA mode
     """
-    sample = wildcards.sample
-    sra_mode = config['sra_mode']
-    # If pipeline is downloading from SRA the paths to the FASTQ files
-    # are in the fastp subfolder
-    if sra_mode:
-        return {'r1': "results/{sample}/sra/{sample}_1.fastq.gz",
-                'r2': "results/{sample}/sra/{sample}_2.fastq.gz"}
-    
-    interleaved_fastq = config['interleaved_input']
-    if interleaved_fastq:
-        return {'r1': 'results/{sample}/deinterleave/{sample}_R1.fastq',
-                'r2': 'results/{sample}/deinterleave/{sample}_R2.fastq'}
-    
-    fq = samples.query('sample_name == @wildcards.sample')
+    fq = samples.query('sample_name == @wildcards.sample & replicate == @wildcards.replicate')
     fq1 = fq.get('fq1').item()
     fq2 = fq.get('fq2').item()
     
     return {'r1': fq1, 'r2': fq2}
 
-def get_interleaved_input(wildcards):
+def get_replicates(wildcards):
+    """Return the replicate names for a specific sample.
     """
-    Get path to interleaved fastq file
-    """
-    sample = wildcards.sample
-    fq = samples.query('sample_name == @wildcards.sample')
-    interleaved_fq = fq.get('fq').item()
-    return interleaved_fq
+    # use the sample ID to get the replicate rows in the subsample table and return the replicate names
+    return samples.query('sample_name == @wildcards.sample').get('replicate', None).values
 
-def get_bam_input(wildcards):
+
+def get_star_input(wildcards):
+    """Collect the STAR input fastq files.
+
+    STAR takes all replicates of a sample. This function collects all replicates
+    for the forward and reverse read and returns them as a dictionary.
     """
-    Get path to interleaved fastq file
+    replicates = get_replicates(wildcards)
+    return {
+        'fq1': [f"results/{wildcards.sample}/fastp/{rep}/{wildcards.sample}_R1.fastq.gz" for rep in replicates],
+        'fq2': [f"results/{wildcards.sample}/fastp/{rep}/{wildcards.sample}_R2.fastq.gz" for rep in replicates]
+    }
+
+def get_rg_star(wildcards):
+    """Get the read group line for STAR, where multiple replicates are handled
     """
-    sample = wildcards.sample
-    bam = samples.query('sample_name == @wildcards.sample')
-    bam = fq.get('bam').item()
-    return bam
+    replicates = get_replicates(wildcards)
+    return ' , '.join([f'ID:{wildcards.sample}_{rep}\tSM:{wildcards.sample}\tPL:ILLUMINA' for rep in replicates])
+
 
 def determine_star_read_command(wildcards, read):
     """
