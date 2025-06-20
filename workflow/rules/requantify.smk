@@ -123,13 +123,14 @@ rule bowtie_align:
     
     """
     input:
-        r1 = "results/{sample}/fastp/{sample}_R1.fastq.gz",
-        r2 = "results/{sample}/fastp/{sample}_R2.fastq.gz",
+        unpack(get_star_input),
         bowtie_index = rules.bowtie_index.output.bowtie_index
     params:
         index_prefix = lambda wildcards, input: input.bowtie_index[0].removesuffix(".1.bt2"),
         report_threshold = '-a' if config["requantify"].get('bowtie_k_threshold', 200) == 'all' \
             else f'-k {config["requantify"].get("bowtie_k_threshold", 200)}',
+        input_str_fq1 = lambda wildcards, input: ','.join(input.fq1),
+        input_str_fq2 = lambda wildcards, input: ','.join(input.fq2),
     output:
         sam = temp("results/{sample}/easyquant/alignment/bowtie_Aligned.out.sam")
     threads: 4
@@ -149,7 +150,7 @@ rule bowtie_align:
         "--no-discordant "
         "--no-mixed "
         "--dpad 0 --gbar 99999999 --mp 1,1 --np 1 --score-min L,0,-0.01 "
-        "-1 {input.r1} -2 {input.r2} "
+        "-1 {params.input_str_fq1} -2 {params.input_str_fq2} "
         "> {output.sam} "
         "2> {log}"
 
@@ -258,9 +259,10 @@ rule translate_to_peptide:
         genome = config['reference']['2bit']
     output:
         junctions = "results/{sample}/fetchdata/sj_final.tsv",
-        neofox_annotation = "results/{sample}/fetchdata/sj_final_neofox_annotation.tsv"
+        neofox_annotation = "results/{sample}/fetchdata/sj_final_neofox_annotation.tsv",
+        peptide_fasta = "results/{sample}/fetchdata/sj_final_peptides.fasta"
     log:  "results/{sample}/log/add_peptide_annotation.log"
-    threads: 4
+    threads: 1
     resources:
         mem_mb = 20000
     container:
