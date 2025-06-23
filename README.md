@@ -1,19 +1,26 @@
-# NeoRasp 🍓🐍
+# NeoRasp
 
 <!-- badges: start -->
 [![Snakemake](https://img.shields.io/badge/snakemake-9.1.3-brightgreen.svg?style=flat)](https://snakemake.readthedocs.io)
+![Python](https://img.shields.io/badge/python-3670A0?style=flat-square&logo=python&logoColor=ffdd54)
+[![R](https://img.shields.io/badge/R-276DC3?style=flat-square&logo=r&logoColor=white)](https://img.shields.io/badge/R-276DC3?style=flat-square&logo=r&logoColor=white)
 [![CI](https://github.com/TRON-Private/tronmake-rna-splicing/actions/workflows/ci.yml/badge.svg)](https://github.com/TRON-Private/tronmake-rna-splicing/actions/workflows/ci.yml/badge.svg)
+[![MIT](https://img.shields.io/badge/MIT-green?style=flat)](https://img.shields.io/badge/MIT-green?style=flat)
 <!-- badges: end -->
 
 **(Neo)antigens from (R)n(a)-(sp)licing**
 
+--- 
+
+<img align="right" width="150" height="150" src="https://github.com/user-attachments/assets/7f359faf-8a20-42c5-949d-4b2a70137d0f">  
 
 Full documentation: https://tron.pages.gitlab.rlp.net/tronmake-rna-splicing
-
 
 NeoRasp is an end-to-end workflow to identify non-canonical tumor-specific splice junction from RNA-seq.
 The workflow implements a sensitive alignment based splice junction detection and targeted re-quantification
 of candidate transcript variants. In our bioinformatics pipeline, [SnakeMake](https://snakemake.readthedocs.io/en/stable/) is employed as the primary workflow manager to orchestrate various steps. 
+
+---
 
 ## Workflow
 
@@ -24,7 +31,7 @@ of candidate transcript variants. In our bioinformatics pipeline, [SnakeMake](ht
 - Process:
     1. Adapter and quality trimming ([`fastp`](https://github.com/OpenGene/fastp))
 
-    2. Detection and metric calculation: ([`STAR`](https://github.com/alexdobin/STAR) -> [`fraser`](https://github.com/deweylab/RSEM))
+    2. Detection and metric calculation: ([`STAR`](https://github.com/alexdobin/STAR) -> [`fraser`](https://github.com/gagneurlab/FRASER))
 
     3. Expression quantification ([`Salmon`](https://salmon.readthedocs.io/en/latest/))
 
@@ -58,11 +65,10 @@ git clone https://gitlab.rlp.net/tron/tronmake-rna-splicing
 ### Create conda environment
 
 ```
-cd NeoRasp
+cd neorasp
 conda env create -f environment.yaml --prefix conda_env/
 conda activate conda_env
 ```
-
 
 ## Authors & Acknowledgements 
 
