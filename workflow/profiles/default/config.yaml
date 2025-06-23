@@ -98,7 +98,7 @@ set-resources:
     mem_mb: 8000 + ((attempt - 1) * 2000)
     runtime: "1h"
   junction_saturation:
-    mem_mb: 2000 + ((attempt - 1) * 2000)
+    mem_mb: 8000 + ((attempt - 1) * 8000)
     runtime: "1h"
   read_distribution:
     mem_mb: 2000 + ((attempt - 1) * 2000)
