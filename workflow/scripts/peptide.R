@@ -78,10 +78,10 @@ df <- df %>%
   )
 
 df_fasta <- df %>%
-  dplyr::select(fasta_header, peptide_context) %>%
+  dplyr::select(fasta_header, protein) %>%
   dplyr::distinct() %>%
-  dplyr::filter(!is.na(peptide_context) & nchar(peptide_context) > 7)
+  dplyr::filter(!is.na(protein))
 
-peptides <- AAStringSet(df_fasta$peptide_context)
+peptides <- AAStringSet(df_fasta$protein)
 names(peptides) <- df_fasta$fasta_header
 writeXStringSet(peptides, snakemake@output[["peptide_fasta"]])
