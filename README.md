@@ -14,7 +14,7 @@
 
 <img align="right" width="150" height="150" src="https://github.com/user-attachments/assets/7f359faf-8a20-42c5-949d-4b2a70137d0f">  
 
-Full documentation: https://tron.pages.gitlab.rlp.net/tronmake-rna-splicing
+Full documentation: [https://tron.pages.gitlab.rlp.net/tronmake-rna-splicing](https://probable-barnacle-2nrmw6z.pages.github.io/)
 
 NeoRasp is an end-to-end workflow to identify non-canonical tumor-specific splice junction from RNA-seq.
 The workflow implements a sensitive alignment based splice junction detection and targeted re-quantification
@@ -49,7 +49,7 @@ of candidate transcript variants. In our bioinformatics pipeline, [SnakeMake](ht
 ## Dependencies
 
  - python (>=3.10)
- - snakemake (==8.24.1)
+ - snakemake (==9.1.3)
  - conda (>=24.9)
  - apptainer (>=1.3.4)
 
