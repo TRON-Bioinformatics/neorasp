@@ -9,7 +9,7 @@ suppressMessages({
   library(fs)
 })
 
-parse_star_junctions <- function(star_sj, fraser_sj, canonical_junctions, read_support, cpm_sj) {
+parse_star_junctions <- function(star_sj, fraser_sj, canonical_junctions, cpm_sj) {
   df_fraser <-
     readr::read_tsv(fraser_sj, 
                      col_types = cols(Start = col_integer(), End = col_integer(), Strand=col_character()),
@@ -48,7 +48,6 @@ parse_star_junctions <- function(star_sj, fraser_sj, canonical_junctions, read_s
 
   # Filter out junctions with a supporting read count less than the provided cutoff
   df_star <- df_star %>%
-    dplyr::filter(uniquely_mapping_reads >= as.numeric(read_support)) %>%
     dplyr::left_join(df_fraser %>% dplyr::select(junc_id, intron_jaccard, psi5, psi3) %>% distinct())
 
   return(list(novel_junctions = df_star, canonical_junctions = filtered_junctions)) 
@@ -59,7 +58,6 @@ junctions <- parse_star_junctions(
     star_sj = snakemake@input[['star_sj']],
     fraser_sj = snakemake@input[['fraser_psi']],
     canonical_junctions = snakemake@input[['canonical_junctions']],
-    read_support = snakemake@params[['read_support']],
     cpm_sj = snakemake@input[['star_cpm']]
 )
 
