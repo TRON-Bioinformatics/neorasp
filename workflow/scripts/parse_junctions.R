@@ -65,8 +65,3 @@ junctions$novel_junctions %>%
   readr::write_tsv(snakemake@output[['parsed_sj']])
 junctions$canonical_junctions %>%
   readr::write_tsv(snakemake@output[['removed_junction']])
-
-
-
-  
-  
