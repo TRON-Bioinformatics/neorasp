@@ -1,8 +1,5 @@
 # Input file section
 sample_sheet: 'tests/pep/samples.tsv'
-sra_mode: false
-interleaved_input: false
-bam_input: false
 
 reference:
   genome: 'tests/resources/GRCh38v45_minigenome/ref_genome.fa'
@@ -26,7 +23,6 @@ fraser:
   mapq_filter: 255
 
 star:
-  min_read: 5
   ref: tests/resources/GRCh38v45_minigenome/indices/star
 
 requantify:

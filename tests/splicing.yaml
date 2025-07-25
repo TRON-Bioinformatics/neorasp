@@ -1,14 +1,10 @@
-sra_mode: false
 sample_sheet: 'tests/pep/samples.tsv'
-interleaved_input: false
-bam_input: false
-
 
 fraser:
   min_read: 2
   mapq_filter: 255
+
 star:
-  min_read: 2
   ref: tests/resources/tron_genome_lib/indices/star
 
 requantify:
