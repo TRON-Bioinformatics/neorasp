@@ -8,11 +8,8 @@ suppressMessages({
   library(rtracklayer)
   library(Biostrings)
   library(stringr)
-  #library(furrr)
-  #library(purrr)
+  library(purrr)
 })
-#options(future.fork.enable = TRUE)
-#plan(multicore, workers = as.integer(snakemake@threads))
 
 df <- readr::read_tsv(snakemake@input[['sj']], show_col_types = FALSE)
 cds <- base::readRDS(snakemake@input[['cds']])
@@ -27,8 +24,15 @@ alt_peptides <- peptide_annot %>%
 
 alt_peptides <- alt_peptides %>%
   dplyr::mutate(
-    protein_id =
-        purrr::map2_chr(protein, protein_junc_pos, ~rlang::hash(c(.x, .y)))
+    protein_id = 
+      purrr::map2_chr(protein, protein_junc_pos,
+      ~ {
+        if (is.na(.x) || is.na(.y)) {
+          NA_character_
+        } else {
+          rlang::hash(list(.x, .y))
+        }
+      })
   )
 
 df <- df %>% 
