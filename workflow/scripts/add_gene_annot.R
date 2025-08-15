@@ -8,6 +8,9 @@ suppressMessages({
   library(furrr)
   library(purrr)
 })
+
+
+
 options(future.fork.enable = TRUE)
 plan(multicore, workers = as.integer(snakemake@threads))
 
