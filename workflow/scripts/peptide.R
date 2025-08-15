@@ -11,17 +11,21 @@ suppressMessages({
   library(purrr)
 })
 
+# Read snakemake input/parameters
 df <- readr::read_tsv(snakemake@input[['sj']], show_col_types = FALSE)
 cds <- base::readRDS(snakemake@input[['cds']])
 bsg <- rtracklayer::TwoBitFile(snakemake@input[['genome']])
+peptide_flank_size <- as.integer(snakemake@params[["peptide_flank_size"]])
 
+# Add splice junctions with peptides
 peptide_annot <- df %>% 
   dplyr::select(junc_id, tx_id, cts_seq, cts_junc_pos, cts_size, cts_id) %>% 
   dplyr::distinct()
 
 alt_peptides <- peptide_annot %>%
-  splice2neo::add_peptide(cds = cds, flanking_size = 13, bsg = bsg)
+  splice2neo::add_peptide(cds = cds, flanking_size = peptide_flank_size, bsg = bsg)
 
+# Calculate protein id for peptide FASTA
 alt_peptides <- alt_peptides %>%
   dplyr::mutate(
     protein_id = 
@@ -35,6 +39,7 @@ alt_peptides <- alt_peptides %>%
       })
   )
 
+# Remove unused annotation columns 
 df <- df %>% 
   dplyr::left_join(alt_peptides) %>%
   dplyr::select(
@@ -52,6 +57,7 @@ df <- df %>%
   ) %>% dplyr::rename(junction_reads = junc_interval_start,
                       spanning_reads = span_interval_start)
 
+# Generate table for NeoFox annotation
 dat_for_neofox <- df %>%
   dplyr::filter(!is.na(peptide_context) & nchar(peptide_context) > 7) %>%
   dplyr::mutate(
@@ -64,9 +70,11 @@ dat_for_neofox <- df %>%
   ) %>% dplyr::select(patientIdentifier, junc_id, tx_id, mutatedXmer, wildTypeXmer, rnaExpression, rnaVariantAlleleFrequency, gene) %>%
   dplyr::distinct()
 
+# Write output files
 df %>% readr::write_tsv(snakemake@output[['junctions']])
 dat_for_neofox %>% readr::write_tsv(snakemake@output[['neofox_annotation']])
 
+# Assemble the FASTA header for Ligandomics analysis
 df <- df %>%
   dplyr::mutate(
     fasta_header = paste0(
@@ -81,11 +89,13 @@ df <- df %>%
     )
   )
 
+# Remove junctions without peptide
 df_fasta <- df %>%
-  dplyr::select(fasta_header, protein) %>%
+  dplyr::select(fasta_header, protein, protein_junc_pos) %>%
   dplyr::distinct() %>%
-  dplyr::filter(!is.na(protein))
+  dplyr::filter(!is.na(protein) & !is.na(protein_junc_pos))
 
+# Write FASTA output
 peptides <- AAStringSet(df_fasta$protein)
 names(peptides) <- df_fasta$fasta_header
 writeXStringSet(peptides, snakemake@output[["peptide_fasta"]])
