@@ -43,19 +43,18 @@ includes the paths to the reference and indices.
 In the config file the following attributes are specified:
 
 * `sample_sheet`: TSV file with sample paths
-* `sra_mode`: Input are SRA identifiers (default: `false`)
-* `index_dir`: Directory where the genome lib was build. This directory contains the genome resources and the indices (in future this can be build with [tronmake-genome-lib-builder](https://gitlab.rlp.net/tron/tronmake-genome-lib-builder))
-* `bam_input`: Input are (u)BAM files (default: `false`)
 * `fraser`: Configuration options for FRASER
     * `min_read`: Minimum number of spliced alignment to consider junction in metric calculation (default: `5`).
     * `mapq_filter`: Minimum MAPQ value to consider read for metric calculation.
 * `star`: Configuration options for STAR junctions
-    * `min_read`: Minimum number of spliced alignments to consider a junction valid. (default: `5`)
+    * `ref`: Path to STAR reference index.
 * `requantify`: Configuration options for easyquant and splice2neo
     * `interval_mode`: If set to true, run easyquant in interval mode (default: `true`) 
     * `allow_mismatches`: If set to true, allow mismatches in the junction point area (default: `false`) 
     * `bowtie_k_threshold`: Number of multi-mappers allowed in targeted re-quantification alignment. Setting this to `all` would instruct bowtie to report all possible alignments.
     * `cts_size`: Size of context sequence (+/- bp of exonic sequence). Ideally this should be determined based on the fragment size. (default: `1000`) 
+`splice2neo`: Configuration options for splice2neo.
+    * `peptide_flank_size`: Flanking peptide sequence size (default: `13`). The resulting neoantigen candidate will be $2*peptide_flank_size$
 
 * `chrom-filter`: List of chromosomes for which the splice junctions should be kept. Default are human standard chromosomes.
 
