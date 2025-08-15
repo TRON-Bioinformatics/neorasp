@@ -261,6 +261,8 @@ rule translate_to_peptide:
         junctions = "results/{sample}/fetchdata/sj_final.tsv",
         neofox_annotation = "results/{sample}/fetchdata/sj_final_neofox_annotation.tsv",
         peptide_fasta = "results/{sample}/fetchdata/sj_final_peptides.fasta"
+    params:
+        peptide_flank_size = config['splice2neo'].get('peptide_flank_size', 13)
     log:  "results/{sample}/log/add_peptide_annotation.log"
     threads: 1
     resources:

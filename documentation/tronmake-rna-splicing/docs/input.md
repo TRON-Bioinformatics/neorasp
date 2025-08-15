@@ -25,32 +25,6 @@ Make sure to set `interleaved_input: true` in the config file to trigger derinte
 | sample_2 | /path/to/sample_2.fastq.gz |
 
 
-### (u)BAM
-
-When using (u)BAM files as input the table expects two tab-separated columns **without** a header.
-Make sure to set `BAM_input: true` in the config file to trigger BAM to FASTQ conversion.
-
-| Sample name   | BAM                                                   |
-|:--------:|:-------------------------------------------------------:|
-| sample_1 | /path/to/sample_1.bam                                   |
-| sample_2 | /path/to/sample_2.bam,/path/to/sample_2_2.bam           |
-| sample_3 | /path/to/sample_3.bam,/path/to/sample_3_2.bam           |
-
-### SRA 
-
-When using the SRA mode, the table expects a single column **without** a header.
-Make sure to set `sra_mode: true` in the config file to trigger download of FASTQ files of SRA Run accessions.
-
-|accession |
-|:--------:|
-|SRR6298258| 
-|SRR6298259|
-|SRR6298260|
-|SRR6298261|
-|SRR6298262|
-
-**Note: The pipeline currently support only SRA Run accessions starting with `SRR`, `DRR` or `ERR`. Other accessions such as study, experiment and/or group are currently not supported**
-
 
 ## Genome library
 

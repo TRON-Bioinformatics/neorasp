@@ -1,8 +1,5 @@
 # Input file section
 sample_sheet: 'tests/pep/samples.tsv'
-sra_mode: false
-interleaved_input: false
-bam_input: false
 
 reference:
   genome: 'tests/resources/GRCh38v45_minigenome/ref_genome.fa'
@@ -26,7 +23,6 @@ fraser:
   mapq_filter: 255
 
 star:
-  min_read: 5
   ref: tests/resources/GRCh38v45_minigenome/indices/star
 
 requantify:
@@ -35,9 +31,15 @@ requantify:
   bowtie_k_threshold: 200
   cts_size: 1000
 
+splice2neo:
+  peptide_flank_size: 13
+
 reliable_calls:
   min_junction_usage: 0.01
   min_junction_cpm: 0.1
+
+# Distance cut-off for ASS. Used to differentiate regular ASS from deep intronic splice variants
+max_ass_distance: 50
 
 # Chromosome filtering
 chrom-filter:
