@@ -4,6 +4,7 @@ The output of the pipeline consists of two main files.
 
 * `results/{sample}/fetchdata/sj_final.tsv`
 * `results/{sample}/fetchdata/sj_final_neofox_annotation.tsv`
+* `results/{sample}/fetchdata/sj_final_peptides.fasta`
 
 Within the files, each line describes a candidate junction transcript. The file `sj_final.tsv` contains all candidate junctions with annotated features and targeted re-quantification results. The file `sj_final_neofox_annotation.tsv` contains only junction candidates with a mutated peptide sequence in format
 suitable for analysis with NeoFox.
@@ -73,3 +74,16 @@ suitable for analysis with NeoFox.
 * `rnaExpression`: Transcript expression in TPM.
 * `rnaVariantAlleleFrequency`: Matches to `intron_jaccard`.
 * `gene`: The HGNC identifier of the gene.
+
+### sj_final_peptides.fasta
+
+This fasta file containts the altered full-length peptide sequence for MassSpec analysis. The header of each entry has the following format.
+
+* `>db_rna|splice_<protein_id>|<hgnc> splice_<protein_id> OS=Homo sapiens OX=9606 GN=<hgnc>`
+
+* `protein_id`: Unique id for the protein sequence as hash value using the XXH128 hash algorithm.
+* `hgnc`: The HGNC identifier of the gene.
+
+An example heaader from the test data:
+
+* `>db_rna|splice_8760f9325ca45b33c224399f28e374ea|DNAI7 splice_8760f9325ca45b33c224399f28e374ea OS=Homo sapiens OX=9606 GN=DNAI7`

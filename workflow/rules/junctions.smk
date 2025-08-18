@@ -98,8 +98,6 @@ rule parse_junctions:
     output:
         parsed_sj = "results/{sample}/fetchdata/parsing/parsed_sj_star_fraser.tsv",
         removed_junction = "results/{sample}/fetchdata/detected_sj_canonical.tsv"
-    params:
-        read_support = config['fraser'].get('min_read', 5),
     log: "results/{sample}/log/sj_parsing.log"
     threads: 1
     resources:

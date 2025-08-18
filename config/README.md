@@ -41,4 +41,7 @@ requantify:
 reliable_calls:
   min_junction_usage: 0.01
   min_junction_cpm: 0.1
+
+splice2neo:
+  peptide_flank_size: 13
 ```
