@@ -294,12 +294,14 @@ rule add_transcript_expression:
     """Add transcript/gene expression
 
     Rule to annotate splice junction candidate with transcript and 
-    gene expression determined with salmon.
+    gene expression determined with salmon on reference transcripts and
+    merging TPM values of StringTie transfrags.
 
     input:
         annotated_sj (str):  Path to splice junction table.
         transcript_expression (str): Path to salmon transcript level quantification.
         gene_expression (str): Path to salmon gene level quantification.
+        transfrags_tpm (str): Path to StringTie transfrags TPM table.
     output:
         sj_expression (str): Path to splice junction table with expression estimates added.
 
@@ -307,11 +309,10 @@ rule add_transcript_expression:
     input:
         annotated_sj = rules.add_context_sequence.output.annotated_sj,
         transcript_expression =  'results/{sample}/salmon_bam/quant.sf',
-        gene_expression = 'results/{sample}/salmon_bam/quant.genes.sf'
+        gene_expression = 'results/{sample}/salmon_bam/quant.genes.sf',
+        transfrags_expression = 'results/{sample}/stringtie/junc_to_tpm.tsv'
     output:
         sj_expression = temp("results/{sample}/fetchdata/splice2neo/sj_annotated_expression.tsv")
-    params:
-        exe = workflow.source_path('../scripts/add_tpm.R')
     threads: 1
     resources:
         mem_mb = 8000
