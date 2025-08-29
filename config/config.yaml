@@ -38,6 +38,10 @@ reliable_calls:
   min_junction_usage: 0.01
   min_junction_cpm: 0.1
 
+stringtie:
+  min_junc_count: 1
+  min_junc_anchor: 10
+
 # Distance cut-off for ASS. Used to differentiate regular ASS from deep intronic splice variants
 max_ass_distance: 50
 
