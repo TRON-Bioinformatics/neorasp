@@ -23,7 +23,7 @@ rule stringtie:
     resources:
         mem_mb = 8000
     container:
-        'docker://quay.io/biocontainers/stringtie:3.0.1--h00789bb_0',
+        config['container'].get('stringtie')
     output:
         transfrags =
             'results/{sample}/stringtie/transfrags.gtf',
@@ -56,7 +56,7 @@ rule gffcompare:
         prefix = lambda wildcards, output: os.path.splitext(output.gff_stats)[0]
     threads: 1
     container:
-        'docker://quay.io/biocontainers/gffcompare:0.12.10--h9948957_0'
+        config['container'].get('gffcompare')
     log:
         "results/{sample}/log/gffcompare.log"
     shell:
@@ -72,12 +72,11 @@ rule extract_tpm_from_stringtie:
         gff_tmap = rules.gffcompare.output.gff_tmap,
     output:
         tpm = 'results/{sample}/stringtie/transfrags.tpm.tsv'
-    run:
-        import pandas as pd
-        df = pd.read_csv(input.gff_tmap, sep='\t')
-        df = df[['qry_id', 'TPM']]
-        df.columns = ['stringtie_tx_id', 'stringtie_TPM']
-        df.to_csv(output.tpm, sep='\t', index=False)
+    container:
+        config['container'].get('additional_software')
+    script:
+        '../scripts/stringtie.py'
+
 
 rule junc_to_tpm:
     input:
@@ -85,17 +84,10 @@ rule junc_to_tpm:
         tpm = rules.extract_tpm_from_stringtie.output.tpm
     output:
         junc_to_tpm = 'results/{sample}/stringtie/junc_to_tpm.tsv'
-    run:
-        import pandas as pd
-        junc_df = pd.read_csv(input.junc_to_tx, sep='\t', header=None)
-        junc_df.columns = ['chrom', 'start', 'end', 'strand', 'tx_ids']
-        tpm_df = pd.read_csv(input.tpm, sep='\t')
-        junc_df['tx_ids'] = junc_df['tx_ids'].str.split(',')
-        junc_df = junc_df.explode('tx_ids').reset_index(drop=True)
-        merged_df = pd.merge(junc_df, tpm_df, left_on='tx_ids', right_on='stringtie_tx_id', how='left')
-        merged_df = merged_df[['chrom', 'start', 'end', 'strand', 'tx_ids', 'stringtie_TPM']]
-        merged_df = merged_df.groupby(['chrom', 'start', 'end', 'strand']).agg({'tx_ids': lambda x: ','.join(x), 'stringtie_TPM': 'sum'}).reset_index()
-        merged_df.to_csv(output.junc_to_tpm, sep='\t', index=False)
+    container:
+        config['container'].get('additional_software')
+    script:
+        '../scripts/stringtie.py'
 
 #rule gtf_to_fasta:
 #    input:

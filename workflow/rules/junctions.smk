@@ -32,7 +32,7 @@ rule fraser:
     resources:
         mem_mb = 16000
     container:
-        'docker://quay.io/biocontainers/bioconductor-fraser:1.99.4--r43hf17093f_0'
+        config['container'].get('fraser')
     conda:
         '../envs/fraser.yaml'
     script:
@@ -64,7 +64,7 @@ rule calculate_junction_cpm:
         mem_mb = 4096
     conda: '../envs/python.yaml'
     container:
-        'docker://tronbioinformatics/tron_data_utils:0.0.1'
+        config['container'].get('additional_software')
     script:
 	    '../scripts/normalize_star_cpm.py'
 
@@ -103,7 +103,7 @@ rule parse_junctions:
     resources:
         mem_mb = 8000
     container:
-        'docker://tronbioinformatics/splice2neo:0.6.13'
+        config['container'].get('splice2neo')
     conda:
         '../envs/R.yaml'
     script:
@@ -138,7 +138,7 @@ rule filter_mappability:
     resources:
         mem_mb = 8000
     container:
-        'docker://tronbioinformatics/splice2neo:0.6.13'
+        config['container'].get('splice2neo')
     conda:
         '../envs/R.yaml'
     log: "results/{sample}/log/mappability_filter.log"
@@ -167,7 +167,7 @@ rule filter_reliable_calls:
     resources:
         mem_mb = 8000
     container:
-        'docker://tronbioinformatics/splice2neo:0.6.13'
+        config['container'].get('splice2neo')
     conda:
         '../envs/R.yaml'
     log: 'results/{sample}/log/filter_reliable_calls.log'
@@ -208,7 +208,7 @@ rule add_gene_annotation:
     params:
         extra = "",
     container:
-        'docker://tronbioinformatics/splice2neo:0.6.13'
+        config['container'].get('splice2neo')
     conda:
         '../envs/R.yaml'
     log:  "results/{sample}/log/add_gene_transcript.log"
@@ -247,7 +247,7 @@ rule filter_gene_hgnc:
     resources:
         mem_mb = 8000
     container:
-        'docker://tronbioinformatics/tron_data_utils:0.0.1'
+        config['container'].get('additional_software')
     conda:
         '../envs/python.yaml'
     log:  "results/{sample}/log/gene_filtering.log"
@@ -282,7 +282,7 @@ rule add_context_sequence:
         extra = "",
         cts_size = config['requantify'].get('cts_size', 1000)
     container:
-        'docker://tronbioinformatics/splice2neo:0.6.13'
+        config['container'].get('splice2neo')
     conda:
         '../envs/R.yaml'
     log:  "results/{sample}/log/add_cts.log"
@@ -317,7 +317,7 @@ rule add_transcript_expression:
     resources:
         mem_mb = 8000
     container:
-        'docker://tronbioinformatics/splice2neo:0.6.13'
+        config['container'].get('splice2neo')
     conda:
         '../envs/R.yaml'
     log:  "results/{sample}/log/add_expression_estimates.log"

@@ -20,6 +20,10 @@ reliable_calls:
 splice2neo:
   peptide_flank_size: 13
 
+stringtie:
+  min_junc_count: 1
+  min_junc_anchor: 8
+
 reference:
   genome: 'tests/resources/tron_genome_lib/resources/ref_genome.fasta'
   annotation: 'tests/resources/tron_genome_lib/resources/ref_annot.gtf'
