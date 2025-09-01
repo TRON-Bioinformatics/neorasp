@@ -55,6 +55,8 @@ rule gffcompare:
     params:
         prefix = lambda wildcards, output: os.path.splitext(output.gff_stats)[0]
     threads: 1
+    resources:
+        mem_mb = 4000
     container:
         config['container'].get('gffcompare')
     log:
@@ -74,6 +76,11 @@ rule extract_tpm_from_stringtie:
         tpm = 'results/{sample}/stringtie/transfrags.tpm.tsv'
     container:
         config['container'].get('additional_software')
+    threads: 1
+    resources:
+        mem_mb = 4000
+    log:
+        "results/{sample}/log/extract_tpm_from_stringtie.log"
     script:
         '../scripts/stringtie.py'
 
@@ -86,6 +93,11 @@ rule junc_to_tpm:
         junc_to_tpm = 'results/{sample}/stringtie/junc_to_tpm.tsv'
     container:
         config['container'].get('additional_software')
+    threads: 1
+    resources:
+        mem_mb = 4000
+    log:
+        "results/{sample}/log/junc_to_stringtie_tpm.log"
     script:
         '../scripts/stringtie.py'
 
