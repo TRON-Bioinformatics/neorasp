@@ -60,6 +60,7 @@ df <- df %>%
 # Generate table for NeoFox annotation
 dat_for_neofox <- df %>%
   dplyr::filter(!is.na(peptide_context) & nchar(peptide_context) > 7) %>%
+  dplyr::filter(cds_description == "mutated cds") %>%
   dplyr::mutate(
     mutatedXmer = peptide_context,
     wildTypeXmer = NA,
@@ -93,7 +94,8 @@ df <- df %>%
 df_fasta <- df %>%
   dplyr::select(fasta_header, protein, protein_junc_pos) %>%
   dplyr::distinct() %>%
-  dplyr::filter(!is.na(protein) & !is.na(protein_junc_pos))
+  dplyr::filter(!is.na(protein) & !is.na(protein_junc_pos)) %>%
+  dplyr::filter(cds_description == "mutated cds")
 
 # Write FASTA output
 peptides <- AAStringSet(df_fasta$protein)
