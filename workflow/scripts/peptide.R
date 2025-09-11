@@ -53,7 +53,7 @@ df <- df %>%
     -coverage_mean,
     -coverage_median,
     -interval,
-    -cds_mod_id, 
+    -cds_mod_id,
   ) %>% dplyr::rename(junction_reads = junc_interval_start,
                       spanning_reads = span_interval_start)
 
@@ -92,10 +92,10 @@ df <- df %>%
 
 # Remove junctions without peptide
 df_fasta <- df %>%
+  dplyr::filter(cds_description == "mutated cds") %>%
   dplyr::select(fasta_header, protein, protein_junc_pos) %>%
   dplyr::distinct() %>%
-  dplyr::filter(!is.na(protein) & !is.na(protein_junc_pos)) %>%
-  dplyr::filter(cds_description == "mutated cds")
+  dplyr::filter(!is.na(protein) & !is.na(protein_junc_pos))
 
 # Write FASTA output
 peptides <- AAStringSet(df_fasta$protein)
