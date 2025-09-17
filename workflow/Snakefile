@@ -4,11 +4,13 @@ import math
 import pandas as pd
 
 configfile: workflow.source_path('../config/config.yaml')
+configfile: workflow.source_path('../config/container_config.yaml')
 
 include: "rules/common.smk"
 include: "rules/import_tronmake_expression.smk"
 include: "rules/junctions.smk"
 include: "rules/requantify.smk"
+include: "rules/assembly.smk"
 
 samples = read_sample_sheet(config['sample_sheet'])
 
@@ -35,7 +37,7 @@ rule docstring_export:
         rule_collection = {str(rule.name): str(rule.docstring) for rule in workflow.rules}
     conda: 'envs/python.yaml'
     container:
-        'docker://tronbioinformatics/tron_data_utils:0.0.1'
+        config['container'].get('additional_software')
     script:
         'scripts/export_doc.py'
 
@@ -52,6 +54,6 @@ rule software_export:
             {'conda': str(rule.conda_env), 'container': str(rule.container_img) } for rule in workflow.rules}
     conda: 'envs/python.yaml'
     container:
-        'docker://tronbioinformatics/tron_data_utils:0.0.1'
+        config['container'].get('additional_software')
     script:
         'scripts/export_software.py'

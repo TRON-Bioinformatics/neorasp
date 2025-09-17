@@ -53,13 +53,14 @@ df <- df %>%
     -coverage_mean,
     -coverage_median,
     -interval,
-    -cds_mod_id, 
+    -cds_mod_id,
   ) %>% dplyr::rename(junction_reads = junc_interval_start,
                       spanning_reads = span_interval_start)
 
 # Generate table for NeoFox annotation
 dat_for_neofox <- df %>%
   dplyr::filter(!is.na(peptide_context) & nchar(peptide_context) > 7) %>%
+  dplyr::filter(cds_description == "mutated cds") %>%
   dplyr::mutate(
     mutatedXmer = peptide_context,
     wildTypeXmer = NA,
@@ -91,6 +92,7 @@ df <- df %>%
 
 # Remove junctions without peptide
 df_fasta <- df %>%
+  dplyr::filter(cds_description == "mutated cds") %>%
   dplyr::select(fasta_header, protein, protein_junc_pos) %>%
   dplyr::distinct() %>%
   dplyr::filter(!is.na(protein) & !is.na(protein_junc_pos))
