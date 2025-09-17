@@ -1,0 +1,14 @@
+container:
+  fastp: docker://quay.io/biocontainers/fastp:0.23.4--h125f33a_5
+  star: docker://quay.io/biocontainers/star:2.7.11b--h43eeafb_2
+  samtools: docker://quay.io/biocontainers/samtools:1.20--h50ea8bc_0
+  qualimap: docker://quay.io/biocontainers/qualimap:2.3--hdfd78af_0
+  additional_software: docker://tronbioinformatics/tron_data_utils:0.0.1
+  featurecounts: docker://quay.io/biocontainers/subread:2.1.1--h577a1d6_0
+  salmon: docker://quay.io/biocontainers/salmon:1.10.3--h6dccd9a_2
+  fraser: docker://quay.io/biocontainers/bioconductor-fraser:1.99.4--r43hf17093f_0
+  stringtie: docker://quay.io/biocontainers/stringtie:3.0.1--h00789bb_0
+  gffcompare: docker://quay.io/biocontainers/gffcompare:0.12.10--h9948957_0
+  calculate_junction_cpm: docker://tronbioinformatics/tron_data_utils:0.0.1
+  splice2neo: docker://tronbioinformatics/splice2neo:0.6.13
+  easyquant: docker://tronbioinformatics/easyquant:0.6.0

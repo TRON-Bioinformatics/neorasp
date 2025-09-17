@@ -33,7 +33,7 @@ rule fastp:
         extra = ""
     threads: 2
     container:
-        'docker://quay.io/biocontainers/fastp:0.23.4--h125f33a_5'
+        config['container'].get('fastp')
     conda:
         '../envs/fastp.yaml'
     shell:
@@ -112,7 +112,7 @@ rule star:
     resources:
         mem_mb = 48000
     container:
-        'docker://quay.io/biocontainers/star:2.7.11b--h43eeafb_2'
+        config['container'].get('star')
     conda:
         '../envs/star.yaml'
     shell:
@@ -145,7 +145,7 @@ rule samtools:
         bam = temp("results/{sample}/star/Aligned.sortedByCoord.out.bam"),
         bai = temp("results/{sample}/star/Aligned.sortedByCoord.out.bam.bai")
     container:
-        'docker://quay.io/biocontainers/samtools:1.20--h50ea8bc_0'
+        config['container'].get('samtools')
     conda:
         '../envs/samtools.yaml'
     log:
@@ -179,7 +179,7 @@ rule bam2cram:
         cram = "results/{sample}/star/Aligned.sortedByCoord.out.cram",
         crai = "results/{sample}/star/Aligned.sortedByCoord.out.cram.crai"
     container:
-        'docker://quay.io/biocontainers/samtools:1.20--h50ea8bc_0'
+        config['container'].get('samtools')
     conda:
         '../envs/samtools.yaml'
     log:
@@ -231,7 +231,7 @@ rule qualimap:
         java_opts = 'JAVA_OPTS="-Xmx15000M -Djava.awt.headless=true"',
         extra = ""
     container:
-        'docker://quay.io/biocontainers/qualimap:2.3--hdfd78af_0'
+        config['container'].get('qualimap')
     conda:
         '../envs/qualimap.yaml'
     shell:
@@ -276,7 +276,7 @@ rule insert_size:
         extra = "-k 10000000 -q 255",
         out_prefix = lambda wildcards, output: output.reads_inner_distance.removesuffix('.inner_distance.txt')
     container:
-        'docker://tronbioinformatics/tron_data_utils:0.0.1'
+        config['container'].get('additional_software')
     conda:
         '../envs/rseqc.yaml'
     shell:
@@ -308,7 +308,7 @@ rule junction_saturation:
         extra = "-s 10",  # steps of 10% increments up to 100%
         out_prefix = lambda wildcards, output: output.pdf.removesuffix(".junctionSaturation_plot.pdf")
     container:
-        "docker://tronbioinformatics/tron_data_utils:0.0.1"
+        config['container'].get('additional_software')
     conda:
         "../envs/rseqc.yaml"
     shell:
@@ -339,7 +339,7 @@ rule read_distribution:
     params:
         extra = ""  # optional additional args (e.g., -l for read length)
     container:
-        "docker://tronbioinformatics/tron_data_utils:0.0.1"
+        config['container'].get('additional_software')
     conda:
         "../envs/rseqc.yaml"
     shell:
@@ -374,7 +374,7 @@ rule featurecounts:
         attribute_type = "gene_type",
         prefix = lambda wildcards, output: output.counts.removesuffix(".featureCounts.txt")
     container:
-        "docker://quay.io/biocontainers/subread:2.1.1--h577a1d6_0"
+        config['container'].get('featurecounts')
     conda:
         "../envs/subread.yaml"
     threads: 4
@@ -457,7 +457,7 @@ rule salmon:
     log:
         'results/{sample}/log/salmon_bam_quant.log'
     container:
-        'docker://quay.io/biocontainers/salmon:1.10.3--h6dccd9a_2'
+        config['container'].get('salmon')
     conda:
         '../envs/salmon.yaml'
     shell:

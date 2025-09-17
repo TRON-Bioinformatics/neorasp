@@ -12,7 +12,7 @@ Example:
 @Date: 2024-11-05
 @Copyright: Copyright 2025, TRON gGmbH, Mainz, Germany
 @License: MIT
-@Version: 0.0.5
+@Version: 0.0.9
 @Status: Development
 
 """
@@ -43,6 +43,7 @@ def convert_paths_to_strings(obj):
         return str(obj)
     else:
         return obj
+
 
 def get_annotation_files_from_genome_lib(genome_lib):
     """
@@ -90,10 +91,8 @@ def get_annotation_files_from_genome_lib(genome_lib):
     wf_config["reference"]["canonical_juncs"] = (
         genome_lib_path / "resources" / "ref_annot_splice_sites.tsv"
     )
-    wf_config["reference"]["rmsk"] = (
-        genome_lib_path / "resources" / "ref_rmsk.Rds"
-    )
-    
+    wf_config["reference"]["rmsk"] = genome_lib_path / "resources" / "ref_rmsk.Rds"
+
     return wf_config
 
 
@@ -143,25 +142,28 @@ def generate_apptainer_mounts(paths: set, mode: str = "ro") -> str:
 
 def splicing_pipeline(args):
     wf_config = dict()
-    wf_config["star"] = {"min_read": args.min_expression}
     wf_config["fraser"] = {"min_read": args.min_expression, "mapq_filter": args.mapq}
-    wf_config["samples"] = args.samples
-    wf_config["sra_mode"] = False
-    wf_config["interleaved_input"] = False
-    wf_config["bam_input"] = False
+    wf_config["sample_sheet"] = args.samples
     wf_config["requantify"] = {
         "interval_mode": True,
         "allow_mismatches": False,
         "bowtie_k_threshold": 200,
         "cts_size": 1000,
     }
+
+    wf_config["stringtie"] = {"min_junc_count": 1, "min_junc_anchor": 10}
+
+    wf_config["splice2neo"] = {
+        "peptide_flank_size": args.peptide_flank_size,
+    }
+
     wf_config["reliable_calls"] = {
         "min_junction_usage": args.min_psi,
         "min_junction_cpm": args.min_cpm,
     }
 
     genome_lib_config = get_annotation_files_from_genome_lib(args.genome_lib)
-    wf_config["star"] = wf_config["star"] | dict(genome_lib_config)["star"]
+    # wf_config["star"] = wf_config["star"] | dict(genome_lib_config)["star"]
     wf_config["reference"] = dict(genome_lib_config)["reference"]
     input_paths = find_apptainer_mounts(args)
     apptainer_bind_commands = generate_apptainer_mounts(input_paths)
@@ -259,6 +261,13 @@ def tronmake_cli():
         help="Work directory for pipeline execution",
         default=pathlib.Path(__file__).parent,
     )
+    parser.add_argument(
+        "--peptide_flank_size",
+        dest="peptide_flank_size",
+        help="Size of flanking sequence around splice junction for peptide generation",
+        default=13,
+    )
+
     parser.set_defaults(func=splicing_pipeline)
 
     args = parser.parse_args()

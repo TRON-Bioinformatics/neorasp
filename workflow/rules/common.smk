@@ -25,7 +25,6 @@ def get_final_output():
         final_files.extend(
             collect("results/{sample}/metrics/{sample}.junctionSaturation_plot.pdf", sample = sample.sample_name)
         )
-        #results/{sample}/metrics/{sample}.summary.xls
         final_files.extend(
            collect("results/{sample}/metrics/{sample}.read_distribution.txt", sample = sample.sample_name)
         )
@@ -35,6 +34,10 @@ def get_final_output():
         # Cram files
         final_files.extend(
             collect("results/{sample}/star/Aligned.sortedByCoord.out.cram", sample = sample.sample_name)
+        )
+        # stringtie
+        final_files.extend(
+            collect("results/{sample}/stringtie/junc_to_tpm.tsv", sample = sample.sample_name)
         )
     return final_files
 
