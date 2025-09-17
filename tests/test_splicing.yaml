@@ -21,6 +21,7 @@
     - path: "results/Hugo_Pt10/metrics/Hugo_Pt10.junctionSaturation_plot.r"
     - path: "results/Hugo_Pt10/metrics/Hugo_Pt10.read_distribution.txt"
     - path: "results/Hugo_Pt10/qualimap/rnaseq_qc_results.txt"
+    - path: "results/report/multiqc.html"
 
 - name: test_full_run_replicates
   tags:
