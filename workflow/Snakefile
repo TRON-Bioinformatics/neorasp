@@ -2,6 +2,7 @@ import os
 import sys
 import math
 import pandas as pd
+from pathlib import Path
 
 configfile: workflow.source_path('../config/config.yaml')
 configfile: workflow.source_path('../config/container_config.yaml')
@@ -11,6 +12,7 @@ include: "rules/import_tronmake_expression.smk"
 include: "rules/junctions.smk"
 include: "rules/requantify.smk"
 include: "rules/assembly.smk"
+include: "rules/multiqc.smk"
 
 samples = read_sample_sheet(config['sample_sheet'])
 
