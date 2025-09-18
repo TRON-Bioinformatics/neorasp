@@ -39,6 +39,8 @@ def get_final_output():
         final_files.extend(
             collect("results/{sample}/stringtie/junc_to_tpm.tsv", sample = sample.sample_name)
         )
+    final_files.append("results/report/multiqc.html")
+
     return final_files
 
 def read_sample_sheet(file):
@@ -113,3 +115,24 @@ def determine_star_read_command(wildcards, read):
     elif "bzip2 compressed data" in magic_byte:
         read_command = '--readFilesCommand bzcat '
     return read_command
+
+def get_multiqc_input(wildcards):
+
+    final_files = []
+    for sample in samples.itertuples():
+        final_files.extend(
+            collect("results/{sample}/qualimap", sample = sample.sample_name)
+        )
+        final_files.extend(
+            collect("results/{sample}/metrics/{sample}.inner_distance_freq.txt", sample = sample.sample_name)
+        )
+        final_files.extend(
+            collect("results/{sample}/metrics/{sample}.junctionSaturation_plot.r", sample = sample.sample_name)
+        )
+        final_files.extend(
+           collect("results/{sample}/metrics/{sample}.read_distribution.txt", sample = sample.sample_name)
+        )
+        final_files.extend(
+           collect("results/{sample}/metrics/{sample}.featureCounts.txt.summary", sample = sample.sample_name)
+        )
+    return final_files

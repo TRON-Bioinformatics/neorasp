@@ -12,3 +12,4 @@ container:
   calculate_junction_cpm: docker://tronbioinformatics/tron_data_utils:0.0.1
   splice2neo: docker://tronbioinformatics/splice2neo:0.6.13
   easyquant: docker://tronbioinformatics/easyquant:0.6.0
+  multiqc: docker://quay.io/biocontainers/multiqc:1.31--pyhdfd78af_0
