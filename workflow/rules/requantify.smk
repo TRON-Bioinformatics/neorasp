@@ -13,7 +13,7 @@ rule prepare_requant:
         genes_of_interest (str): A file with gene ids.
     """
     input:
-        sj = rules.add_transcript_expression.output.sj_expression
+        sj = "results/{sample}/fetchdata/splice2neo/sj_annotated_peptide.tsv"
     output:
         easyquant_table = "results/{sample}/easyquant/context_seq.tsv",
         genes_of_interest = "results/{sample}/easyquant/genes_of_interest.txt"
@@ -39,7 +39,7 @@ rule generate_context_fa:
         context_fa (str): Path to FASTA file of context sequences
     """
     input:
-        easyquant_table = rules.prepare_requant.output.easyquant_table
+        easyquant_table = "results/{sample}/easyquant/context_seq.tsv",
     output:
         context_fa = "results/{sample}/easyquant/context.fa"
     threads: 1
@@ -70,7 +70,7 @@ rule bowtie_index:
         prefix (str): Path where bowtie2 shall be created
     """
     input:
-        context_fa = rules.generate_context_fa.output.context_fa
+        context_fa = "results/{sample}/easyquant/context.fa"
     params:
         prefix = lambda wildcards, output: output.bowtie_index[0].removesuffix('.1.bt2')
     threads: 4
@@ -220,10 +220,10 @@ rule add_quant_counts:
         requant_dir (str):  Path to working directory of easyquant.
     """
     input:
-        sj = rules.add_transcript_expression.output.sj_expression,
+        sj = "results/{sample}/fetchdata/splice2neo/sj_annotated_peptide.tsv",
         quantification = rules.requantify.output.quant
     output:
-        requantified_sj = temp("results/{sample}/fetchdata/splice2neo/sj_annotated_requantified.tsv")
+        requantified_sj = "results/{sample}/fetchdata/sj_final.tsv"
     params:
         requant_dir = lambda wildcards, input: os.path.dirname(input.quantification)
     log:  "results/{sample}/log/add_requantification_counts.log"
@@ -237,39 +237,40 @@ rule add_quant_counts:
     script:
         '../scripts/quant.R'
 
-rule translate_to_peptide:
-    """Peptide sequences
-
-    Annotate splice junctions with mutated peptide sequence.
-    In this step, all junctions that generate a mutated coding
-    sequence are formated for annotatin with NeoFox.
-
-    input:
-        sj (str):  Path to splice junction table.
-        cds (str): Path to RDS object of reference coding sequence.
-        genome (str): Path to 2Bit object of reference genome.
-    output:
-        junctions (str): Path to splice junctions table with peptide annotation.
-        neofox_annotation (str): Splice junction derived peptides in NeoFox format.
-
-    """
-    input:
-        sj = rules.add_quant_counts.output.requantified_sj,
-        cds = config['reference']['ref_cds'],
-        genome = config['reference']['2bit']
-    output:
-        junctions = "results/{sample}/fetchdata/sj_final.tsv",
-        neofox_annotation = "results/{sample}/fetchdata/sj_final_neofox_annotation.tsv",
-        peptide_fasta = "results/{sample}/fetchdata/sj_final_peptides.fasta"
-    params:
-        peptide_flank_size = config['splice2neo'].get('peptide_flank_size', 13)
-    log:  "results/{sample}/log/add_peptide_annotation.log"
-    threads: 1
-    resources:
-        mem_mb = 20000
-    container:
-        config['container'].get('splice2neo')
-    conda:
-        '../envs/R.yaml'
-    script:
-        '../scripts/peptide.R'
+#rule translate_to_peptide:
+#    """Peptide sequences
+#
+#    Annotate splice junctions with mutated peptide sequence.
+#    In this step, all junctions that generate a mutated coding
+#    sequence are formated for annotatin with NeoFox.
+#
+#    input:
+#        sj (str):  Path to splice junction table.
+#        cds (str): Path to RDS object of reference coding sequence.
+#        genome (str): Path to 2Bit object of reference genome.
+#    output:
+#        junctions (str): Path to splice junctions table with peptide annotation.
+#        neofox_annotation (str): Splice junction derived peptides in NeoFox format.
+#
+#    """
+#    input:
+#        sj = rules.add_quant_counts.output.requantified_sj,
+#        cds = config['reference']['ref_cds'],
+#        genome = config['reference']['2bit']
+#    output:
+#        junctions = "results/{sample}/fetchdata/sj_final.tsv",
+#        neofox_annotation = "results/{sample}/fetchdata/sj_final_neofox_annotation.tsv",
+#        peptide_fasta = "results/{sample}/fetchdata/sj_final_peptides.fasta"
+#    params:
+#        peptide_flank_size = config['splice2neo'].get('peptide_flank_size', 13)
+#    log:  "results/{sample}/log/add_peptide_annotation.log"
+#    threads: 1
+#    resources:
+#        mem_mb = 20000
+#    container:
+#        config['container'].get('splice2neo')
+#    conda:
+#        '../envs/R.yaml'
+#    script:
+#        '../scripts/peptide.R'
+#

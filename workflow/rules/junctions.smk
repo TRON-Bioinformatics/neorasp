@@ -254,42 +254,6 @@ rule filter_gene_hgnc:
     script:
         '../scripts/filter_gene_name.py'
 
-
-rule add_context_sequence:
-    """Add transcript sequence
-
-    Rule to annotate splice junction candidates with possible transcript sequences.
-
-    input:
-        parsed_sj (str):  Path to splice junction table.
-        transcripts (str): Path to RDS object of reference transcripts.
-        genome (str): Path to 2Bit object of reference genome.
-    output:
-        annotated_sj (str): Path to splice junction table with context sequences.
-        annotated_sj_problematic (str): Path to table with removed junctions.
-
-    """
-    input:
-        parsed_sj = rules.filter_gene_hgnc.output.sj_passed_gene,
-        transcripts = config['reference']['ref_transcripts'],
-        genome = config['reference']['2bit']
-    output:
-        annotated_sj = "results/{sample}/fetchdata/splice2neo/cts/sj_annotated_cts.tsv",
-    threads: 4
-    resources:
-        mem_mb = 20000
-    params:
-        extra = "",
-        cts_size = config['requantify'].get('cts_size', 1000)
-    container:
-        config['container'].get('splice2neo')
-    conda:
-        '../envs/R.yaml'
-    log:  "results/{sample}/log/add_cts.log"
-    script:
-        '../scripts/add_tx.R'
-
-
 rule add_transcript_expression:
     """Add transcript/gene expression
 
@@ -307,7 +271,7 @@ rule add_transcript_expression:
 
     """
     input:
-        annotated_sj = rules.add_context_sequence.output.annotated_sj,
+        annotated_sj = "results/{sample}/fetchdata/splice2neo/gene_name_filter/sj_pass_gene.tsv",
         transcript_expression =  'results/{sample}/salmon_bam/quant.sf',
         gene_expression = 'results/{sample}/salmon_bam/quant.genes.sf',
         transfrags_expression = 'results/{sample}/stringtie/junc_to_tpm.tsv'
@@ -323,4 +287,145 @@ rule add_transcript_expression:
     log:  "results/{sample}/log/add_expression_estimates.log"
     script:
         '../scripts/add_tpm.R'
+
+
+checkpoint split_junc_table:
+    input:
+        parsed_sj = "results/{sample}/fetchdata/splice2neo/sj_annotated_expression.tsv",
+    output:
+        directory("results/{sample}/fetchdata/splice2neo/split_junc")
+    threads: 1
+    resources:
+        mem_mb = 8000
+    params:
+        extra="",
+        scatter_size = config['splice2neo'].get('scatter_size', 50),
+        prefix = lambda wildcards, output: os.path.join(output[0], "splice2neo_input_")
+    log:  "results/{sample}/log/split_junc.log"
+    container:
+        config['container'].get('shell_utils')
+    shell:
+        """
+        mkdir -p {output}
+        head -n1 {input.parsed_sj} > {output}/header.tsv
+        
+        split -d -l {params.scatter_size} <(tail -n+2 {input.parsed_sj}) {params.prefix}
+        wait $!
+        
+        for file in {params.prefix}*
+        do
+            cat {output}/header.tsv ${{file}} > temp_file && mv temp_file ${{file}}
+        done
+        """
+
+rule add_context_sequence:
+    """Add transcript sequence
+
+    Rule to annotate splice junction candidates with possible transcript sequences.
+
+    input:
+        parsed_sj (str):  Path to splice junction table.
+        transcripts (str): Path to RDS object of reference transcripts.
+        genome (str): Path to 2Bit object of reference genome.
+    output:
+        annotated_sj (str): Path to splice junction table with context sequences.
+        annotated_sj_problematic (str): Path to table with removed junctions.
+
+    """
+    input:
+        parsed_sj = "results/{sample}/fetchdata/splice2neo/split_junc/splice2neo_input_{chunkID}",
+        transcripts = config['reference']['ref_transcripts'],
+        genome = config['reference']['2bit']
+    output:
+        annotated_sj = temp("results/{sample}/fetchdata/splice2neo/cts/sj_annotated_cts_{chunkID}.tsv"),
+    threads: 4
+    resources:
+        mem_mb = 20000
+    params:
+        extra = "",
+        cts_size = config['requantify'].get('cts_size', 1000)
+    container:
+        config['container'].get('splice2neo')
+    conda:
+        '../envs/R.yaml'
+    log:  "results/{sample}/log/add_cts_{chunkID}.log"
+    script:
+        '../scripts/add_tx.R'
+
+rule translate_to_peptide:
+    """Peptide sequences
+
+    Annotate splice junctions with mutated peptide sequence.
+    In this step, all junctions that generate a mutated coding
+    sequence are formated for annotatin with NeoFox.
+
+    input:
+        sj (str):  Path to splice junction table.
+        cds (str): Path to RDS object of reference coding sequence.
+        genome (str): Path to 2Bit object of reference genome.
+    output:
+        peptide_junc (str): Path to splice junctions table with peptide annotation.
+        peptide_fasta (str): Splice junction derived peptides in NeoFox format.
+
+    """
+    input:
+        annotated_sj = "results/{sample}/fetchdata/splice2neo/cts/sj_annotated_cts_{chunkID}.tsv",
+        cds = config['reference']['ref_cds'],
+        genome = config['reference']['2bit']
+    output:
+        peptide_junc = temp("results/{sample}/fetchdata/splice2neo/pep/sj_annotated_peptide_{chunkID}.tsv"),
+        peptide_fasta = temp("results/{sample}/fetchdata/splice2neo/pep/sj_annotated_peptide_{chunkID}.fasta"),
+        neofox_annotation = temp("results/{sample}/fetchdata/splice2neo/pep/sj_neofox_annotation_{chunkID}.tsv")
+    params:
+        peptide_flank_size = config['splice2neo'].get('peptide_flank_size', 13)
+    log:  "results/{sample}/log/add_peptide_annotation_{chunkID}.log"
+    threads: 1
+    resources:
+        mem_mb = 20000
+    container:
+        config['container'].get('splice2neo')
+    conda:
+        '../envs/R.yaml'
+    script:
+        '../scripts/peptide2.R'
+
+
+def aggregate_splice2neo_output(wildcards):
+    
+    splice2neo_final_files = {}
+
+    checkpoint_output = checkpoints.split_junc_table.get(**wildcards).output[0]
+    
+    splice2neo_final_files["peptide_junc"] = expand(
+        "results/{sample}/fetchdata/splice2neo/pep/sj_annotated_peptide_{chunkID}.tsv",
+           sample=wildcards.sample,
+           chunkID=glob_wildcards(os.path.join(checkpoint_output, "splice2neo_input_{chunkID}")).chunkID
+        )
+    splice2neo_final_files["peptide_fasta"] = expand(
+        "results/{sample}/fetchdata/splice2neo/pep/sj_annotated_peptide_{chunkID}.fasta",
+            sample=wildcards.sample,
+            chunkID=glob_wildcards(os.path.join(checkpoint_output, "splice2neo_input_{chunkID}")).chunkID
+        )
+    splice2neo_final_files["neofox_annotation"] = expand(
+        "results/{sample}/fetchdata/splice2neo/pep/sj_neofox_annotation_{chunkID}.tsv",
+            sample=wildcards.sample,
+            chunkID=glob_wildcards(os.path.join(checkpoint_output, "splice2neo_input_{chunkID}")).chunkID
+        )
+    return splice2neo_final_files
+
+rule gather_splice2neo:
+    input:
+        unpack(aggregate_splice2neo_output)
+    output:
+        sj_annot_cts_peptide = temp("results/{sample}/fetchdata/splice2neo/sj_annotated_peptide.tsv"),
+        peptide_fasta = "results/{sample}/fetchdata/sj_final_peptides.fasta",
+        neofox_annotation = "results/{sample}/fetchdata/sj_final_neofox_annotation.tsv"
+    threads: 1
+    resources:
+        mem_mb = 8000
+    container:
+        config['container'].get('shell_utils')
+    script:
+        '../scripts/gather_splice2neo.sh'
+
 
