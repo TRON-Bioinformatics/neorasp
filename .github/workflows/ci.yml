@@ -44,9 +44,7 @@ jobs:
   integration:
     name: Integration Tests
     if: github.event_name == 'pull_request'
-    runs-on: ${{ fromJSON( github.repository_owner != 'TRON-Private' &&
-      '["ubuntu-24.04"]' || (github.ref_name == 'main' && '["ubuntu-24.04"]' || '["self-hosted", "ubuntu-24.04"]'
-      ) }}
+    runs-on: ${{ fromJSON( github.repository_owner != 'TRON-Private' && '["ubuntu-24.04"]' || (github.ref_name == 'main' && '["ubuntu-24.04"]' || '["self-hosted", "ubuntu-24.04"]') }}
     env:
       XDG_CACHE_HOME: ${{ github.workspace }}/.cache
     steps:
