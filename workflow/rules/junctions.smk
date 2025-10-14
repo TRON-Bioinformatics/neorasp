@@ -288,8 +288,20 @@ rule add_transcript_expression:
     script:
         '../scripts/add_tpm.R'
 
-
 checkpoint split_junc_table:
+    """
+    Split detected splice junctions into chunks of fixed size for
+    parallel processing with splice2neo. By default, the chunks
+    will have the prefix `splice2neo_input_` followed by a decimal number.
+
+    input:
+        parsed_sj (str): Splice junctions table containing all columns required for splice2neo annotation
+    output:
+        A directory for storing chunked TSV files.
+    params:
+        scatter_size (int): Number of junctions to include in chunk. Default is 100.
+
+    """
     input:
         parsed_sj = "results/{sample}/fetchdata/splice2neo/sj_annotated_expression.tsv",
     output:
@@ -299,7 +311,7 @@ checkpoint split_junc_table:
         mem_mb = 8000
     params:
         extra="",
-        scatter_size = config['splice2neo'].get('scatter_size', 50),
+        scatter_size = config['splice2neo'].get('scatter_size', 100),
         prefix = lambda wildcards, output: os.path.join(output[0], "splice2neo_input_")
     log:  "results/{sample}/log/split_junc.log"
     container:
@@ -357,7 +369,7 @@ rule translate_to_peptide:
 
     Annotate splice junctions with mutated peptide sequence.
     In this step, all junctions that generate a mutated coding
-    sequence are formated for annotatin with NeoFox.
+    sequence are formated for annotation with NeoFox.
 
     input:
         sj (str):  Path to splice junction table.
@@ -365,7 +377,8 @@ rule translate_to_peptide:
         genome (str): Path to 2Bit object of reference genome.
     output:
         peptide_junc (str): Path to splice junctions table with peptide annotation.
-        peptide_fasta (str): Splice junction derived peptides in NeoFox format.
+        peptide_fasta (str): Splice junction derived protein sequences in FASTA format e.g. for MassSpec
+        neofox_annotation (str): plice junction derived peptides in NeoFox format.
 
     """
     input:
@@ -389,31 +402,11 @@ rule translate_to_peptide:
     script:
         '../scripts/peptide2.R'
 
-
-def aggregate_splice2neo_output(wildcards):
-    
-    splice2neo_final_files = {}
-
-    checkpoint_output = checkpoints.split_junc_table.get(**wildcards).output[0]
-    
-    splice2neo_final_files["peptide_junc"] = expand(
-        "results/{sample}/fetchdata/splice2neo/pep/sj_annotated_peptide_{chunkID}.tsv",
-           sample=wildcards.sample,
-           chunkID=glob_wildcards(os.path.join(checkpoint_output, "splice2neo_input_{chunkID}")).chunkID
-        )
-    splice2neo_final_files["peptide_fasta"] = expand(
-        "results/{sample}/fetchdata/splice2neo/pep/sj_annotated_peptide_{chunkID}.fasta",
-            sample=wildcards.sample,
-            chunkID=glob_wildcards(os.path.join(checkpoint_output, "splice2neo_input_{chunkID}")).chunkID
-        )
-    splice2neo_final_files["neofox_annotation"] = expand(
-        "results/{sample}/fetchdata/splice2neo/pep/sj_neofox_annotation_{chunkID}.tsv",
-            sample=wildcards.sample,
-            chunkID=glob_wildcards(os.path.join(checkpoint_output, "splice2neo_input_{chunkID}")).chunkID
-        )
-    return splice2neo_final_files
-
 rule gather_splice2neo:
+    """
+    Gather scattered junction anntotation files from splice2neo
+    and merge into unified tables for further processing.
+    """
     input:
         unpack(aggregate_splice2neo_output)
     output:
@@ -425,6 +418,7 @@ rule gather_splice2neo:
         mem_mb = 8000
     container:
         config['container'].get('shell_utils')
+    log: "results/{sample}/log/splice2neo_gather.log"
     script:
         '../scripts/gather_splice2neo.sh'
 
