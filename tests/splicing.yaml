@@ -19,6 +19,7 @@ reliable_calls:
 
 splice2neo:
   peptide_flank_size: 13
+  scatter_size: 50
 
 stringtie:
   min_junc_count: 1
