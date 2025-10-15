@@ -405,7 +405,19 @@ rule translate_to_peptide:
 rule gather_splice2neo:
     """
     Gather scattered junction anntotation files from splice2neo
-    and merge into unified tables for further processing.
+    and merge into unified tables for further processing. Input
+    of this rule are splice2neo annotated chunks.
+
+    input:
+        peptide_junc (List[str]): Paths to peptide annotated splice junctions.
+        peptide_fasta (List[str]): Paths to splice junctions derived proteins in FASTA.
+        neofox_annotation (List[str]): Paths to neofox annotation files.
+    
+    output:
+        sj_annot_cts_peptide (str): Path to transcript and peptide annotated splice junction table.
+        peptide_fasta (str): Path to peptide FASTA file
+        neofox_annotation (str): Path to neofox annotation file
+
     """
     input:
         unpack(aggregate_splice2neo_output)
@@ -418,6 +430,8 @@ rule gather_splice2neo:
         mem_mb = 8000
     container:
         config['container'].get('shell_utils')
+    conda:
+        '../envs/R.yaml'
     log: "results/{sample}/log/splice2neo_gather.log"
     script:
         '../scripts/gather_splice2neo.sh'
