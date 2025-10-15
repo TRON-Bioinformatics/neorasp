@@ -33,6 +33,7 @@ requantify:
 
 splice2neo:
   peptide_flank_size: 13
+  scatter_size: 100
 
 reliable_calls:
   min_junction_usage: 0.01
