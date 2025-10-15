@@ -53,8 +53,15 @@ In the config file the following attributes are specified:
     * `allow_mismatches`: If set to true, allow mismatches in the junction point area (default: `false`) 
     * `bowtie_k_threshold`: Number of multi-mappers allowed in targeted re-quantification alignment. Setting this to `all` would instruct bowtie to report all possible alignments.
     * `cts_size`: Size of context sequence (+/- bp of exonic sequence). Ideally this should be determined based on the fragment size. (default: `1000`) 
-`splice2neo`: Configuration options for splice2neo.
-    * `peptide_flank_size`: Flanking peptide sequence size (default: `13`). The resulting neoantigen candidate will be $2*peptide_flank_size$
+* `splice2neo`: Configuration options for splice2neo.
+    * `peptide_flank_size`: Flanking peptide sequence size (default: `13`). The resulting neoantigen candidate will be $$2*peptide_flank_size$$
+    * `scatter_size`: Size of chunks for scatter-gather execution of splice2neo (default: `100`).
+* `reliable_calls`: Filter criteria to retain spliced alignments.
+  * `min_junction_usage`: Minium Intron Jaccard Index (Splice Usage) (default: `0.05`). Splice junctions with less than 5% usage are discarded
+  * `min_junction_cpm`: Minimum CPM normalized uniquely mapped reads to keep junction. (default: `0.1`)
+* `stringtie`:
+  * `min_junc_count`: Minimum number of reads to keep junction in StringTie assembly (default: `1`)
+  * `min_junc_anchor`: Minimum anchor of spliced alignment to keep in assembly (default: `10`)
 
 * `chrom-filter`: List of chromosomes for which the splice junctions should be kept. Default are human standard chromosomes.
 
