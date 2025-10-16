@@ -10,7 +10,7 @@ suppressMessages({
   library(stringr)
   library(purrr)
 })
-saveRDS(snakemake, "tmp_snakemake.Rds")
+
 # Read snakemake input/parameters
 df <- readr::read_tsv(snakemake@input[['annotated_sj']], show_col_types = FALSE)
 cds <- base::readRDS(snakemake@input[['cds']])
