@@ -326,7 +326,7 @@ checkpoint split_junc_table:
         
         for file in {params.prefix}*
         do
-            cat {output}/header.tsv ${{file}} > temp_file && mv temp_file ${{file}}
+            cat {output}/header.tsv ${{file}} > {output}/temp_file && mv {output}/temp_file ${{file}}
         done
         """
 
@@ -350,7 +350,7 @@ rule add_context_sequence:
         genome = config['reference']['2bit']
     output:
         annotated_sj = temp("results/{sample}/fetchdata/splice2neo/cts/sj_annotated_cts_{chunkID}.tsv"),
-    threads: 4
+    threads: 1
     resources:
         mem_mb = 20000
     params:
@@ -435,5 +435,6 @@ rule gather_splice2neo:
     log: "results/{sample}/log/splice2neo_gather.log"
     script:
         '../scripts/gather_splice2neo.sh'
+
 
 
