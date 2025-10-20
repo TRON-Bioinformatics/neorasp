@@ -6,10 +6,35 @@ suppressMessages({
   library(splice2neo)
   library(GenomicFeatures)
   library(purrr)
+  library(fs)
+  library(withr)
+  library(stringr)
 })
 
-transcripts <- base::readRDS(snakemake@input[['transcripts']])
-bsg <- rtracklayer::TwoBitFile(snakemake@input[['genome']])
+output_dir <- dirname(snakemake@output[['annotated_sj']])
+
+tmp_genome <- tempfile(
+	pattern = stringr::str_glue("genome_copy_{snakemake@wildcards[['chunkID']]}_"), 
+	tmpdir = output_dir,
+	fileext = ".2bit")
+
+tmp_transcripts <- tempfile(
+	pattern = stringr::str_glue("transcript_copy_{snakemake@wildcards[['chunkID']]}_"),
+	tmpdir = output_dir,
+	fileext = ".RDS")
+
+
+fs::file_copy(snakemake@input[['genome']], tmp_genome, overwrite = TRUE)
+fs::file_copy(snakemake@input[['transcripts']], tmp_transcripts, overwrite = TRUE)
+
+defer({
+  if (file_exists(tmp_genome)) file_delete(tmp_genome)
+  if (file_exists(tmp_transcripts)) file_delete(tmp_transcripts)
+})
+
+bsg <- rtracklayer::TwoBitFile(tmp_genome)
+transcripts <- base::readRDS(tmp_transcripts)
+
 
 df <- readr::read_tsv(snakemake@input[['parsed_sj']], show_col_types = FALSE)
 
