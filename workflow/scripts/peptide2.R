@@ -10,12 +10,13 @@ suppressMessages({
   library(stringr)
   library(purrr)
 })
-saveRDS(snakemake, "tmp_snakemake.Rds")
+
 # Read snakemake input/parameters
 df <- readr::read_tsv(snakemake@input[['annotated_sj']], show_col_types = FALSE)
 cds <- base::readRDS(snakemake@input[['cds']])
 bsg <- rtracklayer::TwoBitFile(snakemake@input[['genome']])
 peptide_flank_size <- as.integer(snakemake@params[["peptide_flank_size"]])
+
 # Add splice junctions with peptides
 peptide_annot <- df %>% 
   dplyr::select(junc_id, tx_id, cts_seq, cts_junc_pos, cts_size, cts_id) %>% 

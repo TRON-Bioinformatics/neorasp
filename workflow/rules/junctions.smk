@@ -326,7 +326,7 @@ checkpoint split_junc_table:
         
         for file in {params.prefix}*
         do
-            cat {output}/header.tsv ${{file}} > temp_file && mv temp_file ${{file}}
+            cat {output}/header.tsv ${{file}} > {output}/temp_file && mv {output}/temp_file ${{file}}
         done
         """
 
@@ -347,10 +347,11 @@ rule add_context_sequence:
     input:
         parsed_sj = "results/{sample}/fetchdata/splice2neo/split_junc/splice2neo_input_{chunkID}",
         transcripts = config['reference']['ref_transcripts'],
+        #genome = config['reference']['genome']
         genome = config['reference']['2bit']
     output:
-        annotated_sj = temp("results/{sample}/fetchdata/splice2neo/cts/sj_annotated_cts_{chunkID}.tsv"),
-    threads: 4
+        annotated_sj = "results/{sample}/fetchdata/splice2neo/cts/sj_annotated_cts_{chunkID}.tsv",
+    threads: 1
     resources:
         mem_mb = 20000
     params:
@@ -386,9 +387,9 @@ rule translate_to_peptide:
         cds = config['reference']['ref_cds'],
         genome = config['reference']['2bit']
     output:
-        peptide_junc = temp("results/{sample}/fetchdata/splice2neo/pep/sj_annotated_peptide_{chunkID}.tsv"),
-        peptide_fasta = temp("results/{sample}/fetchdata/splice2neo/pep/sj_annotated_peptide_{chunkID}.fasta"),
-        neofox_annotation = temp("results/{sample}/fetchdata/splice2neo/pep/sj_neofox_annotation_{chunkID}.tsv")
+        peptide_junc = "results/{sample}/fetchdata/splice2neo/pep/sj_annotated_peptide_{chunkID}.tsv",
+        peptide_fasta = "results/{sample}/fetchdata/splice2neo/pep/sj_annotated_peptide_{chunkID}.fasta",
+        neofox_annotation = "results/{sample}/fetchdata/splice2neo/pep/sj_neofox_annotation_{chunkID}.tsv"
     params:
         peptide_flank_size = config['splice2neo'].get('peptide_flank_size', 13)
     log:  "results/{sample}/log/add_peptide_annotation_{chunkID}.log"
@@ -412,7 +413,7 @@ rule gather_splice2neo:
         peptide_junc (List[str]): Paths to peptide annotated splice junctions.
         peptide_fasta (List[str]): Paths to splice junctions derived proteins in FASTA.
         neofox_annotation (List[str]): Paths to neofox annotation files.
-    
+
     output:
         sj_annot_cts_peptide (str): Path to transcript and peptide annotated splice junction table.
         peptide_fasta (str): Path to peptide FASTA file
@@ -422,7 +423,7 @@ rule gather_splice2neo:
     input:
         unpack(aggregate_splice2neo_output)
     output:
-        sj_annot_cts_peptide = temp("results/{sample}/fetchdata/splice2neo/sj_annotated_peptide.tsv"),
+        sj_annot_cts_peptide = "results/{sample}/fetchdata/splice2neo/sj_annotated_peptide.tsv",
         peptide_fasta = "results/{sample}/fetchdata/sj_final_peptides.fasta",
         neofox_annotation = "results/{sample}/fetchdata/sj_final_neofox_annotation.tsv"
     threads: 1

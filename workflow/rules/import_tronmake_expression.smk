@@ -311,6 +311,8 @@ rule junction_saturation:
         config['container'].get('additional_software')
     conda:
         "../envs/rseqc.yaml"
+    resources:
+        mem_mb = 20000
     shell:
         "junction_saturation.py "
         "{params.extra} "
