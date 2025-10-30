@@ -35,6 +35,8 @@ rule fraser:
         config['container'].get('fraser')
     conda:
         '../envs/fraser.yaml'
+    benchmark:
+        'results/{sample}/benchmark/fraser_bench.txt'
     script:
         '../scripts/fraser.R'
 
@@ -65,6 +67,8 @@ rule calculate_junction_cpm:
     conda: '../envs/python.yaml'
     container:
         config['container'].get('additional_software')
+    benchmark:
+        'results/{sample}/benchmark/calculate_junction_cpm_bench.txt'
     script:
 	    '../scripts/normalize_star_cpm.py'
 
@@ -106,6 +110,8 @@ rule parse_junctions:
         config['container'].get('splice2neo')
     conda:
         '../envs/R.yaml'
+    benchmark:
+        'results/{sample}/benchmark/parse_junctions_bench.txt'
     script:
         '../scripts/parse_junctions.R'
 
@@ -142,6 +148,8 @@ rule filter_mappability:
     conda:
         '../envs/R.yaml'
     log: "results/{sample}/log/mappability_filter.log"
+    benchmark:
+        'results/{sample}/benchmark/filter_mappability_bench.txt'
     script:
         '../scripts/filter_mapability.R'
 
@@ -171,6 +179,8 @@ rule filter_reliable_calls:
     conda:
         '../envs/R.yaml'
     log: 'results/{sample}/log/filter_reliable_calls.log'
+    benchmark:
+        'results/{sample}/benchmark/filter_reliable_calls_bench.txt'
     script:
         '../scripts/filter_reliable_calls.R'
 
@@ -212,6 +222,8 @@ rule add_gene_annotation:
     conda:
         '../envs/R.yaml'
     log:  "results/{sample}/log/add_gene_transcript.log"
+    benchmark:
+        'results/{sample}/benchmark/add_gene_annotation_bench.txt'
     script:
         '../scripts/add_gene_annot.R'
 
@@ -251,6 +263,8 @@ rule filter_gene_hgnc:
     conda:
         '../envs/python.yaml'
     log:  "results/{sample}/log/gene_filtering.log"
+    benchmark:
+        'results/{sample}/benchmark/filter_gene_hgnc_bench.txt'
     script:
         '../scripts/filter_gene_name.py'
 
@@ -285,6 +299,8 @@ rule add_transcript_expression:
     conda:
         '../envs/R.yaml'
     log:  "results/{sample}/log/add_expression_estimates.log"
+    benchmark:
+        'results/{sample}/benchmark/add_transcript_expression_bench.txt'
     script:
         '../scripts/add_tpm.R'
 
@@ -316,6 +332,8 @@ checkpoint split_junc_table:
     log:  "results/{sample}/log/split_junc.log"
     container:
         config['container'].get('shell_utils')
+    benchmark:
+        'results/{sample}/benchmark/split_junc_table_bench.txt'
     shell:
         """
         mkdir -p {output}
@@ -362,6 +380,8 @@ rule add_context_sequence:
     conda:
         '../envs/R.yaml'
     log:  "results/{sample}/log/add_cts_{chunkID}.log"
+    benchmark:
+        'results/{sample}/benchmark/add_context_sequence_{chunkID}_bench.txt'
     script:
         '../scripts/add_tx.R'
 
@@ -400,6 +420,8 @@ rule translate_to_peptide:
         config['container'].get('splice2neo')
     conda:
         '../envs/R.yaml'
+    benchmark:
+        'results/{sample}/benchmark/translate_to_peptide_{chunkID}_bench.txt'
     script:
         '../scripts/peptide2.R'
 
@@ -434,6 +456,8 @@ rule gather_splice2neo:
     conda:
         '../envs/R.yaml'
     log: "results/{sample}/log/splice2neo_gather.log"
+    benchmark:
+        'results/{sample}/benchmark/gather_splice2neo_bench.txt'
     script:
         '../scripts/gather_splice2neo.sh'
 

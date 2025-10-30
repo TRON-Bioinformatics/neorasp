@@ -25,6 +25,8 @@ rule prepare_requant:
     conda:
         '../envs/R.yaml'
     log:  "results/{sample}/log/prepare_requantification.log"
+    benchmark:
+        'results/{sample}/benchmark/prepare_reuqant_bench.txt'
     script:
         '../scripts/prepare_quant.R'
 
@@ -50,6 +52,8 @@ rule generate_context_fa:
     conda:
         '../envs/easyquant.yaml'
     log:  "results/{sample}/log/bpquant_csv2fasta.log"
+    benchmark:
+        'results/{sample}/benchmark/generate_context_fa_bench.txt'
     shell:
         'bp_quant '
         'csv2fasta '
@@ -91,6 +95,8 @@ rule bowtie_index:
             ".rev.1.bt2",
             ".rev.2.bt2"
         )
+    benchmark:
+        'results/{sample}/benchmark/bowtie_index_bench.txt'
     shell:
         'bowtie2-build '
         '--threads {threads} '
@@ -141,6 +147,8 @@ rule bowtie_align:
     conda:
         '../envs/easyquant.yaml'
     log:  "results/{sample}/log/bowtie_align.log"
+    benchmark:
+        'results/{sample}/benchmark/bowtie_align_bench.txt'
     shell:
         "bowtie2 "
         "-p {threads} "
@@ -196,6 +204,8 @@ rule requantify:
     conda:
         '../envs/easyquant.yaml'
     log:  "results/{sample}/log/requantification.log"
+    benchmark:
+        'results/{sample}/benchmark/requantify_bench.txt'
     shell:
         "bp_quant count "
         "-i {input.sam} "
@@ -204,7 +214,7 @@ rule requantify:
         "-o {params.requant_dir} "
         "{params.interval} "
         "{params.mismatches} "
-        "2>&1 | tee {log}"
+        "&> {log}"
 
 rule add_quant_counts:
     """Add quant counts
@@ -234,43 +244,7 @@ rule add_quant_counts:
         config['container'].get('splice2neo')
     conda:
         '../envs/R.yaml'
+    benchmark:
+        'results/{sample}/benchmark/add_quant_counts_bench.txt'
     script:
         '../scripts/quant.R'
-
-#rule translate_to_peptide:
-#    """Peptide sequences
-#
-#    Annotate splice junctions with mutated peptide sequence.
-#    In this step, all junctions that generate a mutated coding
-#    sequence are formated for annotatin with NeoFox.
-#
-#    input:
-#        sj (str):  Path to splice junction table.
-#        cds (str): Path to RDS object of reference coding sequence.
-#        genome (str): Path to 2Bit object of reference genome.
-#    output:
-#        junctions (str): Path to splice junctions table with peptide annotation.
-#        neofox_annotation (str): Splice junction derived peptides in NeoFox format.
-#
-#    """
-#    input:
-#        sj = rules.add_quant_counts.output.requantified_sj,
-#        cds = config['reference']['ref_cds'],
-#        genome = config['reference']['2bit']
-#    output:
-#        junctions = "results/{sample}/fetchdata/sj_final.tsv",
-#        neofox_annotation = "results/{sample}/fetchdata/sj_final_neofox_annotation.tsv",
-#        peptide_fasta = "results/{sample}/fetchdata/sj_final_peptides.fasta"
-#    params:
-#        peptide_flank_size = config['splice2neo'].get('peptide_flank_size', 13)
-#    log:  "results/{sample}/log/add_peptide_annotation.log"
-#    threads: 1
-#    resources:
-#        mem_mb = 20000
-#    container:
-#        config['container'].get('splice2neo')
-#    conda:
-#        '../envs/R.yaml'
-#    script:
-#        '../scripts/peptide.R'
-#
