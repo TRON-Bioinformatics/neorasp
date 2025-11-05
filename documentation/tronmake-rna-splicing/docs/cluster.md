@@ -1,5 +1,7 @@
 # Cluster execution
 
+## Custom Profile
+
 To execute the workflow on a cluster managed by a workload manager such as SLURM, 
 a profile file must be created with specific content tailored to the cluster’s configuration. 
 The following generic example profile can be used on a cluster configured with SLURM.
@@ -16,3 +18,7 @@ The jobs parameter in the profile file specifies the maximum number of jobs that
 When the pipeline is started within a SLURM job, no more than 1 core and 1 GB of memory is required for this initial 
 job as all tasks are submitted as individual jobs. However, we recommend to start the initial SnakeMake process
 from an interactive shell session.
+
+## SnakeMake executor plugin
+
+SnakeMake provides multiple executor plugins to run the workflow on compute clusters. So far, we have only tested the slurm-executor-plugin.
