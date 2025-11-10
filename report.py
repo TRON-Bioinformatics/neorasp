@@ -1,11 +1,13 @@
 import pandas as pd
 import glob
 import os
+import sys
 import plotly.express as px
 from plotly.offline import plot
 
+search_path = sys.argv[1]
 # Find all benchmark files
-bench_files = glob.glob("*_bench.txt")
+bench_files = glob.glob(os.path.join(search_path,"results/*/benchmark/*_bench.txt"))
 
 records = []
 for f in bench_files:
