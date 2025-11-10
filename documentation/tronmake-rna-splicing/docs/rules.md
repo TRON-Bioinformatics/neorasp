@@ -13,6 +13,7 @@ This page provides a short overview of the components used in the pipeline follo
 |salmon	| https://salmon.readthedocs.io/en/latest/ | GPL-3.0|
 |easyquant |https://github.com/TRON-Bioinformatics/easyquant | MIT|
 |splice2neo | https://github.com/TRON-Bioinformatics/splice2neo | MIT|
+|stringtie | https://ccb.jhu.edu/software/stringtie/ | MIT| 
 
 ### Detailed pipeline dependencies
 
