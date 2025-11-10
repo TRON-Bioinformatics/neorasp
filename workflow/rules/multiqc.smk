@@ -15,6 +15,8 @@ rule multiqc:
             Path(output[0]).parent,
         file_name = lambda wildcards, output: 
             Path(output[0]).with_suffix("").name,
+    benchmark:
+        'results/report/multiqc_bench.txt'
     shell:
         "multiqc "
         "{params.extra} "
