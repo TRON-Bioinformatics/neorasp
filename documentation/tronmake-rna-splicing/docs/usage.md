@@ -63,7 +63,21 @@ In the config file the following attributes are specified:
   * `min_junc_count`: Minimum number of reads to keep junction in StringTie assembly (default: `1`)
   * `min_junc_anchor`: Minimum anchor of spliced alignment to keep in assembly (default: `10`)
 
-* `chrom-filter`: List of chromosomes for which the splice junctions should be kept. Default are human standard chromosomes.
+* `reference`: TronMake Genome Library paths.
+    * `genome`: Reference genome in fasta format.
+    * `annotation`: Reference annotation in GTF format.
+    * `annotation_bed`: Reference annotation in BED12 format.
+    * `cdna`: Reference transcript sequences in FASTA format. Must match the reference GTF.
+    * `chromsizes`: Chromosome sizes file, e.g. from samtools faidx.
+    * `encode_mapability`: ENCODE difficult to map regions.
+    * `ucsc_mapability`: UCSC difficult to map regions.
+    * `ref_transcripts`: GRangesList of reference transcripts as RDS file.
+    * `ref_cds`: GRangesList of reference coding sequence as RDS file.
+    * `tx2gene`: A tsv mapping transcripts to genes.
+    * `gene2symbol`: A tsv file mapping gene ids to HGNC symbols.
+    * `2bit`: Reference genome in 2bit format.
+    * `canonical_juncs`: A reference set of canoncial splice junctions.
+    * `rmsk`: A GRanges Object of RepeatMasker annotation to identify and flag potenital JETs.
 
 
 ### Example config file
@@ -79,7 +93,7 @@ If you want to collaboratively work with this pipeline, it is helpful to have a 
 
 ## Apptainer arguments
 
-Please make sure to mount the appropriate directories into the singularity image. By default, snakemake will only mount the current working directory and the location of the workflow into the container. However, if your input (FASTQ files and genome library) is located somewhere else you need to pass the appropriate bind commands to the container. In addition, the `.cache` folder of snakemake must be mounted in the container. Therefore `$HOME/.cache/snakemake` should also be included in the `--bind` command.
+Please make sure to mount the appropriate directories into the singularity/apptainer image. By default, snakemake will only mount the current working directory and the location of the workflow into the container. However, if your input (FASTQ files and genome library) is located somewhere else you need to pass the appropriate bind commands to the container. In addition, the `.cache` folder of snakemake must be mounted in the container. Therefore `$HOME/.cache/snakemake` should also be included in the `--bind` command.
 
 `--apptainer-args '--bind /path/to/your/input --bind /home/user/.cache/snakemake'`
 
@@ -91,7 +105,7 @@ Please make sure to mount the appropriate directories into the singularity image
 
 If your junction of interest is not detected it might be filtered out in one of the pipeline steps.
 
-* If the junction was lowly covered it might be filtered out by the initial read count cutoff.
+* If the junction was lowly covered it might be filtered out by the reliable call criteria.
 
 * If the junction was thought to be canonical you might find it in: `results/{sample}/fetchdata/detected_sj_canonical.tsv`.
 
@@ -100,6 +114,8 @@ If your junction of interest is not detected it might be filtered out in one of 
 * If your junction falls into a highly polymorphic gene you might find it in: `results/{sample}/fetchdata/splice2neo/gene_name_filter/sj_problematic_gene.tsv`
 
 * If your junction does not overlap a gene you might find it in: `results/{sample}/fetchdata/splice2neo/gene_annot/sj_no_transcript_overlap.tsv`
+
+* If your junctions does not alter the peptide sequence it might be removed by the splice2neo filter `cds_description == "mutated cds"`
 
 
 **Which HGNC genes are excluded by default**
