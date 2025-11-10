@@ -36,6 +36,8 @@ rule fastp:
         config['container'].get('fastp')
     conda:
         '../envs/fastp.yaml'
+    benchmark:
+        'results/{sample}/benchmark/fastp_{replicate}_bench.txt'
     shell:
         'fastp '
         '--thread {threads} '
@@ -46,7 +48,7 @@ rule fastp:
         '--out1 {output.trimmed[0]} '
         '--out2 {output.trimmed[1]} '
         '--html {output.html} '
-        '--json {output.json} '
+        '--json {output.json} &> {log}'
 
 rule star:
     """STAR
@@ -115,6 +117,8 @@ rule star:
         config['container'].get('star')
     conda:
         '../envs/star.yaml'
+    benchmark:
+        'results/{sample}/benchmark/star_bench.txt'
     shell:
         'STAR '
         '{params.read_cmd} '
@@ -151,6 +155,8 @@ rule samtools:
     log:
         "results/{sample}/log/samtools.log"
     threads: 1
+    benchmark:
+        'results/{sample}/benchmark/samtools_bench.txt'
     shell:
         """
         exec 2> {log}
@@ -187,6 +193,8 @@ rule bam2cram:
     threads: 4
     resources:
         mem_mb = 8192
+    benchmark:
+        'results/{sample}/benchmark/bam2cram_bench.txt'
     shell:
         """
         exec 2> {log}
@@ -234,6 +242,8 @@ rule qualimap:
         config['container'].get('qualimap')
     conda:
         '../envs/qualimap.yaml'
+    benchmark:
+        'results/{sample}/benchmark/qualimap_bench.txt'
     shell:
         '{params.java_opts} '
         'qualimap rnaseq {params.extra} '
@@ -279,6 +289,8 @@ rule insert_size:
         config['container'].get('additional_software')
     conda:
         '../envs/rseqc.yaml'
+    benchmark:
+        'results/{sample}/benchmark/insert_size_bench.txt'
     shell:
         "inner_distance.py " 
         "{params.extra} "
@@ -311,6 +323,10 @@ rule junction_saturation:
         config['container'].get('additional_software')
     conda:
         "../envs/rseqc.yaml"
+    resources:
+        mem_mb = 20000
+    benchmark:
+        'results/{sample}/benchmark/junction_saturation_bench.txt'
     shell:
         "junction_saturation.py "
         "{params.extra} "
@@ -342,6 +358,8 @@ rule read_distribution:
         config['container'].get('additional_software')
     conda:
         "../envs/rseqc.yaml"
+    benchmark:
+        'results/{sample}/benchmark/read_distribution_bench.txt'
     shell:
         "read_distribution.py "
         "{params.extra} "
@@ -378,6 +396,8 @@ rule featurecounts:
     conda:
         "../envs/subread.yaml"
     threads: 4
+    benchmark:
+        'results/{sample}/benchmark/featurecounts_bench.txt'
     shell:
         "featureCounts "
         "-T {params.threads} "
@@ -460,6 +480,8 @@ rule salmon:
         config['container'].get('salmon')
     conda:
         '../envs/salmon.yaml'
+    benchmark:
+        'results/{sample}/benchmark/salmon_bench.txt'
     shell:
         'salmon quant '
         '--alignments {input.bam} '

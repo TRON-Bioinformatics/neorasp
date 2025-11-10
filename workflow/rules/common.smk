@@ -101,7 +101,7 @@ def get_rg_star(wildcards):
     return ' , '.join([f'ID:{wildcards.sample}_{rep}\tSM:{wildcards.sample}\tPL:ILLUMINA' for rep in replicates])
 
 
-def determine_star_read_command(wildcards, read):
+def determine_star_read_command(wildcards, read) -> str:
     """
     Determine appropriate read command for STAR alignment.
     To ensure we are using the correct uncompression tool we read the magic byte of the file
@@ -116,7 +116,7 @@ def determine_star_read_command(wildcards, read):
         read_command = '--readFilesCommand bzcat '
     return read_command
 
-def get_multiqc_input(wildcards):
+def get_multiqc_input(wildcards) -> list:
 
     final_files = []
     for sample in samples.itertuples():
@@ -136,3 +136,30 @@ def get_multiqc_input(wildcards):
            collect("results/{sample}/metrics/{sample}.featureCounts.txt.summary", sample = sample.sample_name)
         )
     return final_files
+
+def aggregate_splice2neo_output(wildcards) -> dict:
+    """
+    Input function for rule `gather_splice2neo`. This will
+    gather from the split checkpoint all created chunks and return
+    the peptide and transcript annotated files for further processing.
+    """
+    splice2neo_final_files = {}
+
+    checkpoint_output = checkpoints.split_junc_table.get(**wildcards).output[0]
+    
+    splice2neo_final_files["peptide_junc"] = expand(
+        "results/{sample}/fetchdata/splice2neo/pep/sj_annotated_peptide_{chunkID}.tsv",
+           sample=wildcards.sample,
+           chunkID=glob_wildcards(os.path.join(checkpoint_output, "splice2neo_input_{chunkID}")).chunkID
+        )
+    splice2neo_final_files["peptide_fasta"] = expand(
+        "results/{sample}/fetchdata/splice2neo/pep/sj_annotated_peptide_{chunkID}.fasta",
+            sample=wildcards.sample,
+            chunkID=glob_wildcards(os.path.join(checkpoint_output, "splice2neo_input_{chunkID}")).chunkID
+        )
+    splice2neo_final_files["neofox_annotation"] = expand(
+        "results/{sample}/fetchdata/splice2neo/pep/sj_neofox_annotation_{chunkID}.tsv",
+            sample=wildcards.sample,
+            chunkID=glob_wildcards(os.path.join(checkpoint_output, "splice2neo_input_{chunkID}")).chunkID
+        )
+    return splice2neo_final_files
