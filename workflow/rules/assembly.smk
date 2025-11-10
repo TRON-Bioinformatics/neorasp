@@ -29,6 +29,8 @@ rule stringtie:
             'results/{sample}/stringtie/transfrags.gtf',
     log:
         "results/{sample}/log/stringtie.log"
+    benchmark:
+        'results/{sample}/benchmark/stringtie_bench.txt'
     shell:
         'stringtie '
         '{input.bam} '
@@ -61,6 +63,8 @@ rule gffcompare:
         config['container'].get('gffcompare')
     log:
         "results/{sample}/log/gffcompare.log"
+    benchmark:
+        'results/{sample}/benchmark/gffcompare_bench.txt'
     shell:
         'gffcompare '
         '-r {input.reference} '
@@ -81,6 +85,8 @@ rule extract_tpm_from_stringtie:
         mem_mb = 4000
     log:
         "results/{sample}/log/extract_tpm_from_stringtie.log"
+    benchmark:
+        'results/{sample}/benchmark/extract_tpm_from_stringtie_bench.txt'
     script:
         '../scripts/stringtie.py'
 
@@ -98,28 +104,7 @@ rule junc_to_tpm:
         mem_mb = 4000
     log:
         "results/{sample}/log/junc_to_stringtie_tpm.log"
+    benchmark:
+        'results/{sample}/benchmark/junc_to_tpm_bench.txt'
     script:
         '../scripts/stringtie.py'
-
-#rule gtf_to_fasta:
-#    input:
-#        gtf=rules.stringtie.output.transfrags
-#        ref= config
-#    output:
-#        fasta="results/{sample}/stringtie/transfrags.fa"
-#    shell:
-#        """
-#        gffread {input.gtf} -g {input.ref} -w {output.fasta}
-#        """
-
-#rule run_rnasamba:
-#    input:
-#        fasta=rules.gtf_to_fasta.output.fasta
-#		model=config
-#    output:
-#        protein_tsv = "results/{sample}/stringtie/transfrags.rnasamba.tsv",
-#        protein_fasta = "results/{sample}/stringtie/transfrags.rnasamba.protein.fasta"
-#	shell:
-#        """
-#        rnasamba classify -p {output.protein_fasta} {output.protein_tsv} {input.fasta} {input.model}
-#        """
