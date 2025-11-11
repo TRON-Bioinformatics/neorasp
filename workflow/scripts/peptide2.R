@@ -9,6 +9,8 @@ suppressMessages({
   library(Biostrings)
   library(stringr)
   library(purrr)
+  library(withr)
+  library(fs)
 })
 
 output_dir <- dirname(snakemake@output[['peptide_junc']])
