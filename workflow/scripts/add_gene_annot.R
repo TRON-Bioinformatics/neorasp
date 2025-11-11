@@ -15,6 +15,9 @@ options(future.fork.enable = TRUE)
 plan(multicore, workers = as.integer(snakemake@threads))
 
 transcripts <- base::readRDS(snakemake@input[['transcripts']])
+# Get transcripts with a defined CDS
+cds <- base::readRDS(snakemake@input[['cds']])
+cds_transcripts <- names(cds)
 
 df <- readr::read_tsv(snakemake@input[['parsed_sj']], show_col_types = FALSE)
 
@@ -38,10 +41,17 @@ df <- df %>%
 df_without_tx <- df %>%
     filter(is.na(tx_id)) %>%
     dplyr::mutate(hgnc="", gene_id="")
+  
+df_nc_transcripts <- df %>%
+  dplyr::filter(!is.na(tx_id)) %>%
+  dplyr::filter(!tx_id %in% cds_transcripts)
 
 # Apply choose_tx in parallel to fix issue in splice2neo with large dataframes.
+# 1. Remove junctions not overlapping any annotated transcript
+# 2. Filter for junctions overlapping a transcript with defined CDS
 df <- df %>%
   dplyr::filter(!is.na(tx_id)) %>%
+  dplyr::filter(tx_id %in% cds_transcripts) %>%
   base::split(.$junc_id) %>% 
   furrr::future_map(~splice2neo::choose_tx(.x))
 df <- dplyr::bind_rows(discard(df, ~nrow(.x) == 0))
@@ -53,5 +63,8 @@ df <- df %>%
 
 df_without_tx %>%
   readr::write_tsv(snakemake@output[['annotated_sj_problematic']])
+
+df_nc_transcripts %>%
+  readr::write_tsv(snakemake@output[['annotated_sj_non_coding']])
 
 df %>% readr::write_tsv(snakemake@output[['annotated_sj']])
