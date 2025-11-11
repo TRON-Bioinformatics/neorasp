@@ -206,12 +206,14 @@ rule add_gene_annotation:
     input:
         parsed_sj = rules.filter_reliable_calls.output.sj_expression,
         transcripts = config['reference']['ref_transcripts'],
+        cds = config['reference']['ref_cds'],
         tx2gene = config['reference']['tx2gene'],
         gene2hgnc = config['reference']['gene2symbol'],
         rmsk = config['reference']['rmsk']
     output:
         annotated_sj = "results/{sample}/fetchdata/splice2neo/gene_annot/sj_gene_transcript_overlap.tsv",
-        annotated_sj_problematic = "results/{sample}/fetchdata/splice2neo/gene_annot/sj_no_transcript_overlap.tsv"
+        annotated_sj_problematic = "results/{sample}/fetchdata/splice2neo/gene_annot/sj_no_transcript_overlap.tsv",
+        annotated_sj_non_coding = "results/{sample}/fetchdata/splice2neo/gene_annot/sj_nc_gene_transcript_overlap.tsv"
     threads: 4
     resources:
         mem_mb = 20000

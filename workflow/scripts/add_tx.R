@@ -35,7 +35,6 @@ defer({
 bsg <- rtracklayer::TwoBitFile(tmp_genome)
 transcripts <- base::readRDS(tmp_transcripts)
 
-
 df <- readr::read_tsv(snakemake@input[['parsed_sj']], show_col_types = FALSE)
 
 df <- df %>%
