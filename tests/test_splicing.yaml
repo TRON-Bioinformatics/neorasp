@@ -29,3 +29,21 @@
   command: >
     snakemake -p --sdm apptainer -j 4 --configfile tests/splicing_replicates.yaml --apptainer-args "--bind /tmp --bind ${GITHUB_WORKSPACE} --bind ${XDG_CACHE_HOME}/snakemake/" --apptainer-prefix ~/.apptainer/cache
 
+- name: test_only_alignment
+  tags:
+    - integrationtest
+  command: >
+    snakemake -p --sdm apptainer -j 4 --configfile tests/splicing.yaml --until only_alignment --apptainer-args "--bind /tmp --bind ${GITHUB_WORKSPACE} --bind ${XDG_CACHE_HOME}/snakemake/" --apptainer-prefix ~/.apptainer/cache
+  files:
+    - path: "results/Hugo_Pt10/star/Aligned.sortedByCoord.out.cram"
+
+- name: test_only_alignment
+  tags:
+    - integrationtest
+  command: >
+    snakemake -p --sdm apptainer -j 4 --configfile tests/splicing.yaml --until only_splice2neo --apptainer-args "--bind /tmp --bind ${GITHUB_WORKSPACE} --bind ${XDG_CACHE_HOME}/snakemake/" --apptainer-prefix ~/.apptainer/cache
+  files:
+    - path: "results/Hugo_Pt10/star/Aligned.sortedByCoord.out.cram"
+    - path: "results/Hugo_Pt10/fetchdata/sj_final_neofox_annotation.tsv"
+    - path: "results/Hugo_Pt10/fetchdata/sj_final_peptides.fasta"
+    - path: "results/Hugo_Pt10/fetchdata/splice2neo/sj_annotated_peptide.tsv"
