@@ -19,25 +19,9 @@ def get_final_output():
         final_files.extend(
             collect("results/{sample}/fetchdata/sj_final_peptides.fasta", sample = sample.sample_name)
         )
-        final_files.extend(
-            collect("results/{sample}/metrics/{sample}.inner_distance.txt", sample = sample.sample_name)
-        )
-        final_files.extend(
-            collect("results/{sample}/metrics/{sample}.junctionSaturation_plot.pdf", sample = sample.sample_name)
-        )
-        final_files.extend(
-           collect("results/{sample}/metrics/{sample}.read_distribution.txt", sample = sample.sample_name)
-        )
-        final_files.extend(
-           collect("results/{sample}/metrics/{sample}.featureCounts.txt", sample = sample.sample_name)
-        )
         # Cram files
         final_files.extend(
             collect("results/{sample}/star/Aligned.sortedByCoord.out.cram", sample = sample.sample_name)
-        )
-        # stringtie
-        final_files.extend(
-            collect("results/{sample}/stringtie/junc_to_tpm.tsv", sample = sample.sample_name)
         )
     final_files.append("results/report/multiqc.html")
 
@@ -148,17 +132,17 @@ def aggregate_splice2neo_output(wildcards) -> dict:
     checkpoint_output = checkpoints.split_junc_table.get(**wildcards).output[0]
     
     splice2neo_final_files["peptide_junc"] = expand(
-        "results/{sample}/fetchdata/splice2neo/pep/sj_annotated_peptide_{chunkID}.tsv",
+        "<results>/fetchdata/splice2neo/pep/sj_annotated_peptide_{chunkID}.tsv",
            sample=wildcards.sample,
            chunkID=glob_wildcards(os.path.join(checkpoint_output, "splice2neo_input_{chunkID}")).chunkID
         )
     splice2neo_final_files["peptide_fasta"] = expand(
-        "results/{sample}/fetchdata/splice2neo/pep/sj_annotated_peptide_{chunkID}.fasta",
+        "<results>/fetchdata/splice2neo/pep/sj_annotated_peptide_{chunkID}.fasta",
             sample=wildcards.sample,
             chunkID=glob_wildcards(os.path.join(checkpoint_output, "splice2neo_input_{chunkID}")).chunkID
         )
     splice2neo_final_files["neofox_annotation"] = expand(
-        "results/{sample}/fetchdata/splice2neo/pep/sj_neofox_annotation_{chunkID}.tsv",
+        "<results>/fetchdata/splice2neo/pep/sj_neofox_annotation_{chunkID}.tsv",
             sample=wildcards.sample,
             chunkID=glob_wildcards(os.path.join(checkpoint_output, "splice2neo_input_{chunkID}")).chunkID
         )
