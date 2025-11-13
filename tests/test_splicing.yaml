@@ -29,7 +29,7 @@
   command: >
     snakemake -p --sdm apptainer -j 4 --configfile tests/splicing_replicates.yaml --apptainer-args "--bind /tmp --bind ${GITHUB_WORKSPACE} --bind ${XDG_CACHE_HOME}/snakemake/" --apptainer-prefix ~/.apptainer/cache
 
-- name: test_only_alignment
+- name: test_only_splice2neo
   tags:
     - integrationtest
   command: >
