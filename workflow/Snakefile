@@ -52,6 +52,9 @@ rule only_splice2neo:
         ),
         collect("results/{sample}/fetchdata/sj_final_neofox_annotation.tsv",
             sample = samples.sample_name.unique()
+        ),
+        collect("results/{sample}/star/Aligned.sortedByCoord.out.cram",
+            sample = samples.sample_name.unique()
         )
 
 rule doc_all:
