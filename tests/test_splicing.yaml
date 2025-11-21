@@ -1,20 +1,21 @@
 - name: test_full_run
   tags:
     - integrationtest
+    - ci
   command: >
     snakemake -p --sdm apptainer -j 4 --configfile tests/splicing.yaml --apptainer-args "--bind /tmp --bind ${GITHUB_WORKSPACE} --bind ${XDG_CACHE_HOME}/snakemake/" --apptainer-prefix ~/.apptainer/cache
   files:
     - path: "results/Hugo_Pt10/star/Aligned.sortedByCoord.out.cram"
     - path: "results/Hugo_Pt10/fetchdata/sj_final.tsv"
     - path: "results/Hugo_Pt10/fetchdata/sj_final_neofox_annotation.tsv"
-    
+
     - path: "results/Hugo_Pt10/fetchdata/sj_final_peptides.fasta"
       contains:
         - ">db_rna|splice_39ff4bc0f2dfb74e6069cfabfac34695|DNAI7 splice_39ff4bc0f2dfb74e6069cfabfac34695 OS=Homo sapiens OX=9606 GN=DNAI7"
         - "MGPKAKKSGSKKKKVTKAERLKLLQEEEERRLKEEEEARLKYEKEEMERLEIQRIEKEKWHRLEAKDLERRNEELEELYL"
         - "LERCFPEAEKLKQETKLLSQWKHYIQCDGSPDPSVAQEMNTFISLWKEKTNETFEEVIEKSKVVLNLIEKLKFILLETPP"
         - "CDLQDKNIIQYQESILQLQELLHLKFGVATEILLKQASTLADLDSGNMEKVIKDENVTLYVWANLKKNPRVLLRKNLKP"
-    
+
     - path: "results/Hugo_Pt10/metrics/Hugo_Pt10.inner_distance.txt"
     - path: "results/Hugo_Pt10/fetchdata/splice2neo/reliable_call/sj_fail_reliable_call.tsv"
     - path: "results/Hugo_Pt10/metrics/Hugo_Pt10.featureCounts.txt"
@@ -26,6 +27,7 @@
 - name: test_full_run_replicates
   tags:
     - integrationtest
+    - ci
   command: >
     snakemake -p --sdm apptainer -j 4 --configfile tests/splicing_replicates.yaml --apptainer-args "--bind /tmp --bind ${GITHUB_WORKSPACE} --bind ${XDG_CACHE_HOME}/snakemake/" --apptainer-prefix ~/.apptainer/cache
 
@@ -47,3 +49,4 @@
     - path: "results/Hugo_Pt10/fetchdata/sj_final_neofox_annotation.tsv"
     - path: "results/Hugo_Pt10/fetchdata/sj_final_peptides.fasta"
     - path: "results/Hugo_Pt10/fetchdata/splice2neo/sj_annotated_peptide.tsv"
+
