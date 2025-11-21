@@ -79,10 +79,10 @@ jobs:
       - name: Run Integration Tests
         shell: bash -l {0}
         run: |
-          conda run -n tronmake pytest --tag integrationtest --git-aware --symlink --stderr-bytes 100000
-      
+          conda run -n tronmake pytest --tag ci --git-aware --symlink --stderr-bytes 100000
+
       - name: Clean up
         run: |
           rm -rf .snakemake
           rm -rf results
-          
+
