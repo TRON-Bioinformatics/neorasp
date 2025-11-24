@@ -1,7 +1,3 @@
-'''
-This script is used to import the TronMake RNA-expression workflow rules.
-'''
-
 rule fastp:
     """fastp
 
@@ -60,6 +56,7 @@ rule star:
     input
         r1 (str): Path to forward (R1) reads.
         r2 (str): Path to reverse (R2) reads.
+        index (str): Path to STAR index
     output:
         bam (str): Path to unsorted BAM file.
         log (str): Path to STAR execution log.
@@ -73,40 +70,31 @@ rule star:
         unmapped_fq2 (str): Path to unmapped reverse (R2) reads.
     params:
         extra (List[str]): Additional parameters passed to STAR.
-            Defaults to ENCODE3 options.
+            Defaults to ENCODE3 options.,
+        read_cmd (str): Command used by STAR to decompress FASTQ files
+        rg_string (str): Read group string to set in BAM file.
+        prefix (str): Prefix to use for for output files.
 
     """
     input:
-        unpack(get_star_input)
+        unpack(get_star_input),
+        index = config['star']['ref'],
     output:
-        bam = temp("<results>/star/Aligned.out.bam"),
-        log = "<results>/star/Log.out",
-        sj = "<results>/star/SJ.out.tab",
-        chim_junc = "<results>/star/Chimeric.out.junction",
-        log_final = "<results>/star/Log.final.out",
-        transcriptome_bam = temp("<results>/star/Aligned.toTranscriptome.out.bam"),
-        unmapped_fq1 = "<results>/star/Unmapped.out.mate1.gz",
-        unmapped_fq2 = "<results>/star/Unmapped.out.mate2.gz"
+        bam = temp("<results>/star/{sample}_Aligned.out.bam"),
+        log = "<results>/star/{sample}_Log.out",
+        sj = "<results>/star/{sample}_SJ.out.tab",
+        chim_junc = "<results>/star/{sample}_Chimeric.out.junction",
+        log_final = "<results>/star/{sample}_Log.final.out",
+        transcriptome_bam = temp("<results>/star/{sample}_Aligned.toTranscriptome.out.bam"),
+        unmapped_fq1 = "<results>/star/{sample}_Unmapped.out.mate1.gz",
+        unmapped_fq2 = "<results>/star/{sample}_Unmapped.out.mate2.gz"
     log:
         "<logs>/star.log",
     params:
         input_str_fq1 = lambda wildcards, input: ','.join(input.fq1),
         input_str_fq2 = lambda wildcards, input: ','.join(input.fq2),
-        # ENCODE3 RNA-seq options
-        extra=' '.join(['--outSAMtype BAM Unsorted', 
-                        '--outFilterType BySJout',
-                        '--alignSJoverhangMin 8',
-                        '--alignSJDBoverhangMin 1',
-                        '--outFilterMismatchNoverReadLmax 0.04',
-                        '--alignIntronMin 20', 
-                        '--alignIntronMax 1000000',
-                        '--alignMatesGapMax 1000000',
-                        '--outSAMstrandField intronMotif',
-                        '--chimSegmentMin 20',
-                        '--quantMode TranscriptomeSAM',
-                        '--outReadsUnmapped Fastx']),
-        prefix = lambda wildcards, output: os.path.dirname(output.bam),
-        index = config['star']['ref'],
+        extra = config["star"].get("extra", encode3_rna_options()),
+        prefix = lambda wildcards, output: os.path.join(os.path.dirname(output.bam), f"{wildcards.sample}_"),
         read_cmd =
             lambda wildcards, input: determine_star_read_command(wildcards, input.fq1[0]),
         rg_string = lambda wildcards: get_rg_star, 
@@ -123,13 +111,14 @@ rule star:
         'STAR '
         '{params.read_cmd} '
         '--runThreadN {threads} '
-        '--genomeDir {params.index} '
+        '--genomeDir {input.index} '
         '--readFilesIn {params.input_str_fq1} {params.input_str_fq2} '
         '{params.extra} '
+        '--quantMode TranscriptomeSAM '
         '--outSAMattrRGline {params.rg_string} '
-        '--outFileNamePrefix {params.prefix}/ &> {log} ; '
-        'test -f {params.prefix}/Unmapped.out.mate1 && gzip {params.prefix}/Unmapped.out.mate1 ; '
-        'test -f {params.prefix}/Unmapped.out.mate2 && gzip {params.prefix}/Unmapped.out.mate2'
+        '--outFileNamePrefix {params.prefix} &> {log} ; '
+        'test -f {params.prefix}Unmapped.out.mate1 && gzip {params.prefix}Unmapped.out.mate1 ; '
+        'test -f {params.prefix}Unmapped.out.mate2 && gzip {params.prefix}Unmapped.out.mate2'
 
 rule samtools:
     """Samtools
@@ -144,10 +133,10 @@ rule samtools:
 
     """
     input:
-        bam = "<results>/star/Aligned.out.bam"
+        bam = "<results>/star/{sample}_Aligned.out.bam"
     output:
-        bam = temp("<results>/star/Aligned.sortedByCoord.out.bam"),
-        bai = temp("<results>/star/Aligned.sortedByCoord.out.bam.bai")
+        bam = temp("<results>/star/{sample}_Aligned.sortedByCoord.out.bam"),
+        bai = temp("<results>/star/{sample}_Aligned.sortedByCoord.out.bam.bai")
     container:
         config['container'].get('samtools')
     conda:
@@ -178,12 +167,12 @@ rule bam2cram:
 
     """
     input:
-        bam = "<results>/star/Aligned.sortedByCoord.out.bam",
-        bai = "<results>/star/Aligned.sortedByCoord.out.bam.bai",
+        bam = "<results>/star/{sample}_Aligned.sortedByCoord.out.bam",
+        bai = "<results>/star/{sample}_Aligned.sortedByCoord.out.bam.bai",
         genome = config['reference']['genome']
     output:
-        cram = "<results>/star/Aligned.sortedByCoord.out.cram",
-        crai = "<results>/star/Aligned.sortedByCoord.out.cram.crai"
+        cram = "<results>/star/{sample}_Aligned.sortedByCoord.out.cram",
+        crai = "<results>/star/{sample}_Aligned.sortedByCoord.out.cram.crai"
     container:
         config['container'].get('samtools')
     conda:
@@ -367,7 +356,6 @@ rule read_distribution:
         "-r {input.refgene} "
         "> {output.txt} "
         "2> {log}"
-
 
 rule featurecounts:
     """

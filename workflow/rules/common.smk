@@ -21,7 +21,7 @@ def get_final_output():
         )
         # Cram files
         final_files.extend(
-            collect("results/{sample}/star/Aligned.sortedByCoord.out.cram", sample = sample.sample_name)
+            collect("results/{sample}/star/{sample}_Aligned.sortedByCoord.out.cram", sample = sample.sample_name)
         )
     final_files.append("results/report/multiqc.html")
 
@@ -100,6 +100,22 @@ def determine_star_read_command(wildcards, read) -> str:
         read_command = '--readFilesCommand bzcat '
     return read_command
 
+def encode3_rna_options() -> str:
+    """
+    Return STAR ENCODE3 default options for NeoRasp
+    """
+    return ' '.join(['--outSAMtype BAM Unsorted', 
+                     '--outFilterType BySJout',
+                     '--alignSJoverhangMin 8',
+                     '--alignSJDBoverhangMin 1',
+                     '--outFilterMismatchNoverReadLmax 0.04',
+                     '--alignIntronMin 20', 
+                     '--alignIntronMax 1000000',
+                     '--alignMatesGapMax 1000000',
+                     '--outSAMstrandField intronMotif',
+                     '--chimSegmentMin 20',
+                     '--outReadsUnmapped Fastx'])
+
 def get_multiqc_input(wildcards) -> list:
 
     final_files = []
@@ -118,6 +134,9 @@ def get_multiqc_input(wildcards) -> list:
         )
         final_files.extend(
            collect("results/{sample}/metrics/{sample}.featureCounts.txt.summary", sample = sample.sample_name)
+        )
+        final_files.extend(
+            collect("results/{sample}/star/{sample}_Log.final.out", sample = sample.sample_name)
         )
     return final_files
 
