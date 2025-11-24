@@ -9,4 +9,4 @@ all: localintegrationtest
 
 localintegrationtest:
 	export WORKSPACE="$PWD"
-	conda run pytest --tag localintegrationtest --git-aware --symlink --stderr-bytes 100000 
+	conda run pytest --tag localintegrationtest --git-aware --symlink --stderr-bytes 100000
