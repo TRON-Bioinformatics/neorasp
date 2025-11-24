@@ -16,7 +16,7 @@
       --apptainer-args "--bind /tmp --bind ${GITHUB_WORKSPACE} --bind ${XDG_CACHE_HOME}/snakemake/"
       --apptainer-prefix ~/.apptainer/cache
   files:
-    - path: "results/Hugo_Pt10/star/Aligned.sortedByCoord.out.cram"
+    - path: "results/Hugo_Pt10/star/Hugo_Pt10_Aligned.sortedByCoord.out.cram"
     - path: "results/Hugo_Pt10/fetchdata/sj_final.tsv"
     - path: "results/Hugo_Pt10/fetchdata/sj_final_neofox_annotation.tsv"
 
@@ -46,7 +46,7 @@
       --apptainer-prefix ${APPTAINER_HPC}
       --apptainer-args "--bind /tmp --bind ${WORKSPACE}"
   files:
-    - path: "results/Hugo_Pt10/star/Aligned.sortedByCoord.out.cram"
+    - path: "results/Hugo_Pt10/star/Hugo_Pt10_Aligned.sortedByCoord.out.cram"
     - path: "results/Hugo_Pt10/fetchdata/sj_final.tsv"
     - path: "results/Hugo_Pt10/fetchdata/sj_final_neofox_annotation.tsv"
 
