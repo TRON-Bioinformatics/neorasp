@@ -46,7 +46,6 @@
       --apptainer-prefix ${APPTAINER_HPC}
       --apptainer-args "--bind /tmp --bind ${WORKSPACE}"
   files:
-    - path: "results/Hugo_Pt10/star/Hugo_Pt10_Aligned.sortedByCoord.out.cram"
     - path: "results/Hugo_Pt10/star/Hugo_Pt10_SJ.out.tab"
     - path: "results/Hugo_Pt10/star/Hugo_Pt10_Log.final.out"
     - path: "results/report/multiqc_data/star_alignment_plot.txt"
