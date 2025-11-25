@@ -51,6 +51,14 @@ jobs:
     env:
       XDG_CACHE_HOME: ${{ github.workspace }}/.cache
     steps:
+      - run: df -h
+      - name: "ubuntu-cleanup"
+        # this should increase free space from ~21gb to ~38gb
+        run: |
+          sudo rm -rf /usr/share/dotnet /usr/local/lib/android /opt/ghc /opt/hostedtoolcache/CodeQL
+          sudo docker image prune --all --force
+          sudo docker builder prune -a
+      - run: df -h
       - uses: actions/checkout@v4
         with:
           submodules: recursive
@@ -85,4 +93,6 @@ jobs:
         run: |
           rm -rf .snakemake
           rm -rf results
+      - run: df -h
+        if: ${{ always() }}
 
