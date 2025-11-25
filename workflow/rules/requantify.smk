@@ -13,10 +13,10 @@ rule prepare_requant:
         genes_of_interest (str): A file with gene ids.
     """
     input:
-        sj = "results/{sample}/fetchdata/splice2neo/sj_annotated_peptide.tsv"
+        sj = "<results>/fetchdata/splice2neo/sj_annotated_peptide.tsv"
     output:
-        easyquant_table = "results/{sample}/easyquant/context_seq.tsv",
-        genes_of_interest = "results/{sample}/easyquant/genes_of_interest.txt"
+        easyquant_table = "<results>/easyquant/context_seq.tsv",
+        genes_of_interest = "<results>/easyquant/genes_of_interest.txt"
     threads: 1
     resources:
         mem_mb = 8000
@@ -24,9 +24,9 @@ rule prepare_requant:
         config['container'].get('splice2neo')
     conda:
         '../envs/R.yaml'
-    log:  "results/{sample}/log/prepare_requantification.log"
+    log:  "<logs>/prepare_requantification.log"
     benchmark:
-        'results/{sample}/benchmark/prepare_reuqant_bench.txt'
+        '<benchmarks>/prepare_reuqant_bench.txt'
     script:
         '../scripts/prepare_quant.R'
 
@@ -41,9 +41,9 @@ rule generate_context_fa:
         context_fa (str): Path to FASTA file of context sequences
     """
     input:
-        easyquant_table = "results/{sample}/easyquant/context_seq.tsv",
+        easyquant_table = "<results>/easyquant/context_seq.tsv",
     output:
-        context_fa = "results/{sample}/easyquant/context.fa"
+        context_fa = "<results>/easyquant/context.fa"
     threads: 1
     resources:
         mem_mb = 4000
@@ -51,9 +51,9 @@ rule generate_context_fa:
         config['container'].get('easyquant')
     conda:
         '../envs/easyquant.yaml'
-    log:  "results/{sample}/log/bpquant_csv2fasta.log"
+    log:  "<logs>/bpquant_csv2fasta.log"
     benchmark:
-        'results/{sample}/benchmark/generate_context_fa_bench.txt'
+        '<benchmarks>/generate_context_fa_bench.txt'
     shell:
         'bp_quant '
         'csv2fasta '
@@ -74,7 +74,7 @@ rule bowtie_index:
         prefix (str): Path where bowtie2 shall be created
     """
     input:
-        context_fa = "results/{sample}/easyquant/context.fa"
+        context_fa = "<results>/easyquant/context.fa"
     params:
         prefix = lambda wildcards, output: output.bowtie_index[0].removesuffix('.1.bt2')
     threads: 4
@@ -84,10 +84,10 @@ rule bowtie_index:
         config['container'].get('easyquant')
     conda:
         '../envs/easyquant.yaml'
-    log:  "results/{sample}/log/bowtie_index.log"
+    log:  "<logs>/bowtie_index.log"
     output:
         bowtie_index = multiext(
-            "results/{sample}/easyquant/idx/bowtie",
+            "<results>/easyquant/idx/bowtie",
             ".1.bt2",
             ".2.bt2",
             ".3.bt2",
@@ -96,7 +96,7 @@ rule bowtie_index:
             ".rev.2.bt2"
         )
     benchmark:
-        'results/{sample}/benchmark/bowtie_index_bench.txt'
+        '<benchmarks>/bowtie_index_bench.txt'
     shell:
         'bowtie2-build '
         '--threads {threads} '
@@ -138,7 +138,7 @@ rule bowtie_align:
         input_str_fq1 = lambda wildcards, input: ','.join(input.fq1),
         input_str_fq2 = lambda wildcards, input: ','.join(input.fq2),
     output:
-        sam = temp("results/{sample}/easyquant/alignment/bowtie_Aligned.out.sam")
+        sam = temp("<results>/easyquant/alignment/bowtie_Aligned.out.sam")
     threads: 4
     resources:
         mem_mb = 16000
@@ -146,9 +146,9 @@ rule bowtie_align:
         config['container'].get('easyquant')
     conda:
         '../envs/easyquant.yaml'
-    log:  "results/{sample}/log/bowtie_align.log"
+    log:  "<logs>/bowtie_align.log"
     benchmark:
-        'results/{sample}/benchmark/bowtie_align_bench.txt'
+        '<benchmarks>/bowtie_align_bench.txt'
     shell:
         "bowtie2 "
         "-p {threads} "
@@ -186,7 +186,7 @@ rule requantify:
         mismatches (str): Allow mismatches in junction region. Defaults to False.
     """
     input:
-        sam = "results/{sample}/easyquant/alignment/bowtie_Aligned.out.sam",
+        sam = "<results>/easyquant/alignment/bowtie_Aligned.out.sam",
         context_seq = rules.prepare_requant.output.easyquant_table
     params:
         requant_dir = lambda wildcards, output: os.path.dirname(output.quant),
@@ -194,8 +194,8 @@ rule requantify:
         interval = "--interval_mode" if config["requantify"].get("interval_mode", True) else "",
         mismatches = "--allow_mismatches" if config["requantify"].get("allow_mismatches", False) else ""
     output:
-        quant = "results/{sample}/easyquant/quantification.tsv",
-        read_info = "results/{sample}/easyquant/read_info.tsv.gz"
+        quant = "<results>/easyquant/quantification.tsv",
+        read_info = "<results>/easyquant/read_info.tsv.gz"
     threads: 1
     resources:
         mem_mb = 8000
@@ -203,9 +203,9 @@ rule requantify:
         config['container'].get('easyquant')
     conda:
         '../envs/easyquant.yaml'
-    log:  "results/{sample}/log/requantification.log"
+    log:  "<logs>/requantification.log"
     benchmark:
-        'results/{sample}/benchmark/requantify_bench.txt'
+        '<benchmarks>/requantify_bench.txt'
     shell:
         "bp_quant count "
         "-i {input.sam} "
@@ -230,13 +230,13 @@ rule add_quant_counts:
         requant_dir (str):  Path to working directory of easyquant.
     """
     input:
-        sj = "results/{sample}/fetchdata/splice2neo/sj_annotated_peptide.tsv",
+        sj = "<results>/fetchdata/splice2neo/sj_annotated_peptide.tsv",
         quantification = rules.requantify.output.quant
     output:
-        requantified_sj = "results/{sample}/fetchdata/sj_final.tsv"
+        requantified_sj = "<results>/fetchdata/sj_final.tsv"
     params:
         requant_dir = lambda wildcards, input: os.path.dirname(input.quantification)
-    log:  "results/{sample}/log/add_requantification_counts.log"
+    log:  "<logs>/add_requantification_counts.log"
     threads: 1
     resources:
         mem_mb = 8000
@@ -245,6 +245,6 @@ rule add_quant_counts:
     conda:
         '../envs/R.yaml'
     benchmark:
-        'results/{sample}/benchmark/add_quant_counts_bench.txt'
+        '<benchmarks>/add_quant_counts_bench.txt'
     script:
         '../scripts/quant.R'
