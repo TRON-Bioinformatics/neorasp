@@ -33,6 +33,34 @@ snakemake \
 * `--profile` (optional): Path to a profile specification that defines e.g. which executor to use and how many jobs are submitted in parallel (see section [Cluster config](#cluster-execution)).
 * `--retries` (optional): Number of retries if a rule fails. When a rule is restarted and the default workflow config is not modified, the RAM for the failed rule is increased, to account for potentially higher RAM requirements.
 
+## Target Rules
+
+NeoRasp provides multiple target rules to run different parts of the pipeline:
+
+* **Default (`all`)**: Runs the complete pipeline including alignment, junction detection, splice2neo annotation, and MultiQC report.
+
+* **`only_alignment`**: Runs only the alignment step with STAR. Useful for quickly aligning reads and identifying splice junctions without running the full annotation pipeline.
+  ```bash
+  snakemake --until only_alignment [other options]
+  ```
+
+* **`only_splice2neo`**: Runs alignment and splice2neo annotation, but skips quality control metrics and MultiQC report generation. Useful for focusing on junction candidates.
+  ```bash
+  snakemake --until only_splice2neo [other options]
+  ```
+
+## Pathvars for Workflow Reuse
+
+NeoRasp implements Snakemake pathvars to make the workflow more flexible and reusable. Pathvars define generic placeholders for output paths that can be customized when importing the workflow as a module.
+
+Default pathvars:
+* `results`: `results/{sample}` - Main results directory
+* `logs`: `results/{sample}/log` - Log files
+* `benchmarks`: `results/{sample}/benchmark` - Benchmark files
+* `multiqc`: `results/report/multiqc` - MultiQC report location
+
+These can be overridden when using NeoRasp as a Snakemake module to integrate with other workflows.
+
 ## Config file
 
 The config file contains variables that configure how the workflow is run. This
@@ -46,8 +74,9 @@ In the config file the following attributes are specified:
 * `fraser`: Configuration options for FRASER
     * `min_read`: Minimum number of spliced alignment to consider junction in metric calculation (default: `5`).
     * `mapq_filter`: Minimum MAPQ value to consider read for metric calculation.
-* `star`: Configuration options for STAR junctions
-    * `ref`: Path to STAR reference index.
+* `star`: Configuration options for STAR alignment
+    * `ref`: Path to STAR reference index directory (now specified as workflow input for better compatibility with storage plugins).
+    * `extra`: Additional STAR parameters (optional). Defaults to ENCODE3 RNA-seq recommendations.
 * `requantify`: Configuration options for easyquant and splice2neo
     * `interval_mode`: If set to true, run easyquant in interval mode (default: `true`) 
     * `allow_mismatches`: If set to true, allow mismatches in the junction point area (default: `false`) 
@@ -55,7 +84,7 @@ In the config file the following attributes are specified:
     * `cts_size`: Size of context sequence (+/- bp of exonic sequence). Ideally this should be determined based on the fragment size. (default: `1000`) 
 * `splice2neo`: Configuration options for splice2neo.
     * `peptide_flank_size`: Flanking peptide sequence size (default: `13`). The resulting neoantigen candidate will be $$2*peptide_flank_size$$
-    * `scatter_size`: Size of chunks for scatter-gather execution of splice2neo (default: `100`).
+    * `scatter_size`: Size of chunks for scatter-gather execution of splice2neo (default: `1000`). Determines how many junctions are processed in each parallel batch.
 * `reliable_calls`: Filter criteria to retain spliced alignments.
   * `min_junction_usage`: Minium Intron Jaccard Index (Splice Usage) (default: `0.05`). Splice junctions with less than 5% usage are discarded
   * `min_junction_cpm`: Minimum CPM normalized uniquely mapped reads to keep junction. (default: `0.1`)
