@@ -75,7 +75,7 @@ In the config file the following attributes are specified:
     * `min_read`: Minimum number of spliced alignment to consider junction in metric calculation (default: `5`).
     * `mapq_filter`: Minimum MAPQ value to consider read for metric calculation.
 * `star`: Configuration options for STAR alignment
-    * `ref`: Path to STAR reference index directory (now specified as workflow input for better compatibility with storage plugins).
+    * `ref`: Path to STAR reference index directory. Note: The index is now specified as a workflow input rather than a parameter, which improves compatibility with Snakemake storage plugins (e.g., for remote file systems).
     * `extra`: Additional STAR parameters (optional). Defaults to ENCODE3 RNA-seq recommendations.
 * `requantify`: Configuration options for easyquant and splice2neo
     * `interval_mode`: If set to true, run easyquant in interval mode (default: `true`) 
