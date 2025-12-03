@@ -18,7 +18,7 @@ jobs:
 
       - name: Setup Conda Environment
         run: |
-          mamba env create -n tronmake -f environment.yaml
+          mamba env create -n tronmake -f environment.ci.yaml
           git config --global --add safe.directory "$(pwd)"
           conda run -n tronmake pytest --tag dryrun --git-aware --symlink --stderr-bytes 100000 --kwd --basetemp /tmp/test
 
@@ -37,7 +37,7 @@ jobs:
 
       - name: Run Snakemake Lint
         run: |
-          mamba env create -n tronmake -f environment.yaml
+          mamba env create -n tronmake -f environment.ci.yaml
           git config --global --add safe.directory "$(pwd)"
           conda run -n tronmake snakemake --lint
 
@@ -62,7 +62,7 @@ jobs:
           miniforge-version: latest
           auto-update-conda: true
           channels: conda-forge,bioconda
-          environment-file: environment.yaml
+          environment-file: environment.ci.yaml
           activate-environment: tronmake
         # Cache Apptainer images (cross-branch)
       - uses: actions/cache@v4
