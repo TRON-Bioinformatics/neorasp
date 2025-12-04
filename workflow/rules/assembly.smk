@@ -26,11 +26,11 @@ rule stringtie:
         config['container'].get('stringtie')
     output:
         transfrags =
-            'results/{sample}/stringtie/transfrags.gtf',
+            '<results>/stringtie/transfrags.gtf',
     log:
-        "results/{sample}/log/stringtie.log"
+        "<logs>/stringtie.log"
     benchmark:
-        'results/{sample}/benchmark/stringtie_bench.txt'
+        '<benchmarks>/stringtie_bench.txt'
     shell:
         'stringtie '
         '{input.bam} '
@@ -47,13 +47,13 @@ rule gffcompare:
         reference = config['reference']['annotation'],
         reference_genome = config['reference']['genome']
     output:
-        gff_stats = 'results/{sample}/stringtie/{sample}.stats',
-        gff_tmap = 'results/{sample}/stringtie/{sample}.transfrags.gtf.tmap',
-        gff_refmap = 'results/{sample}/stringtie/{sample}.transfrags.gtf.refmap',
-        gff_annotated = 'results/{sample}/stringtie/{sample}.annotated.gtf',
-        gff_loci = 'results/{sample}/stringtie/{sample}.loci',
-        gff_tracking = 'results/{sample}/stringtie/{sample}.tracking',
-        junc_to_tx = 'results/{sample}/stringtie/junc_to_tx.tab'
+        gff_stats = '<results>/stringtie/{sample}.stats',
+        gff_tmap = '<results>/stringtie/{sample}.transfrags.gtf.tmap',
+        gff_refmap = '<results>/stringtie/{sample}.transfrags.gtf.refmap',
+        gff_annotated = '<results>/stringtie/{sample}.annotated.gtf',
+        gff_loci = '<results>/stringtie/{sample}.loci',
+        gff_tracking = '<results>/stringtie/{sample}.tracking',
+        junc_to_tx = '<results>/stringtie/junc_to_tx.tab'
     params:
         prefix = lambda wildcards, output: os.path.splitext(output.gff_stats)[0]
     threads: 1
@@ -62,9 +62,9 @@ rule gffcompare:
     container:
         config['container'].get('gffcompare')
     log:
-        "results/{sample}/log/gffcompare.log"
+        "<logs>/gffcompare.log"
     benchmark:
-        'results/{sample}/benchmark/gffcompare_bench.txt'
+        '<benchmarks>/gffcompare_bench.txt'
     shell:
         'gffcompare '
         '-r {input.reference} '
@@ -77,16 +77,16 @@ rule extract_tpm_from_stringtie:
     input:
         gff_tmap = rules.gffcompare.output.gff_tmap,
     output:
-        tpm = 'results/{sample}/stringtie/transfrags.tpm.tsv'
+        tpm = '<results>/stringtie/transfrags.tpm.tsv'
     container:
         config['container'].get('additional_software')
     threads: 1
     resources:
         mem_mb = 4000
     log:
-        "results/{sample}/log/extract_tpm_from_stringtie.log"
+        "<logs>/extract_tpm_from_stringtie.log"
     benchmark:
-        'results/{sample}/benchmark/extract_tpm_from_stringtie_bench.txt'
+        '<benchmarks>/extract_tpm_from_stringtie_bench.txt'
     script:
         '../scripts/stringtie.py'
 
@@ -96,15 +96,15 @@ rule junc_to_tpm:
         junc_to_tx = rules.gffcompare.output.junc_to_tx,
         tpm = rules.extract_tpm_from_stringtie.output.tpm
     output:
-        junc_to_tpm = 'results/{sample}/stringtie/junc_to_tpm.tsv'
+        junc_to_tpm = '<results>/stringtie/junc_to_tpm.tsv'
     container:
         config['container'].get('additional_software')
     threads: 1
     resources:
         mem_mb = 4000
     log:
-        "results/{sample}/log/junc_to_stringtie_tpm.log"
+        "<logs>/junc_to_stringtie_tpm.log"
     benchmark:
-        'results/{sample}/benchmark/junc_to_tpm_bench.txt'
+        '<benchmarks>/junc_to_tpm_bench.txt'
     script:
         '../scripts/stringtie.py'

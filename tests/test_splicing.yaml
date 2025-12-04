@@ -1,21 +1,32 @@
+# A collection of full pipeline runs to test overall integration of a part of NeoRasp
+# 1. Full run on toy example
+# 2. Full run with technical replicates
+# 3. Run until alignment step
+# 4. Run until splice2neo step
+
 - name: test_full_run
   tags:
     - integrationtest
     - ci
   command: >
-    snakemake -p --sdm apptainer -j 4 --configfile tests/splicing.yaml --apptainer-args "--bind /tmp --bind ${GITHUB_WORKSPACE} --bind ${XDG_CACHE_HOME}/snakemake/" --apptainer-prefix ~/.apptainer/cache
+    snakemake -p 
+      --sdm apptainer
+      -j 4 
+      --configfile tests/splicing.yaml
+      --apptainer-args "--bind /tmp --bind ${GITHUB_WORKSPACE} --bind ${XDG_CACHE_HOME}/snakemake/"
+      --apptainer-prefix ~/.apptainer/cache
   files:
-    - path: "results/Hugo_Pt10/star/Aligned.sortedByCoord.out.cram"
+    - path: "results/Hugo_Pt10/star/Hugo_Pt10_Aligned.sortedByCoord.out.cram"
     - path: "results/Hugo_Pt10/fetchdata/sj_final.tsv"
     - path: "results/Hugo_Pt10/fetchdata/sj_final_neofox_annotation.tsv"
-    
+
     - path: "results/Hugo_Pt10/fetchdata/sj_final_peptides.fasta"
       contains:
         - ">db_rna|splice_39ff4bc0f2dfb74e6069cfabfac34695|DNAI7 splice_39ff4bc0f2dfb74e6069cfabfac34695 OS=Homo sapiens OX=9606 GN=DNAI7"
         - "MGPKAKKSGSKKKKVTKAERLKLLQEEEERRLKEEEEARLKYEKEEMERLEIQRIEKEKWHRLEAKDLERRNEELEELYL"
         - "LERCFPEAEKLKQETKLLSQWKHYIQCDGSPDPSVAQEMNTFISLWKEKTNETFEEVIEKSKVVLNLIEKLKFILLETPP"
         - "CDLQDKNIIQYQESILQLQELLHLKFGVATEILLKQASTLADLDSGNMEKVIKDENVTLYVWANLKKNPRVLLRKNLKP"
-    
+
     - path: "results/Hugo_Pt10/metrics/Hugo_Pt10.inner_distance.txt"
     - path: "results/Hugo_Pt10/fetchdata/splice2neo/reliable_call/sj_fail_reliable_call.tsv"
     - path: "results/Hugo_Pt10/metrics/Hugo_Pt10.featureCounts.txt"
@@ -24,10 +35,117 @@
     - path: "results/Hugo_Pt10/qualimap/rnaseq_qc_results.txt"
     - path: "results/report/multiqc.html"
 
+- name: test_full_run_local
+  tags:
+    - localintegrationtest
+  command: >
+    snakemake -p 
+      --sdm apptainer
+      -j 4 
+      --configfile tests/splicing.yaml
+      --apptainer-prefix ${APPTAINER_HPC}
+      --apptainer-args "--bind /tmp --bind ${WORKSPACE}"
+  files:
+    - path: "results/Hugo_Pt10/star/Hugo_Pt10_Aligned.sortedByCoord.out.cram"
+    - path: "results/Hugo_Pt10/fetchdata/sj_final.tsv"
+    - path: "results/Hugo_Pt10/fetchdata/sj_final_neofox_annotation.tsv"
+
+    - path: "results/Hugo_Pt10/fetchdata/sj_final_peptides.fasta"
+      contains:
+        - ">db_rna|splice_39ff4bc0f2dfb74e6069cfabfac34695|DNAI7 splice_39ff4bc0f2dfb74e6069cfabfac34695 OS=Homo sapiens OX=9606 GN=DNAI7"
+        - "MGPKAKKSGSKKKKVTKAERLKLLQEEEERRLKEEEEARLKYEKEEMERLEIQRIEKEKWHRLEAKDLERRNEELEELYL"
+        - "LERCFPEAEKLKQETKLLSQWKHYIQCDGSPDPSVAQEMNTFISLWKEKTNETFEEVIEKSKVVLNLIEKLKFILLETPP"
+        - "CDLQDKNIIQYQESILQLQELLHLKFGVATEILLKQASTLADLDSGNMEKVIKDENVTLYVWANLKKNPRVLLRKNLKP"
+
+    - path: "results/Hugo_Pt10/metrics/Hugo_Pt10.inner_distance.txt"
+    - path: "results/Hugo_Pt10/fetchdata/splice2neo/reliable_call/sj_fail_reliable_call.tsv"
+    - path: "results/Hugo_Pt10/metrics/Hugo_Pt10.featureCounts.txt"
+    - path: "results/Hugo_Pt10/metrics/Hugo_Pt10.junctionSaturation_plot.r"
+    - path: "results/Hugo_Pt10/metrics/Hugo_Pt10.read_distribution.txt"
+    - path: "results/Hugo_Pt10/qualimap/rnaseq_qc_results.txt"
+    - path: "results/report/multiqc.html"
+
+
 - name: test_full_run_replicates
   tags:
     - integrationtest
     - ci
   command: >
-    snakemake -p --sdm apptainer -j 4 --configfile tests/splicing_replicates.yaml --apptainer-args "--bind /tmp --bind ${GITHUB_WORKSPACE} --bind ${XDG_CACHE_HOME}/snakemake/" --apptainer-prefix ~/.apptainer/cache
+    snakemake -p 
+      --sdm apptainer -j 4
+      --configfile tests/splicing_replicates.yaml
+      --apptainer-args "--bind /tmp --bind ${GITHUB_WORKSPACE} --bind ${XDG_CACHE_HOME}/snakemake/"
+      --apptainer-prefix ~/.apptainer/cache
 
+- name: test_full_run_replicates_local
+  tags:
+    - localintegrationtest
+  command: >
+    snakemake -p 
+      --sdm apptainer 
+      -j 4 
+      --configfile tests/splicing_replicates.yaml
+      --apptainer-prefix ${APPTAINER_HPC}
+      --apptainer-args "--bind /tmp --bind ${WORKSPACE}"
+
+- name: test_only_alignment
+  tags:
+    - integrationtest
+  command: >
+    snakemake -p 
+      --sdm apptainer -j 4
+      --configfile tests/splicing.yaml
+      --until only_alignment
+      --apptainer-args "--bind /tmp --bind ${GITHUB_WORKSPACE} --bind ${XDG_CACHE_HOME}/snakemake/"
+      --apptainer-prefix ~/.apptainer/cache
+  files:
+    - path: "results/Hugo_Pt10/star/Hugo_Pt10_Aligned.sortedByCoord.out.cram"
+    - path: "results/Hugo_Pt10/star/Hugo_Pt10_SJ.out.tab"
+
+- name: test_only_alignment_local
+  tags:
+    - localintegrationtest
+  command: >
+    snakemake -p
+      --sdm apptainer
+      -j 4
+      --configfile tests/splicing.yaml
+      --until only_alignment
+      --apptainer-prefix ${APPTAINER_HPC}
+      --apptainer-args "--bind /tmp --bind ${WORKSPACE}"
+  files:
+    - path: "results/Hugo_Pt10/star/Hugo_Pt10_Aligned.sortedByCoord.out.cram"
+    - path: "results/Hugo_Pt10/star/Hugo_Pt10_SJ.out.tab"
+
+- name: test_only_splice2neo
+  tags:
+    - integrationtest
+  command: >
+    snakemake -p 
+      --sdm apptainer 
+      -j 4 --configfile tests/splicing.yaml 
+      --until only_splice2neo 
+      --apptainer-args "--bind /tmp --bind ${GITHUB_WORKSPACE} --bind ${XDG_CACHE_HOME}/snakemake/"
+      --apptainer-prefix ~/.apptainer/cache
+  files:
+    - path: "results/Hugo_Pt10/star/Hugo_Pt10_Aligned.sortedByCoord.out.cram"
+    - path: "results/Hugo_Pt10/fetchdata/sj_final_neofox_annotation.tsv"
+    - path: "results/Hugo_Pt10/fetchdata/sj_final_peptides.fasta"
+    - path: "results/Hugo_Pt10/fetchdata/splice2neo/sj_annotated_peptide.tsv"
+
+- name: test_only_splice2neo_local
+  tags:
+    - localintegrationtest
+  command: >
+    snakemake -p 
+      --sdm apptainer
+      -j 4
+      --configfile tests/splicing.yaml
+      --until only_splice2neo
+      --apptainer-prefix ${APPTAINER_HPC}
+      --apptainer-args "--bind /tmp --bind ${WORKSPACE}"
+  files:
+    - path: "results/Hugo_Pt10/star/Hugo_Pt10_Aligned.sortedByCoord.out.cram"
+    - path: "results/Hugo_Pt10/fetchdata/sj_final_neofox_annotation.tsv"
+    - path: "results/Hugo_Pt10/fetchdata/sj_final_peptides.fasta"
+    - path: "results/Hugo_Pt10/fetchdata/splice2neo/sj_annotated_peptide.tsv"

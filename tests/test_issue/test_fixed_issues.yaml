@@ -1,0 +1,56 @@
+# Test that splice2neo scatter gather approach works when just one file is yielded by split
+- name: test_issue_140_fixed
+  tags:
+    - localintegrationtest
+  command: >
+    snakemake -p 
+      --sdm apptainer
+      -j 4
+      --configfile tests/splicing.yaml --config splice2neo='{scatter_size':' 1000}'
+      --until only_splice2neo
+      --apptainer-prefix ${APPTAINER_HPC}
+      --apptainer-args "--bind /tmp --bind ${WORKSPACE}"
+  files:
+    - path: "results/Hugo_Pt10/fetchdata/sj_final_neofox_annotation.tsv"
+    - path: "results/Hugo_Pt10/fetchdata/sj_final_peptides.fasta"
+    - path: "results/Hugo_Pt10/fetchdata/splice2neo/sj_annotated_peptide.tsv"
+
+# Test that splice2neo scatter gather approach works when many small chunks are yielded by split
+- name: test_issue_140_fixed_2
+  tags:
+    - localintegrationtest
+  command: >
+    snakemake -p 
+      --sdm apptainer
+      -j 4
+      --configfile tests/splicing.yaml --config splice2neo='{scatter_size':' 10}'
+      --until only_splice2neo
+      --apptainer-prefix ${APPTAINER_HPC}
+      --apptainer-args "--bind /tmp --bind ${WORKSPACE}"
+  files:
+    - path: "results/Hugo_Pt10/fetchdata/sj_final_neofox_annotation.tsv"
+    - path: "results/Hugo_Pt10/fetchdata/sj_final_peptides.fasta"
+    - path: "results/Hugo_Pt10/fetchdata/splice2neo/sj_annotated_peptide.tsv"
+  
+# Test star alignment uses sample prefix for ouptut and multiqc report contains STAR metrics with sample name
+- name: test_issue_142_fixed
+  tags:
+    - localintegrationtest
+  command: >
+    snakemake -p 
+      --sdm apptainer
+      -j 4
+      --configfile tests/splicing.yaml
+      --until multiqc
+      --apptainer-prefix ${APPTAINER_HPC}
+      --apptainer-args "--bind /tmp --bind ${WORKSPACE}"
+  files:
+    - path: "results/Hugo_Pt10/star/Hugo_Pt10_SJ.out.tab"
+    - path: "results/Hugo_Pt10/star/Hugo_Pt10_Log.final.out"
+    - path: "results/report/multiqc_data/star_alignment_plot.txt"
+      contains:
+        - "Hugo_Pt10"
+    - path: "results/report/multiqc_data/star_summary_table.txt"
+      contains:
+        - "Hugo_Pt10"
+
