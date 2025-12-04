@@ -4,6 +4,14 @@ import math
 import pandas as pd
 from pathlib import Path
 
+# Define pathvars as generic path for NeoRasp
+# When importing this workflow they should be redefined to match the requirements
+pathvars:
+    results="results/{sample}",
+    logs="results/{sample}/log",
+    benchmarks="results/{sample}/benchmark",
+    multiqc="results/report/multiqc",
+
 configfile: workflow.source_path('../config/config.yaml')
 configfile: workflow.source_path('../config/container_config.yaml')
 
@@ -21,6 +29,33 @@ rule all:
         get_final_output()
     default_target: True
     localrule: True
+
+rule only_alignment:
+    """
+    Target rule to only align reads against genome and identify splice junctions
+    """
+    input:
+        collect("results/{sample}/star/{sample}_Aligned.sortedByCoord.out.cram",
+            sample = samples.sample_name.unique()
+    )
+
+rule only_splice2neo:
+    """
+    Only run junction identification and splice2neo annotation
+    """
+    input:
+        collect("results/{sample}/fetchdata/splice2neo/sj_annotated_peptide.tsv",
+            sample = samples.sample_name.unique()
+        ),
+        collect("results/{sample}/fetchdata/sj_final_peptides.fasta",
+            sample = samples.sample_name.unique()
+        ),
+        collect("results/{sample}/fetchdata/sj_final_neofox_annotation.tsv",
+            sample = samples.sample_name.unique()
+        ),
+        collect("results/{sample}/star/{sample}_Aligned.sortedByCoord.out.cram",
+            sample = samples.sample_name.unique()
+        )
 
 rule doc_all:
     input:

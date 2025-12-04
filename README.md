@@ -1,7 +1,7 @@
 # NeoRasp
 
 <!-- badges: start -->
-[![Snakemake](https://img.shields.io/badge/snakemake-9.1.3-brightgreen.svg?style=flat)](https://snakemake.readthedocs.io)
+[![Snakemake](https://img.shields.io/badge/snakemake-9.13.7-brightgreen.svg?style=flat)](https://snakemake.readthedocs.io)
 ![Python](https://img.shields.io/badge/python-3670A0?style=flat-square&logo=python&logoColor=ffdd54)
 [![R](https://img.shields.io/badge/R-276DC3?style=flat-square&logo=r&logoColor=white)](https://img.shields.io/badge/R-276DC3?style=flat-square&logo=r&logoColor=white)
 [![CI](https://github.com/TRON-Private/tronmake-rna-splicing/actions/workflows/ci.yml/badge.svg)](https://github.com/TRON-Private/tronmake-rna-splicing/actions/workflows/ci.yml/badge.svg)
@@ -49,7 +49,7 @@ of candidate transcript variants. In our bioinformatics pipeline, [SnakeMake](ht
 ## Dependencies
 
  - python (>=3.10)
- - snakemake (==9.1.3)
+ - snakemake (==9.13.7)
  - conda (>=24.9)
  - apptainer (>=1.3.4)
 
