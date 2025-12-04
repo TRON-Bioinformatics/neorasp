@@ -55,7 +55,7 @@ jobs:
       - name: Build rulegraph and run Snakevision
         shell: bash -l {0}
         run: |
-          snakemake --configfile tests/splicing.yaml --rulegraph --forceall > documentation/tronmake-rna-splicing/docs/assets/pipeline_rulegraph.dot
+          snakemake --configfile tests/splicing.yaml --cores 1 --rulegraph --forceall > documentation/tronmake-rna-splicing/docs/assets/pipeline_rulegraph.dot
           ./snakevision/bin/snakevision -s all doc_all docstring_export software_export \
             -o documentation/tronmake-rna-splicing/docs/assets/pipeline_rulegraph.svg \
             documentation/tronmake-rna-splicing/docs/assets/pipeline_rulegraph.dot
@@ -63,7 +63,7 @@ jobs:
       - name: Run Snakemake documentation build
         shell: bash -l {0}
         run: |
-          snakemake -p --until doc_all --configfile tests/splicing.yaml
+          snakemake -p --until doc_all --cores 1 --configfile tests/splicing.yaml
 
       - name: Build MkDocs site
         shell: bash -l {0}
