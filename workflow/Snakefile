@@ -5,7 +5,7 @@ import pandas as pd
 from pathlib import Path
 
 # Define pathvars as generic path for NeoRasp
-# When importing this workflow they should be redefined to match the requriements
+# When importing this workflow they should be redefined to match the requirements
 pathvars:
     results="results/{sample}",
     logs="results/{sample}/log",
