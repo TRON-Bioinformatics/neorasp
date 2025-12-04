@@ -95,8 +95,7 @@ rule star:
         input_str_fq2 = lambda wildcards, input: ','.join(input.fq2),
         extra = config["star"].get("extra", encode3_rna_options()),
         prefix = lambda wildcards, output: os.path.join(os.path.dirname(output.bam), f"{wildcards.sample}_"),
-        read_cmd =
-            lambda wildcards, input: determine_star_read_command(wildcards, input.fq1[0]),
+        read_cmd = lambda wildcards, input: determine_star_read_command(wildcards, input.fq1[0]),
         rg_string = lambda wildcards: get_rg_star, 
     threads: 18
     resources:

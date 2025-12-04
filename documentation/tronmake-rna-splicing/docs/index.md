@@ -3,12 +3,12 @@
 <!-- badges: start -->
 
 [![Release](https://gitlab.rlp.net/tron/tronmake-rna-splicing/-/badges/release.svg)](https://gitlab.rlp.net/tron/tronmake-rna-splicing/-/releases)
-[![Snakemake](https://img.shields.io/badge/snakemake-8.24.1-brightgreen.svg?style=flat)](https://snakemake.readthedocs.io)
+[![Snakemake](https://img.shields.io/badge/snakemake-9.13.7-brightgreen.svg?style=flat)](https://snakemake.readthedocs.io)
 [![pipeline status](https://gitlab.rlp.net/tron/tronmake-rna-splicing/badges/develop/pipeline.svg)](https://gitlab.rlp.net/tron/tronmake-rna-splicing/commits/master)
 
 <!-- badges: end -->
 
-NeoRasp in an end-to-end workflow to identify non-canonical tumor-specific splice junction from RNA-seq.
+NeoRasp is an end-to-end workflow to identify non-canonical tumor-specific splice junction from RNA-seq.
 The workflow implements sensitive alignment-based detection of splice junctions and targeted re-quantification of candidate context sequences. 
 In our bioinformatics pipeline, [SnakeMake](https://snakemake.readthedocs.io/en/stable/) is employed as the primary workflow manager to orchestrate various steps. 
 
