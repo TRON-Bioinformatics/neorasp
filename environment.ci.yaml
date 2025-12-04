@@ -1,0 +1,25 @@
+name: tronmake
+channels:
+  - bioconda
+  - conda-forge
+  - nodefaults
+dependencies:
+  - snakemake-minimal=9.13.7
+  - pip
+  - pandas
+  - libmagic
+  - pip:
+    - biopython
+    - snakemake-executor-plugin-cluster-generic
+    - python-magic
+    - loguru
+    - mkdocs
+    - mkdocs-table-reader-plugin
+    - mkdocs-material
+    - mkdocs-include-markdown-plugin
+    - mkdocs-git-revision-date-plugin
+    - mkdocs-glightbox
+    - mkdocs-inline-select-svg-plugin
+    - markdown
+    - pytest
+    - pytest-workflow
