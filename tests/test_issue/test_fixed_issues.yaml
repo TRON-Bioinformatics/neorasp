@@ -32,7 +32,7 @@
     - path: "results/Hugo_Pt10/fetchdata/sj_final_peptides.fasta"
     - path: "results/Hugo_Pt10/fetchdata/splice2neo/sj_annotated_peptide.tsv"
   
-# Test star alignment uses sample prefix for ouptut and multiqc report contains STAR metrics with sample name
+# Test star alignment uses sample prefix for output and multiqc report contains STAR metrics with sample name
 - name: test_issue_142_fixed
   tags:
     - localintegrationtest
