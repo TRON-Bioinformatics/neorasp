@@ -16,7 +16,12 @@ suppressMessages({
 output_dir <- dirname(snakemake@output[['peptide_junc']])
 
 tmp_genome <- tempfile(
-	pattern = stringr::str_glue("genome_copy_{snakemake@wildcards[['chunkID']]}_"), 
+	pattern = stringr::str_glue("genome_copy_{snakemake@wildcards[['chunkID']]}_"),
+	tmpdir = output_dir,
+	fileext = ".2bit")
+
+tmp_genome_final <- tempfile(
+	pattern = stringr::str_glue("genome_copy_{snakemake@wildcards[['chunkID']]}_"),
 	tmpdir = output_dir,
 	fileext = ".2bit")
 
@@ -26,11 +31,15 @@ tmp_cds <- tempfile(
 	fileext = ".RDS")
 
 
+# Copy to tmp
+# Perform atomar NFS operation to ensure objects dont use same cache
 fs::file_copy(snakemake@input[['genome']], tmp_genome, overwrite = TRUE)
+fs::file_move(tmp_genome, tmp_genome_final)
+
 fs::file_copy(snakemake@input[['cds']], tmp_cds, overwrite = TRUE)
 
 defer({
-  if (file_exists(tmp_genome)) file_delete(tmp_genome)
+  if (file_exists(tmp_genome_final)) file_delete(tmp_genome_final)
   if (file_exists(tmp_cds)) file_delete(tmp_cds)
 })
 
@@ -38,7 +47,7 @@ defer({
 # Read snakemake input/parameters
 df <- readr::read_tsv(snakemake@input[['annotated_sj']], show_col_types = FALSE)
 cds <- base::readRDS(tmp_cds)
-bsg <- rtracklayer::TwoBitFile(tmp_genome)
+bsg <- rtracklayer::TwoBitFile(tmp_genome_final)
 peptide_flank_size <- as.integer(snakemake@params[["peptide_flank_size"]])
 
 # Add splice junctions with peptides
