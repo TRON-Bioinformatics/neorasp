@@ -1,6 +1,7 @@
 - name: test_full_run
   tags:
     - integrationtest
+    - ci
   command: >
     snakemake -p --sdm apptainer -j 4 --configfile tests/splicing.yaml --apptainer-args "--bind /tmp --bind ${GITHUB_WORKSPACE} --bind ${XDG_CACHE_HOME}/snakemake/" --apptainer-prefix ~/.apptainer/cache
   files:
@@ -26,6 +27,7 @@
 - name: test_full_run_replicates
   tags:
     - integrationtest
+    - ci
   command: >
     snakemake -p --sdm apptainer -j 4 --configfile tests/splicing_replicates.yaml --apptainer-args "--bind /tmp --bind ${GITHUB_WORKSPACE} --bind ${XDG_CACHE_HOME}/snakemake/" --apptainer-prefix ~/.apptainer/cache
 
