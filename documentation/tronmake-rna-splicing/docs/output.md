@@ -1,4 +1,14 @@
-# Output
+## Output Files
+
+The pipeline generates the following main output files for each sample:
+
+* `results/{sample}/star/{sample}_Aligned.sortedByCoord.out.cram` - Aligned reads in CRAM format
+* `results/{sample}/fetchdata/sj_final.tsv` - Final junction candidates with annotations
+* `results/{sample}/fetchdata/sj_final_neofox_annotation.tsv` - NeoFox-compatible annotation
+* `results/{sample}/fetchdata/sj_final_peptides.fasta` - Altered peptide sequences
+* `results/report/multiqc.html` - Quality control report
+
+## Main Result Files
 
 The output of the pipeline consists of two main files.
 
