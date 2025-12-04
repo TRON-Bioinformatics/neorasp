@@ -26,7 +26,7 @@ rule prepare_requant:
         '../envs/R.yaml'
     log:  "<logs>/prepare_requantification.log"
     benchmark:
-        '<benchmarks>/prepare_reuqant_bench.txt'
+        '<benchmarks>/prepare_requant_bench.txt'
     script:
         '../scripts/prepare_quant.R'
 
