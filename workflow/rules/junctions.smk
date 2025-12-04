@@ -25,9 +25,9 @@ rule fraser:
             lambda wildcards, output: os.path.dirname(output.psi_table),
         min_read = config['fraser'].get('min_read', 5),
         mapq_filter = config['fraser'].get('mapq_filter', 255)
-    log:  "results/{sample}/log/fraser.log"
+    log:  "<logs>/fraser.log"
     output:
-        psi_table = "results/{sample}/fraser/junctions_psi.tsv"
+        psi_table = "<results>/fraser/junctions_psi.tsv"
     threads: 2
     resources:
         mem_mb = 16000
@@ -36,7 +36,7 @@ rule fraser:
     conda:
         '../envs/fraser.yaml'
     benchmark:
-        'results/{sample}/benchmark/fraser_bench.txt'
+        '<benchmarks>/fraser_bench.txt'
     script:
         '../scripts/fraser.R'
 
@@ -59,8 +59,8 @@ rule calculate_junction_cpm:
     input:
         star_sj = rules.star.output.sj
     output:
-        star_sj_cpm = "results/{sample}/fetchdata/parsing/sj_out_tab_cpm.tsv"
-    log: "results/{sample}/log/sj_cpm.log"
+        star_sj_cpm = "<results>/fetchdata/parsing/sj_out_tab_cpm.tsv"
+    log: "<logs>/sj_cpm.log"
     threads: 1
     resources:
         mem_mb = 4096
@@ -68,7 +68,7 @@ rule calculate_junction_cpm:
     container:
         config['container'].get('additional_software')
     benchmark:
-        'results/{sample}/benchmark/calculate_junction_cpm_bench.txt'
+        '<benchmarks>/calculate_junction_cpm_bench.txt'
     script:
 	    '../scripts/normalize_star_cpm.py'
 
@@ -100,9 +100,9 @@ rule parse_junctions:
         star_cpm = rules.calculate_junction_cpm.output.star_sj_cpm,
         canonical_junctions = config['reference']['canonical_juncs']
     output:
-        parsed_sj = "results/{sample}/fetchdata/parsing/parsed_sj_star_fraser.tsv",
-        removed_junction = "results/{sample}/fetchdata/detected_sj_canonical.tsv"
-    log: "results/{sample}/log/sj_parsing.log"
+        parsed_sj = "<results>/fetchdata/parsing/parsed_sj_star_fraser.tsv",
+        removed_junction = "<results>/fetchdata/detected_sj_canonical.tsv"
+    log: "<logs>/sj_parsing.log"
     threads: 1
     resources:
         mem_mb = 8000
@@ -111,7 +111,7 @@ rule parse_junctions:
     conda:
         '../envs/R.yaml'
     benchmark:
-        'results/{sample}/benchmark/parse_junctions_bench.txt'
+        '<benchmarks>/parse_junctions_bench.txt'
     script:
         '../scripts/parse_junctions.R'
 
@@ -138,8 +138,8 @@ rule filter_mappability:
         encode_regions = config['reference']['encode_mapability'],
         ucsc_regions = config['reference']['ucsc_mapability']
     output:
-        parsed_sj = "results/{sample}/fetchdata/mappability/sj_passing_mappability.tsv",
-        failed_sj = "results/{sample}/fetchdata/mappability/sj_problematic_mappability.tsv"
+        parsed_sj = "<results>/fetchdata/mappability/sj_passing_mappability.tsv",
+        failed_sj = "<results>/fetchdata/mappability/sj_problematic_mappability.tsv"
     threads: 1
     resources:
         mem_mb = 8000
@@ -147,9 +147,9 @@ rule filter_mappability:
         config['container'].get('splice2neo')
     conda:
         '../envs/R.yaml'
-    log: "results/{sample}/log/mappability_filter.log"
+    log: "<logs>/mappability_filter.log"
     benchmark:
-        'results/{sample}/benchmark/filter_mappability_bench.txt'
+        '<benchmarks>/filter_mappability_bench.txt'
     script:
         '../scripts/filter_mapability.R'
 
@@ -166,8 +166,8 @@ rule filter_reliable_calls:
     input:
         annotated_sj = rules.filter_mappability.output.parsed_sj,
     output:
-        sj_expression = temp("results/{sample}/fetchdata/splice2neo/reliable_call/sj_reliable_call.tsv"),
-        sj_low_expression =  "results/{sample}/fetchdata/splice2neo/reliable_call/sj_fail_reliable_call.tsv"
+        sj_expression = temp("<results>/fetchdata/splice2neo/reliable_call/sj_reliable_call.tsv"),
+        sj_low_expression =  "<results>/fetchdata/splice2neo/reliable_call/sj_fail_reliable_call.tsv"
     params:
         min_junction_usage = config['reliable_calls'].get('min_junction_usage', 0.01),
         min_junction_cpm = config['reliable_calls'].get('min_junction_cpm', 0.1)
@@ -178,9 +178,9 @@ rule filter_reliable_calls:
         config['container'].get('splice2neo')
     conda:
         '../envs/R.yaml'
-    log: 'results/{sample}/log/filter_reliable_calls.log'
+    log: '<logs>/filter_reliable_calls.log'
     benchmark:
-        'results/{sample}/benchmark/filter_reliable_calls_bench.txt'
+        '<benchmarks>/filter_reliable_calls_bench.txt'
     script:
         '../scripts/filter_reliable_calls.R'
 
@@ -211,9 +211,9 @@ rule add_gene_annotation:
         gene2hgnc = config['reference']['gene2symbol'],
         rmsk = config['reference']['rmsk']
     output:
-        annotated_sj = "results/{sample}/fetchdata/splice2neo/gene_annot/sj_gene_transcript_overlap.tsv",
-        annotated_sj_problematic = "results/{sample}/fetchdata/splice2neo/gene_annot/sj_no_transcript_overlap.tsv",
-        annotated_sj_non_coding = "results/{sample}/fetchdata/splice2neo/gene_annot/sj_nc_gene_transcript_overlap.tsv"
+        annotated_sj = "<results>/fetchdata/splice2neo/gene_annot/sj_gene_transcript_overlap.tsv",
+        annotated_sj_problematic = "<results>/fetchdata/splice2neo/gene_annot/sj_no_transcript_overlap.tsv",
+        annotated_sj_non_coding = "<results>/fetchdata/splice2neo/gene_annot/sj_nc_gene_transcript_overlap.tsv"
     threads: 4
     resources:
         mem_mb = 20000
@@ -223,9 +223,9 @@ rule add_gene_annotation:
         config['container'].get('splice2neo')
     conda:
         '../envs/R.yaml'
-    log:  "results/{sample}/log/add_gene_transcript.log"
+    log:  "<logs>/add_gene_transcript.log"
     benchmark:
-        'results/{sample}/benchmark/add_gene_annotation_bench.txt'
+        '<benchmarks>/add_gene_annotation_bench.txt'
     script:
         '../scripts/add_gene_annot.R'
 
@@ -254,9 +254,9 @@ rule filter_gene_hgnc:
         working_dir = lambda wildcards, output: os.path.dirname(output.sj_passed_gene),
         organism = config.get('organism', 'human'),
     output:
-        sj_excluded_gene = "results/{sample}/fetchdata/splice2neo/gene_name_filter/sj_problematic_gene.tsv",
-        sj_passed_gene = "results/{sample}/fetchdata/splice2neo/gene_name_filter/sj_pass_gene.tsv",
-        sj_gene_exclusion_intention = "results/{sample}/fetchdata/splice2neo/gene_name_filter/gene_exclusion_intention.tsv"
+        sj_excluded_gene = "<results>/fetchdata/splice2neo/gene_name_filter/sj_problematic_gene.tsv",
+        sj_passed_gene = "<results>/fetchdata/splice2neo/gene_name_filter/sj_pass_gene.tsv",
+        sj_gene_exclusion_intention = "<results>/fetchdata/splice2neo/gene_name_filter/gene_exclusion_intention.tsv"
     threads: 1
     resources:
         mem_mb = 8000
@@ -264,9 +264,9 @@ rule filter_gene_hgnc:
         config['container'].get('additional_software')
     conda:
         '../envs/python.yaml'
-    log:  "results/{sample}/log/gene_filtering.log"
+    log:  "<logs>/gene_filtering.log"
     benchmark:
-        'results/{sample}/benchmark/filter_gene_hgnc_bench.txt'
+        '<benchmarks>/filter_gene_hgnc_bench.txt'
     script:
         '../scripts/filter_gene_name.py'
 
@@ -287,12 +287,12 @@ rule add_transcript_expression:
 
     """
     input:
-        annotated_sj = "results/{sample}/fetchdata/splice2neo/gene_name_filter/sj_pass_gene.tsv",
-        transcript_expression =  'results/{sample}/salmon_bam/quant.sf',
-        gene_expression = 'results/{sample}/salmon_bam/quant.genes.sf',
-        transfrags_expression = 'results/{sample}/stringtie/junc_to_tpm.tsv'
+        annotated_sj = "<results>/fetchdata/splice2neo/gene_name_filter/sj_pass_gene.tsv",
+        transcript_expression =  '<results>/salmon_bam/quant.sf',
+        gene_expression = '<results>/salmon_bam/quant.genes.sf',
+        transfrags_expression = '<results>/stringtie/junc_to_tpm.tsv'
     output:
-        sj_expression = temp("results/{sample}/fetchdata/splice2neo/sj_annotated_expression.tsv")
+        sj_expression = temp("<results>/fetchdata/splice2neo/sj_annotated_expression.tsv")
     threads: 1
     resources:
         mem_mb = 8000
@@ -300,9 +300,9 @@ rule add_transcript_expression:
         config['container'].get('splice2neo')
     conda:
         '../envs/R.yaml'
-    log:  "results/{sample}/log/add_expression_estimates.log"
+    log:  "<logs>/add_expression_estimates.log"
     benchmark:
-        'results/{sample}/benchmark/add_transcript_expression_bench.txt'
+        '<benchmarks>/add_transcript_expression_bench.txt'
     script:
         '../scripts/add_tpm.R'
 
@@ -321,9 +321,9 @@ checkpoint split_junc_table:
 
     """
     input:
-        parsed_sj = "results/{sample}/fetchdata/splice2neo/sj_annotated_expression.tsv",
+        parsed_sj = "<results>/fetchdata/splice2neo/sj_annotated_expression.tsv",
     output:
-        directory("results/{sample}/fetchdata/splice2neo/split_junc")
+        directory("<results>/fetchdata/splice2neo/split_junc")
     threads: 1
     resources:
         mem_mb = 8000
@@ -331,11 +331,11 @@ checkpoint split_junc_table:
         extra="",
         scatter_size = config['splice2neo'].get('scatter_size', 100),
         prefix = lambda wildcards, output: os.path.join(output[0], "splice2neo_input_")
-    log:  "results/{sample}/log/split_junc.log"
+    log:  "<logs>/split_junc.log"
     container:
         config['container'].get('shell_utils')
     benchmark:
-        'results/{sample}/benchmark/split_junc_table_bench.txt'
+        '<benchmarks>/split_junc_table_bench.txt'
     shell:
         """
         mkdir -p {output}
@@ -365,12 +365,12 @@ rule add_context_sequence:
 
     """
     input:
-        parsed_sj = "results/{sample}/fetchdata/splice2neo/split_junc/splice2neo_input_{chunkID}",
+        parsed_sj = "<results>/fetchdata/splice2neo/split_junc/splice2neo_input_{chunkID}",
         transcripts = config['reference']['ref_transcripts'],
         #genome = config['reference']['genome']
         genome = config['reference']['2bit']
     output:
-        annotated_sj = "results/{sample}/fetchdata/splice2neo/cts/sj_annotated_cts_{chunkID}.tsv",
+        annotated_sj = "<results>/fetchdata/splice2neo/cts/sj_annotated_cts_{chunkID}.tsv",
     threads: 1
     resources:
         mem_mb = 20000
@@ -381,9 +381,9 @@ rule add_context_sequence:
         config['container'].get('splice2neo')
     conda:
         '../envs/R.yaml'
-    log:  "results/{sample}/log/add_cts_{chunkID}.log"
+    log:  "<logs>/add_cts_{chunkID}.log"
     benchmark:
-        'results/{sample}/benchmark/add_context_sequence_{chunkID}_bench.txt'
+        '<benchmarks>/add_context_sequence_{chunkID}_bench.txt'
     script:
         '../scripts/add_tx.R'
 
@@ -405,16 +405,16 @@ rule translate_to_peptide:
 
     """
     input:
-        annotated_sj = "results/{sample}/fetchdata/splice2neo/cts/sj_annotated_cts_{chunkID}.tsv",
+        annotated_sj = "<results>/fetchdata/splice2neo/cts/sj_annotated_cts_{chunkID}.tsv",
         cds = config['reference']['ref_cds'],
         genome = config['reference']['2bit']
     output:
-        peptide_junc = "results/{sample}/fetchdata/splice2neo/pep/sj_annotated_peptide_{chunkID}.tsv",
-        peptide_fasta = "results/{sample}/fetchdata/splice2neo/pep/sj_annotated_peptide_{chunkID}.fasta",
-        neofox_annotation = "results/{sample}/fetchdata/splice2neo/pep/sj_neofox_annotation_{chunkID}.tsv"
+        peptide_junc = "<results>/fetchdata/splice2neo/pep/sj_annotated_peptide_{chunkID}.tsv",
+        peptide_fasta = "<results>/fetchdata/splice2neo/pep/sj_annotated_peptide_{chunkID}.fasta",
+        neofox_annotation = "<results>/fetchdata/splice2neo/pep/sj_neofox_annotation_{chunkID}.tsv"
     params:
         peptide_flank_size = config['splice2neo'].get('peptide_flank_size', 13)
-    log:  "results/{sample}/log/add_peptide_annotation_{chunkID}.log"
+    log:  "<logs>/add_peptide_annotation_{chunkID}.log"
     threads: 1
     resources:
         mem_mb = 20000
@@ -423,7 +423,7 @@ rule translate_to_peptide:
     conda:
         '../envs/R.yaml'
     benchmark:
-        'results/{sample}/benchmark/translate_to_peptide_{chunkID}_bench.txt'
+        '<benchmarks>/translate_to_peptide_{chunkID}_bench.txt'
     script:
         '../scripts/peptide2.R'
 
@@ -447,9 +447,9 @@ rule gather_splice2neo:
     input:
         unpack(aggregate_splice2neo_output)
     output:
-        sj_annot_cts_peptide = "results/{sample}/fetchdata/splice2neo/sj_annotated_peptide.tsv",
-        peptide_fasta = "results/{sample}/fetchdata/sj_final_peptides.fasta",
-        neofox_annotation = "results/{sample}/fetchdata/sj_final_neofox_annotation.tsv"
+        sj_annot_cts_peptide = "<results>/fetchdata/splice2neo/sj_annotated_peptide.tsv",
+        peptide_fasta = "<results>/fetchdata/sj_final_peptides.fasta",
+        neofox_annotation = "<results>/fetchdata/sj_final_neofox_annotation.tsv"
     threads: 1
     resources:
         mem_mb = 8000
@@ -457,9 +457,9 @@ rule gather_splice2neo:
         config['container'].get('shell_utils')
     conda:
         '../envs/R.yaml'
-    log: "results/{sample}/log/splice2neo_gather.log"
+    log: "<logs>/splice2neo_gather.log"
     benchmark:
-        'results/{sample}/benchmark/gather_splice2neo_bench.txt'
+        '<benchmarks>/gather_splice2neo_bench.txt'
     script:
         '../scripts/gather_splice2neo.sh'
 

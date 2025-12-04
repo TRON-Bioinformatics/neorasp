@@ -1,5 +1,8 @@
+# Test syntax.
 - name: test_dryrun
   tags:
     - dryrun
+    - integrationtest
+    - localintegrationtest
   command: >
     snakemake --software-deployment-method conda -j 1 -n --configfile tests/splicing.yaml

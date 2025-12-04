@@ -23,6 +23,13 @@ for f in bench_files:
 
 df = pd.concat(records, ignore_index=True)
 
+# Convert kB to Gb
+df["max_rss"] = df["max_rss"] / 1e6
+# Convert Byte to Gb
+df["io_out"] = df["io_out"] / 1e9
+df["io_in"] = df["io_in"] / 1e9
+
+
 ### Boxplots ###
 fig_time = px.box(
     df, x="rule", y="s", points="all",
@@ -33,7 +40,7 @@ fig_time = px.box(
 fig_rss = px.box(
     df, x="rule", y="max_rss", points="all",
     title="Maximal ram usage per rule",
-    labels={"max_rss": "Max RSS (kB)", "rule": "Rule"}
+    labels={"max_rss": "Max RSS (Gb)", "rule": "Rule"}
 )
 
 fig_cpu = px.box(
@@ -45,13 +52,13 @@ fig_cpu = px.box(
 fig_io_write = px.box(
     df, x="rule", y="io_out", points="all",
     title="I/O write",
-    labels={"io_out": "Written bytes", "rule": "Rule"}
+    labels={"io_out": "Written bytes (Gb)", "rule": "Rule"}
 )
 
 fig_io_read = px.box(
     df, x="rule", y="io_in", points="all",
     title="I/O reading",
-    labels={"io_in": "Read bytes", "rule": "Rule"}
+    labels={"io_in": "Read bytes (Gb)", "rule": "Rule"}
 )
 
 
