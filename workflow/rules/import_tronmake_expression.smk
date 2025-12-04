@@ -1,7 +1,3 @@
-'''
-This script is used to import the TronMake RNA-expression workflow rules.
-'''
-
 rule fastp:
     """fastp
 
@@ -22,13 +18,13 @@ rule fastp:
     input:
         sample = lambda wildcards: get_fq(wildcards).values()
     output:
-        trimmed = [temp("results/{sample}/fastp/{replicate}/{sample}_R1.fastq.gz"), 
-                   temp("results/{sample}/fastp/{replicate}/{sample}_R2.fastq.gz")],
-        unpaired = temp("results/{sample}/fastp/{replicate}/{sample}_singletons.fastq.gz"),
-        html = "results/{sample}/fastp/{replicate}/{sample}.html",
-        json = "results/{sample}/fastp/{replicate}/{sample}.json"
+        trimmed = [temp("<results>/fastp/{replicate}/{sample}_R1.fastq.gz"), 
+                   temp("<results>/fastp/{replicate}/{sample}_R2.fastq.gz")],
+        unpaired = temp("<results>/fastp/{replicate}/{sample}_singletons.fastq.gz"),
+        html = "<results>/fastp/{replicate}/{sample}.html",
+        json = "<results>/fastp/{replicate}/{sample}.json"
     log:
-        "results/{sample}/log/fastp_{replicate}.log"
+        "<logs>/fastp_{replicate}.log"
     params:
         extra = ""
     threads: 2
@@ -37,7 +33,7 @@ rule fastp:
     conda:
         '../envs/fastp.yaml'
     benchmark:
-        'results/{sample}/benchmark/fastp_{replicate}_bench.txt'
+        '<benchmarks>/fastp_{replicate}_bench.txt'
     shell:
         'fastp '
         '--thread {threads} '
@@ -60,6 +56,7 @@ rule star:
     input
         r1 (str): Path to forward (R1) reads.
         r2 (str): Path to reverse (R2) reads.
+        index (str): Path to STAR index
     output:
         bam (str): Path to unsorted BAM file.
         log (str): Path to STAR execution log.
@@ -73,42 +70,32 @@ rule star:
         unmapped_fq2 (str): Path to unmapped reverse (R2) reads.
     params:
         extra (List[str]): Additional parameters passed to STAR.
-            Defaults to ENCODE3 options.
+            Defaults to ENCODE3 options.,
+        read_cmd (str): Command used by STAR to decompress FASTQ files
+        rg_string (str): Read group string to set in BAM file.
+        prefix (str): Prefix to use for for output files.
 
     """
     input:
-        unpack(get_star_input)
+        unpack(get_star_input),
+        index = config['star']['ref'],
     output:
-        bam = temp("results/{sample}/star/Aligned.out.bam"),
-        log = "results/{sample}/star/Log.out",
-        sj = "results/{sample}/star/SJ.out.tab",
-        chim_junc = "results/{sample}/star/Chimeric.out.junction",
-        log_final = "results/{sample}/star/Log.final.out",
-        transcriptome_bam = temp("results/{sample}/star/Aligned.toTranscriptome.out.bam"),
-        unmapped_fq1 = "results/{sample}/star/Unmapped.out.mate1.gz",
-        unmapped_fq2 = "results/{sample}/star/Unmapped.out.mate2.gz"
+        bam = temp("<results>/star/{sample}_Aligned.out.bam"),
+        log = "<results>/star/{sample}_Log.out",
+        sj = "<results>/star/{sample}_SJ.out.tab",
+        chim_junc = "<results>/star/{sample}_Chimeric.out.junction",
+        log_final = "<results>/star/{sample}_Log.final.out",
+        transcriptome_bam = temp("<results>/star/{sample}_Aligned.toTranscriptome.out.bam"),
+        unmapped_fq1 = "<results>/star/{sample}_Unmapped.out.mate1.gz",
+        unmapped_fq2 = "<results>/star/{sample}_Unmapped.out.mate2.gz"
     log:
-        "results/{sample}/log/star.log",
+        "<logs>/star.log",
     params:
         input_str_fq1 = lambda wildcards, input: ','.join(input.fq1),
         input_str_fq2 = lambda wildcards, input: ','.join(input.fq2),
-        # ENCODE3 RNA-seq options
-        extra=' '.join(['--outSAMtype BAM Unsorted', 
-                        '--outFilterType BySJout',
-                        '--alignSJoverhangMin 8',
-                        '--alignSJDBoverhangMin 1',
-                        '--outFilterMismatchNoverReadLmax 0.04',
-                        '--alignIntronMin 20', 
-                        '--alignIntronMax 1000000',
-                        '--alignMatesGapMax 1000000',
-                        '--outSAMstrandField intronMotif',
-                        '--chimSegmentMin 20',
-                        '--quantMode TranscriptomeSAM',
-                        '--outReadsUnmapped Fastx']),
-        prefix = lambda wildcards, output: os.path.dirname(output.bam),
-        index = config['star']['ref'],
-        read_cmd =
-            lambda wildcards, input: determine_star_read_command(wildcards, input.fq1[0]),
+        extra = config["star"].get("extra", encode3_rna_options()),
+        prefix = lambda wildcards, output: os.path.join(os.path.dirname(output.bam), f"{wildcards.sample}_"),
+        read_cmd = lambda wildcards, input: determine_star_read_command(wildcards, input.fq1[0]),
         rg_string = lambda wildcards: get_rg_star, 
     threads: 18
     resources:
@@ -118,18 +105,19 @@ rule star:
     conda:
         '../envs/star.yaml'
     benchmark:
-        'results/{sample}/benchmark/star_bench.txt'
+        '<benchmarks>/star_bench.txt'
     shell:
         'STAR '
         '{params.read_cmd} '
         '--runThreadN {threads} '
-        '--genomeDir {params.index} '
+        '--genomeDir {input.index} '
         '--readFilesIn {params.input_str_fq1} {params.input_str_fq2} '
         '{params.extra} '
+        '--quantMode TranscriptomeSAM '
         '--outSAMattrRGline {params.rg_string} '
-        '--outFileNamePrefix {params.prefix}/ &> {log} ; '
-        'test -f {params.prefix}/Unmapped.out.mate1 && gzip {params.prefix}/Unmapped.out.mate1 ; '
-        'test -f {params.prefix}/Unmapped.out.mate2 && gzip {params.prefix}/Unmapped.out.mate2'
+        '--outFileNamePrefix {params.prefix} &> {log} ; '
+        'test -f {params.prefix}Unmapped.out.mate1 && gzip {params.prefix}Unmapped.out.mate1 ; '
+        'test -f {params.prefix}Unmapped.out.mate2 && gzip {params.prefix}Unmapped.out.mate2'
 
 rule samtools:
     """Samtools
@@ -144,19 +132,19 @@ rule samtools:
 
     """
     input:
-        bam = "results/{sample}/star/Aligned.out.bam"
+        bam = "<results>/star/{sample}_Aligned.out.bam"
     output:
-        bam = temp("results/{sample}/star/Aligned.sortedByCoord.out.bam"),
-        bai = temp("results/{sample}/star/Aligned.sortedByCoord.out.bam.bai")
+        bam = temp("<results>/star/{sample}_Aligned.sortedByCoord.out.bam"),
+        bai = temp("<results>/star/{sample}_Aligned.sortedByCoord.out.bam.bai")
     container:
         config['container'].get('samtools')
     conda:
         '../envs/samtools.yaml'
     log:
-        "results/{sample}/log/samtools.log"
+        "<logs>/samtools.log"
     threads: 1
     benchmark:
-        'results/{sample}/benchmark/samtools_bench.txt'
+        '<benchmarks>/samtools_bench.txt'
     shell:
         """
         exec 2> {log}
@@ -178,23 +166,23 @@ rule bam2cram:
 
     """
     input:
-        bam = "results/{sample}/star/Aligned.sortedByCoord.out.bam",
-        bai = "results/{sample}/star/Aligned.sortedByCoord.out.bam.bai",
+        bam = "<results>/star/{sample}_Aligned.sortedByCoord.out.bam",
+        bai = "<results>/star/{sample}_Aligned.sortedByCoord.out.bam.bai",
         genome = config['reference']['genome']
     output:
-        cram = "results/{sample}/star/Aligned.sortedByCoord.out.cram",
-        crai = "results/{sample}/star/Aligned.sortedByCoord.out.cram.crai"
+        cram = "<results>/star/{sample}_Aligned.sortedByCoord.out.cram",
+        crai = "<results>/star/{sample}_Aligned.sortedByCoord.out.cram.crai"
     container:
         config['container'].get('samtools')
     conda:
         '../envs/samtools.yaml'
     log:
-        'results/{sample}/log/samtools_cram.log'
+        '<logs>/samtools_cram.log'
     threads: 4
     resources:
         mem_mb = 8192
     benchmark:
-        'results/{sample}/benchmark/bam2cram_bench.txt'
+        '<benchmarks>/bam2cram_bench.txt'
     shell:
         """
         exec 2> {log}
@@ -226,9 +214,9 @@ rule qualimap:
         # GTF containing transcript, gene, and exon data
         gtf = config['reference']['annotation']
     output:
-        directory("results/{sample}/qualimap")
+        directory("<results>/qualimap")
     log:
-        "results/{sample}/log/qualimap.log"
+        "<logs>/qualimap.log"
     # optional specification of memory usage of the JVM that snakemake will respect with global
     # resource restrictions (https://snakemake.readthedocs.io/en/latest/snakefiles/rules.html#resources)
     # and which can be used to request RAM during cluster job submission as `{resources.mem_mb}`:
@@ -243,7 +231,7 @@ rule qualimap:
     conda:
         '../envs/qualimap.yaml'
     benchmark:
-        'results/{sample}/benchmark/qualimap_bench.txt'
+        '<benchmarks>/qualimap_bench.txt'
     shell:
         '{params.java_opts} '
         'qualimap rnaseq {params.extra} '
@@ -276,12 +264,12 @@ rule insert_size:
         bai = rules.samtools.output.bai,
         refgene = config['reference']['annotation_bed']
     output:
-        reads_inner_distance = "results/{sample}/metrics/{sample}.inner_distance.txt",
-        freq = "results/{sample}/metrics/{sample}.inner_distance_freq.txt",
-        pdf = "results/{sample}/metrics/{sample}.inner_distance_plot.pdf",
-        plot_r = "results/{sample}/metrics/{sample}.inner_distance_plot.r",
+        reads_inner_distance = "<results>/metrics/{sample}.inner_distance.txt",
+        freq = "<results>/metrics/{sample}.inner_distance_freq.txt",
+        pdf = "<results>/metrics/{sample}.inner_distance_plot.pdf",
+        plot_r = "<results>/metrics/{sample}.inner_distance_plot.r",
     log:
-        'results/{sample}/log/insert_size.log',
+        '<logs>/insert_size.log',
     params:
         extra = "-k 10000000 -q 255",
         out_prefix = lambda wildcards, output: output.reads_inner_distance.removesuffix('.inner_distance.txt')
@@ -290,7 +278,7 @@ rule insert_size:
     conda:
         '../envs/rseqc.yaml'
     benchmark:
-        'results/{sample}/benchmark/insert_size_bench.txt'
+        '<benchmarks>/insert_size_bench.txt'
     shell:
         "inner_distance.py " 
         "{params.extra} "
@@ -312,10 +300,10 @@ rule junction_saturation:
         bai = rules.samtools.output.bai,
         refgene = config['reference']['annotation_bed']
     output:
-        pdf = "results/{sample}/metrics/{sample}.junctionSaturation_plot.pdf",
-        rscript = "results/{sample}/metrics/{sample}.junctionSaturation_plot.r"
+        pdf = "<results>/metrics/{sample}.junctionSaturation_plot.pdf",
+        rscript = "<results>/metrics/{sample}.junctionSaturation_plot.r"
     log:
-        "results/{sample}/log/junction_saturation.log"
+        "<logs>/junction_saturation.log"
     params:
         extra = "-s 10",  # steps of 10% increments up to 100%
         out_prefix = lambda wildcards, output: output.pdf.removesuffix(".junctionSaturation_plot.pdf")
@@ -326,7 +314,7 @@ rule junction_saturation:
     resources:
         mem_mb = 20000
     benchmark:
-        'results/{sample}/benchmark/junction_saturation_bench.txt'
+        '<benchmarks>/junction_saturation_bench.txt'
     shell:
         "junction_saturation.py "
         "{params.extra} "
@@ -349,9 +337,9 @@ rule read_distribution:
         bai = rules.samtools.output.bai,
         refgene = config["reference"]["annotation_bed"]
     output:
-        txt = "results/{sample}/metrics/{sample}.read_distribution.txt"
+        txt = "<results>/metrics/{sample}.read_distribution.txt"
     log:
-        "results/{sample}/log/read_distribution.log"
+        "<logs>/read_distribution.log"
     params:
         extra = ""  # optional additional args (e.g., -l for read length)
     container:
@@ -359,7 +347,7 @@ rule read_distribution:
     conda:
         "../envs/rseqc.yaml"
     benchmark:
-        'results/{sample}/benchmark/read_distribution_bench.txt'
+        '<benchmarks>/read_distribution_bench.txt'
     shell:
         "read_distribution.py "
         "{params.extra} "
@@ -367,7 +355,6 @@ rule read_distribution:
         "-r {input.refgene} "
         "> {output.txt} "
         "2> {log}"
-
 
 rule featurecounts:
     """
@@ -382,10 +369,10 @@ rule featurecounts:
         bai = rules.samtools.output.bai,
         gtf = config['reference']['annotation']
     output:
-        counts = "results/{sample}/metrics/{sample}.featureCounts.txt",
-        summary = "results/{sample}/metrics/{sample}.featureCounts.txt.summary"
+        counts = "<results>/metrics/{sample}.featureCounts.txt",
+        summary = "<results>/metrics/{sample}.featureCounts.txt.summary"
     log:
-        "results/{sample}/log/featurecounts.log"
+        "<logs>/featurecounts.log"
     params:
         threads = 4,
         feature_type = "exon",
@@ -397,7 +384,7 @@ rule featurecounts:
         "../envs/subread.yaml"
     threads: 4
     benchmark:
-        'results/{sample}/benchmark/featurecounts_bench.txt'
+        '<benchmarks>/featurecounts_bench.txt'
     shell:
         "featureCounts "
         "-T {params.threads} "
@@ -421,10 +408,10 @@ rule featurecounts:
 #        bai = rules.samtools.output.bai,
 #        gtf = config["reference"]["annotation"]
 #    output:
-#        tin = "results/{sample}/metrics/{sample}.tin.xls",
-#        summary = "results/{sample}/metrics/{sample}.summary.xls"
+#        tin = "<results>/metrics/{sample}.tin.xls",
+#        summary = "<results>/metrics/{sample}.summary.xls"
 #    log:
-#        "results/{sample}/log/tin_score.log"
+#        "<logs>/tin_score.log"
 #    params:
 #        extra = ""
 #    container:
@@ -469,19 +456,19 @@ rule salmon:
         extra = lambda wildcards, input: f'--seqBias --gcBias --geneMap {input.gtf}',
         outdir = lambda wildcards, output: os.path.dirname(output.quant)
     output:
-        quant = 'results/{sample}/salmon_bam/quant.sf',
-        quant_gene = 'results/{sample}/salmon_bam/quant.genes.sf'
+        quant = '<results>/salmon_bam/quant.sf',
+        quant_gene = '<results>/salmon_bam/quant.genes.sf'
     resources:
         mem_mb = 16000
     threads: 4
     log:
-        'results/{sample}/log/salmon_bam_quant.log'
+        '<logs>/salmon_bam_quant.log'
     container:
         config['container'].get('salmon')
     conda:
         '../envs/salmon.yaml'
     benchmark:
-        'results/{sample}/benchmark/salmon_bench.txt'
+        '<benchmarks>/salmon_bench.txt'
     shell:
         'salmon quant '
         '--alignments {input.bam} '

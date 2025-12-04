@@ -23,7 +23,7 @@ reliable_calls:
 
 splice2neo:
   peptide_flank_size: 13
-  scatter_size: 50
+  scatter_size: 1000
 
 reference:
   genome: 'tests/resources/tron_genome_lib/resources/ref_genome.fasta'
