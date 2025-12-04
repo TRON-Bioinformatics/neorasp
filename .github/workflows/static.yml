@@ -34,7 +34,7 @@ jobs:
           miniforge-version: latest
           auto-update-conda: true
           channels: conda-forge,bioconda
-          environment-file: environment.yaml
+          environment-file: environment.ci.yaml
           activate-environment: tronmake
           use-mamba: true
 
