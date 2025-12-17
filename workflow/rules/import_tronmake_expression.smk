@@ -136,6 +136,8 @@ rule samtools:
     output:
         bam = temp("<results>/star/{sample}_Aligned.sortedByCoord.out.bam"),
         bai = temp("<results>/star/{sample}_Aligned.sortedByCoord.out.bam.bai")
+    params:
+        out_dir = lambda wildcards, output: os.path.dirname(output.bam)
     container:
         config['container'].get('samtools')
     conda:
@@ -148,7 +150,11 @@ rule samtools:
     shell:
         """
         exec 2> {log}
-        samtools sort -o {output.bam} {input.bam}
+        
+        TMPDIR=$(mktemp -d "{params.out_dir}/tmp.XXXXXX")
+        trap 'rm -rf "$TMPDIR"' EXIT
+        
+        samtools sort -T "$TMPDIR" -o {output.bam} {input.bam}
         samtools index {output.bam}
         """
 
