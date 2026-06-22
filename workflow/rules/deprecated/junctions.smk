@@ -1,48 +1,49 @@
 rule filter_gene_hgnc:
     """HGNC filter
 
-    Rule to remove splice junctions from highly polymorphic
-    gene loci or genes not located on chromosomes.
-    Default genes removed in this step are IG^, TCR^, BCR^ and HLA.
+Rule to remove splice junctions from highly polymorphic
+gene loci or genes not located on chromosomes.
+Default genes removed in this step are IG^, TCR^, BCR^ and HLA.
 
-    input:
-        parsed_sj (str):  Path to splice junction table.
-    output:
-        sj_passed_gene (str): Path to table with junctions passing the filter.
-        sj_excluded_gene (str): Path to table with junctions falling into exclusion regions.
-        sj_gene_exclusion_intention (str): Path to table with detailed information
-            of calssification.
-    params:
-        working_dir (str): Dirname of output files.
-        exe (str): Path to python script
+input:
+    parsed_sj (str):  Path to splice junction table.
+output:
+    sj_passed_gene (str): Path to table with junctions passing the filter.
+    sj_excluded_gene (str): Path to table with junctions falling into exclusion regions.
+    sj_gene_exclusion_intention (str): Path to table with detailed information
+        of calssification.
+params:
+    working_dir (str): Dirname of output files.
+    exe (str): Path to python script
 
-    """
+"""
     input:
-        parsed_sj = rules.add_gene_annotation.output.annotated_sj,
-    params:
-        working_dir = lambda wildcards, output: os.path.dirname(output.sj_passed_gene),
-        exe = workflow.source_path('../scripts/filter_gene_regex.py')
+        parsed_sj=rules.add_gene_annotation.output.annotated_sj,
     output:
-        sj_excluded_gene = "results/{sample}/fetchdata/splice2neo/sj_problematic_gene.tsv",
-        sj_passed_gene = temp("results/{sample}/fetchdata/splice2neo/sj_pass_gene.tsv"),
-        sj_gene_exclusion_intention = "results/{sample}/fetchdata/splice2neo/gene_exclusion_intention.tsv"
+        sj_excluded_gene="results/{sample}/fetchdata/splice2neo/sj_problematic_gene.tsv",
+        sj_passed_gene=temp("results/{sample}/fetchdata/splice2neo/sj_pass_gene.tsv"),
+        sj_gene_exclusion_intention="results/{sample}/fetchdata/splice2neo/gene_exclusion_intention.tsv",
+    log:
+        "results/{sample}/log/gene_filtering.log",
+    conda:
+        "../envs/python.yaml"
+    container:
+        "docker://tronbioinformatics/tron_data_utils:0.0.1"
     threads: 1
     resources:
-        mem_mb = 8000
-    container:
-        'docker://tronbioinformatics/tron_data_utils:0.0.1'
-    conda:
-        '../envs/python.yaml'
-    log:  "results/{sample}/log/gene_filtering.log"
+        mem_mb=8000,
+    params:
+        working_dir=lambda wildcards, output: os.path.dirname(output.sj_passed_gene),
+        exe=workflow.source_path("../scripts/filter_gene_regex.py"),
     shell:
-        'python {params.exe} '
-        '-i {input.parsed_sj} '
-        '-o {params.working_dir} 2>&1 | tee {log}'
-    
+        "python {params.exe} "
+        "-i {input.parsed_sj} "
+        "-o {params.working_dir} 2>&1 | tee {log}"
 
-#rule bedgraph_to_bigwig:
+
+# rule bedgraph_to_bigwig:
 #    """BigWig creation
-#    
+#
 #    Convert coverage bedGraph files from STAR to binary
 #    BigWig for genome wide coverage in IGV.
 #
@@ -53,7 +54,7 @@ rule filter_gene_hgnc:
 #    output:
 #        bw_forward (str): Coverage of forward strand in BigWig format.
 #        bw_reverse (str): Coverage of reverse strand in BigWig format.
-#    params: 
+#    params:
 #        extra (str): Additional parameters passed to bedGraphToBigWig.
 #    """
 #    input:
