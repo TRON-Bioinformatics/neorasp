@@ -10,7 +10,6 @@ suppressMessages({
 })
 
 
-
 options(future.fork.enable = TRUE)
 plan(multicore, workers = as.integer(snakemake@threads))
 

@@ -86,10 +86,10 @@ r-styler = ">=1.11.0,<2"
 
 [feature.style-r.tasks]
 style-r = { cmd = """\
-    R -q --vanilla -e "styler::style_dir('workflow')"\
+    R -q --vanilla -e "styler::cache_deactivate(); styler::style_dir('workflow')"\
     """, default-environment = "style-r" }
 lint-r = { cmd = """\
-    R -q --vanilla -e "styler::style_dir('workflow', dry = 'fail')"\
+    R -q --vanilla -e "styler::cache_deactivate(); styler::style_dir('workflow', dry = 'fail')"\
     """, default-environment = "style-r" }
 
 [feature.style-sh.dependencies]
