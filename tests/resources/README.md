@@ -2,10 +2,11 @@
 
 First step of ShrinkGenome is not required as it combines different regions from the genome (this could be interesting for fusion reference).
 
-* Select a genomic region for the testdataset
-  * For the given example the KRAS gene and ~1,500,000 bp up- and downstream were selected and written into `merged_intervals.tsv`
+- Select a genomic region for the testdataset
 
-* Build minigenome
+  - For the given example the KRAS gene and ~1,500,000 bp up- and downstream were selected and written into `merged_intervals.tsv`
+
+- Build minigenome
 
 ```
 python ShrinkGenome/build_minigenome_from_intervals.py \
@@ -14,7 +15,7 @@ python ShrinkGenome/build_minigenome_from_intervals.py \
     --spacer_len 0
 ```
 
-* Translate coordinates
+- Translate coordinates
 
 ```
 python ShrinkGenome/translate_fullgenome_to_minigenome_annot.py \
@@ -25,12 +26,13 @@ python ShrinkGenome/translate_fullgenome_to_minigenome_annot.py \
 
 ## Get subsetted reads
 
-* Reads from given example selected from Riaz cohort (https://doi.org/10.1016/j.cell.2017.09.028)
-  * WES tumor: SRR5134770
-  * WES normal: SRR5134767
-  * RNA tumor: SRR5088818
+- Reads from given example selected from Riaz cohort (https://doi.org/10.1016/j.cell.2017.09.028)
 
-* Select reads from region from a mapped bam file and sort the bam file by name (this step has to be executed for each sample)
+  - WES tumor: SRR5134770
+  - WES normal: SRR5134767
+  - RNA tumor: SRR5088818
+
+- Select reads from region from a mapped bam file and sort the bam file by name (this step has to be executed for each sample)
 
 ```
 samtools view -b -h \
@@ -52,7 +54,7 @@ samtools view -b -h \
     > minireads/SRR5088818.mini.namesorted.bam
 ```
 
-* Convert bam to fastq (also has to be done for each sample)
+- Convert bam to fastq (also has to be done for each sample)
 
 ```
 bedtools bamtofastq \
@@ -73,7 +75,7 @@ bedtools bamtofastq \
 
 ## Select the respective transcripts
 
-* get the gene ids that fall into the specified region
+- get the gene ids that fall into the specified region
 
 ```
 bedtools intersect \
@@ -85,7 +87,7 @@ bedtools intersect \
     | sed 's/transcript_id=//' > transcriptids.txt
 ```
 
-* extract the transcript sequences that match the above gathered gene ids
+- extract the transcript sequences that match the above gathered gene ids
 
 ```
 for transcriptid in $(cat transcriptids.txt); 
