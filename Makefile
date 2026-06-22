@@ -8,5 +8,4 @@ endif
 all: localintegrationtest
 
 localintegrationtest:
-	export WORKSPACE="$PWD"
-	conda run pytest --tag localintegrationtest --git-aware --symlink --stderr-bytes 100000
+	pixi run -e test-local test-local
