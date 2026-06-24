@@ -8,6 +8,7 @@ nav:
   - Usage: usage.md
   - Cluster execution: cluster.md
   - Workflow rules: rules.md
+  - Developer guide: developer_guide.md
   - References: references.md
   - About: about.md
 theme:

@@ -10,15 +10,11 @@ Apptainer is required to run the workflow with container support.
 git clone https://gitlab.rlp.net/tron/tronmake-rna-splicing
 ```
 
-## Create conda environment
+## Install depedencies
 
 ```
-cd NeoRasp
-conda env create -f environment.yaml --prefix conda_env/
-conda activate conda_env
+pixi shell
 ```
-
-**Please make sure that the conda chanel priority is not set to strict. Channel priority is configured and set in `$HOME/.condarc`.**
 
 # System dependencies
 
@@ -40,10 +36,8 @@ For local testing on HPC systems with Apptainer support, use the provided Makefi
 export APPTAINER_HPC=/path/to/apptainer/library
 
 # Run all local integration tests
-make localintegrationtest
+pixi run test-local
 ```
-
-The Makefile runs pytest with the `localintegrationtest` tag, which executes tests designed for local environments with proper Apptainer configurations.
 
 ## Test Structure
 
