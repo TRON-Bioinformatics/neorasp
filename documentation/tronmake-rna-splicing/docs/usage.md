@@ -23,7 +23,7 @@ snakemake \
   - `sample_sheet=`: Define the path to the sample sheet.
   - `index_dir=`: Path to the genome library and genome indices.
 - `directory`: Specifies where the results are stored.
-- `configfile`: The path to the config file that contains e.g. the paths to the genome indices (see [Config file](#config-file)).
+- `configfile`: The path to the config file that contains e.g. the paths to the genome indices (see [Config file](#config)).
 - `software-deployment-method`: Currently conda and apptainer are supported. Apptainer is tested and recommended.
 - `workflow-profile` (optional): To define the resources for each snakemake rule. The workflow ships a default profile suitable for most analysis.
 - `--default-resources`: The temporary directory has to be use by some rules. We advise to set the tmpdir to a fast storage, if available. Otherwise use "tmpdir='\<output_directory>'". If not specified, tmpdir is set to the systems default temporary directory.
@@ -57,10 +57,10 @@ NeoRasp implements Snakemake pathvars to make the workflow more flexible and reu
 
 Default pathvars:
 
-- `results`: `results/{sample}` - Main results directory  
-- `logs`: `results/{sample}/log` - Log files  
-- `benchmarks`: `results/{sample}/benchmark` - Benchmark files  
-- `multiqc`: `results/report/multiqc` - MultiQC report location  
+- `results`: `results/{sample}` - Main results directory
+- `logs`: `results/{sample}/log` - Log files
+- `benchmarks`: `results/{sample}/benchmark` - Benchmark files
+- `multiqc`: `results/report/multiqc` - MultiQC report location
 
 These can be overridden when using NeoRasp as a Snakemake module to integrate with other workflows.
 
@@ -122,7 +122,7 @@ In the config file the following attributes are specified:
   - `gene2symbol`: A tsv file mapping gene ids to HGNC symbols.
   - `2bit`: Reference genome in 2bit format.
   - `canonical_juncs`: A reference set of canoncial splice junctions.
-  - `rmsk`: A GRanges Object of RepeatMasker annotation to identify and flag potenital JETs.
+  - `rmsk`: A BED file of RepeatMasker annotation to identify and flag potenital JETs.
 
 ### Example config file
 

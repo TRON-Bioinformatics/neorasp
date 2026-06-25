@@ -1,4 +1,3 @@
-
 ## What type of splicing events can be detected?
 
 NeoRasp is focused on the detection of intra-gene exon-exon junctions. While other type of junctions (inter-gene exon-exon junctions and intra-chromosomal junctions) might be found in the intial alignment step they are not considered for further annotation and re-quantification. To detect such type of splicing abberations you should use specialized pipelines such as EasyFuse or CTAT-splicing.
@@ -41,11 +40,10 @@ The following regex matches are applied to the HGNC gene ids for filtering when 
 |      ^IGL[VJC]?      |    Immunoglobulin gene    |
 |         ^TRB         |   T cell receptor beta    |
 
-
 For mouse the following filters are applied:
 
 | exclude_gene_pattern | exclude_pattern_intention |
 | :------------------: | :-----------------------: |
-| ^mt-                 |   Mitochondrial gene      |
-| ^H2-                 |   MHC gene                |
-| ^Igh[vmdjmgea]?      |   Immunoglobulin gene     |
+|         ^mt-         |    Mitochondrial gene     |
+|         ^H2-         |         MHC gene          |
+|   ^Igh[vmdjmgea]?    |    Immunoglobulin gene    |
