@@ -1,6 +1,6 @@
 # Workflow overview
 
-This page provides a short overview of the components used in the pipeline followed by the API of individual rules.
+This page provides an overview of the pipeline components and detailed descriptions of the individual Snakemake rules.
 
 ## Workflow components
 

@@ -10,14 +10,13 @@ The pipeline generates the following main output files for each sample:
 
 ## Main Result Files
 
-The output of the pipeline consists of three main files.
+The pipeline produces three primary output files:
 
 - `results/{sample}/fetchdata/sj_final.tsv`
 - `results/{sample}/fetchdata/sj_final_neofox_annotation.tsv`
 - `results/{sample}/fetchdata/sj_final_peptides.fasta`
 
-Within the files, each line describes a candidate junction transcript. The file `sj_final.tsv` contains all candidate junctions with annotated features and targeted re-quantification results. The file `sj_final_neofox_annotation.tsv` contains only junction candidates with a mutated peptide sequence in format
-suitable for analysis with NeoFox. `sj_final_peptides.fasta` containts the altered full-length protein sequence for MassSpec analysis. 
+Each line in these files represents a candidate junction transcript. The `sj_final.tsv` file lists all candidate junctions, including annotated features and targeted re-quantification results. The `sj_final_neofox_annotation.tsv` file contains only candidates with mutated peptide sequences, formatted for analysis with NeoFox. Finally, `sj_final_peptides.fasta` provides the altered full-length protein sequences for MassSpec analysis.
 
 ## Column-descriptions
 

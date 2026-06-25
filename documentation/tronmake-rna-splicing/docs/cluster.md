@@ -2,9 +2,7 @@
 
 ## Custom Profile
 
-To execute the workflow on a cluster managed by a workload manager such as SLURM,
-a profile file must be created with specific content tailored to the cluster’s configuration.
-The following generic example profile can be used on a cluster configured with SLURM.
+For execution on clusters managed by workload managers like SLURM, a profile file tailored to the cluster's configuration is required. A generic example for SLURM is provided below:
 
 ```
 executor: cluster-generic

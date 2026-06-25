@@ -8,9 +8,7 @@
 
 <!-- badges: end -->
 
-NeoRasp is an end-to-end workflow to identify non-canonical tumor-specific intra-gene splice junctions from RNA-seq.
-The workflow implements sensitive alignment-based detection of splice junctions and targeted re-quantification of candidate context sequences. 
-In our bioinformatics pipeline, [SnakeMake](https://snakemake.readthedocs.io/en/stable/) is employed as the primary workflow manager to orchestrate various steps. 
+NeoRasp is an end-to-end workflow for identifying non-canonical, tumor-specific intra-gene splice junctions from RNA-seq data. It employs sensitive alignment-based detection of splice junctions followed by targeted re-quantification of candidate context sequences. The pipeline is orchestrated using [Snakemake](https://snakemake.readthedocs.io/en/stable/).
 
 The main steps include:
 

@@ -1,8 +1,6 @@
 # Installation
 
-This sections describes the process to install the workflow on a linux machine.
-Snakemake and python are installed by the conda environment shipped with the repository.
-Apptainer is required to run the workflow with container support.
+This section describes how to install the workflow on Linux. The provided pixi environment installs Snakemake and Python. Apptainer is required for container support.
 
 ## Download pipeline repository
 

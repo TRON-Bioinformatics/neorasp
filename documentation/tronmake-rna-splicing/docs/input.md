@@ -1,10 +1,10 @@
 # Input
 
-NeoRasp takes tumor RNA-seq data as input. The input files are provided as tab separated value sheets (TSV) described in the following section.
+NeoRasp requires tumor RNA-seq data provided as tab-separated value (TSV) files, as detailed below.
 
 ## Sequencing data
 
-The table with paired end FASTQ files expects three tab-separated columns **without** a header. 
+The paired-end FASTQ input table should contain three tab-separated columns **without** a header:
 
 | Sample name          | FASTQ 1                         | FASTQ 2                        |
 |----------------------|---------------------------------|--------------------------------|

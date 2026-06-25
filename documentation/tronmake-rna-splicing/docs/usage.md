@@ -1,8 +1,8 @@
 # Usage
 
-> **Information: If possible, use absolute paths when specifying directories or files.**\
-> **Recommendation: If possible, configure the workflow with a yaml configfile and not on the command line.**\
-> **Apptainer: If possible, use apptainer to run the pipeline. This has been tested. Conda execution is possible but not tested.**
+> **Note: Use absolute paths for directories and files whenever possible.**\
+> **Recommendation: It is recommended to use a YAML configuration file rather than command-line arguments.**\
+> **Apptainer: Apptainer is the recommended and tested software deployment method; while Conda is supported, it has not been extensively tested.**
 
 ```
 snakemake \
