@@ -37,17 +37,17 @@ snakemake \
 
 NeoRasp provides multiple target rules to run different parts of the pipeline:
 
-- **Default (`all`)**: Runs the complete pipeline including alignment, junction detection, splice2neo annotation, and MultiQC report.
+- **`all` (default)**: Runs the complete pipeline including alignment, junction detection, splice2neo annotation, and MultiQC report.
 
 - **`only_alignment`**: Runs only the alignment step with STAR. Useful for quickly aligning reads and identifying splice junctions without running the full annotation pipeline.
 
-  ```bash
+  ```
   snakemake --until only_alignment [other options]
   ```
 
 - **`only_splice2neo`**: Runs alignment and splice2neo annotation, but skips quality control metrics and MultiQC report generation. Useful for focusing on junction candidates.
 
-  ```bash
+  ```
   snakemake --until only_splice2neo [other options]
   ```
 
@@ -57,14 +57,14 @@ NeoRasp implements Snakemake pathvars to make the workflow more flexible and reu
 
 Default pathvars:
 
-- `results`: `results/{sample}` - Main results directory
-- `logs`: `results/{sample}/log` - Log files
-- `benchmarks`: `results/{sample}/benchmark` - Benchmark files
-- `multiqc`: `results/report/multiqc` - MultiQC report location
+- `results`: `results/{sample}` - Main results directory  
+- `logs`: `results/{sample}/log` - Log files  
+- `benchmarks`: `results/{sample}/benchmark` - Benchmark files  
+- `multiqc`: `results/report/multiqc` - MultiQC report location  
 
 These can be overridden when using NeoRasp as a Snakemake module to integrate with other workflows.
 
-## Config file
+## config
 
 The config file contains variables that configure how the workflow is run. This
 includes the paths to the reference and indices.
@@ -139,39 +139,3 @@ If you want to collaboratively work with this pipeline, it is helpful to have a 
 Please make sure to mount the appropriate directories into the singularity/apptainer image. By default, snakemake will only mount the current working directory and the location of the workflow into the container. However, if your input (FASTQ files and genome library) is located somewhere else you need to pass the appropriate bind commands to the container. In addition, the `.cache` folder of snakemake must be mounted in the container. Therefore `$HOME/.cache/snakemake` should also be included in the `--bind` command.
 
 `--apptainer-args '--bind /path/to/your/input --bind /home/user/.cache/snakemake'`
-
-## FAQ
-
-**Junction of interest not detected.**
-
-If your junction of interest is not detected it might be filtered out in one of the pipeline steps.
-
-- If the junction was lowly covered it might be filtered out by the reliable call criteria.
-
-- If the junction was thought to be canonical you might find it in: `results/{sample}/fetchdata/detected_sj_canonical.tsv`.
-
-- If the junction falls into hard to map/align regions you might find it in: `results/{sample}/fetchdata/mappability/sj_problematic_mappability.tsv`.
-
-- If your junction falls into a highly polymorphic gene you might find it in: `results/{sample}/fetchdata/splice2neo/gene_name_filter/sj_problematic_gene.tsv`
-
-- If your junction does not overlap a gene you might find it in: `results/{sample}/fetchdata/splice2neo/gene_annot/sj_no_transcript_overlap.tsv`
-
-- If your junctions does not alter the peptide sequence it might be removed by the splice2neo filter `cds_description == "mutated cds"`
-
-**Which HGNC genes are excluded by default**
-
-We exclude by default gene loci from highly polymorphic gene regions such as HLA, T-cell or B-cell receptor genes.
-The following regex matches are applied to the HGNC gene ids for filtering.
-
-| exclude_gene_pattern | exclude_pattern_intention |
-| :------------------: | :-----------------------: |
-|         ^MT-         |    Mitochondrial gene     |
-|        ^HLA-         |         HLA gene          |
-|     ^IGH[VDJCG]?     |    Immunoglobulin gene    |
-|      ^IGHA[12]       |    Immunoglobulin gene    |
-|        ^IGHM         |    Immunoglobulin gene    |
-|        ^IGHE         |    Immunoglobulin gene    |
-|      ^IGHEP[12]      |    Immunoglobulin gene    |
-|      ^IGK[VJC]?      |    Immunoglobulin gene    |
-|      ^IGL[VJC]?      |    Immunoglobulin gene    |
-|         ^TRB         |   T cell receptor beta    |

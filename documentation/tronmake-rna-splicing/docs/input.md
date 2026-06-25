@@ -1,10 +1,8 @@
 # Input
 
-NeoRasp takes tumor RNA-seq data as input. The input files are provided as tab separated value sheets (TSV) described in the following section..
+NeoRasp takes tumor RNA-seq data as input. The input files are provided as tab separated value sheets (TSV) described in the following section.
 
 ## Sequencing data
-
-### Paired-end FASTQ
 
 The table with paired end FASTQ files expects three tab-separated columns **without** a header. 
 
@@ -13,7 +11,7 @@ The table with paired end FASTQ files expects three tab-separated columns **with
 | sample_1             | /path/to/sample_1.1.fastq       |    /path/to/sample_1.2.fastq   |
 | sample_2             | /path/to/sample_2.1.fastq       |    /path/to/sample_2.2.fastq   |
 
-### Paired-end FASTQ (technical replicates)
+### Technical replicates
 
 NeoRasp supports the processing of technical replicates by providing them in the input table together. The table containing the replicate FASTQ files requires three tab-separated columns **without** a header. NeoRasp aligns the replicates together in one file and sets the SM tag in the BAM file to differentiate reads from the input files.
 
@@ -22,6 +20,6 @@ NeoRasp supports the processing of technical replicates by providing them in the
 | sample_1             | /path/to/sample_11.1.fastq,/path/to/sample_12.1.fastq       |    /path/to/sample_11.2.fastq,/path/to/sample_12.2.fastq   |
 | sample_2             | /path/to/sample_21.1.fastq,/path/to/sample_22.1.fastq       |    /path/to/sample_21.2.fastq,/path/to/sample_22.2.fastq   |
 
-## Genome library
+## OBLX genome library
 
-The workflow requires the genome annotation as well as indices for STAR and Salmon as genome library which are specified in the config file. Please use TronMake genome library for analysis.
+The workflow requires the genome annotation as well as indices for STAR and Salmon  which are specified in the config file. The [OBLX genome library](https://github.com/TRON-Bioinformatics/oblx) provides all files required to run the pipeline. If you want to use your own genome annotation adapt the [config](usage.md#config) file to your needs.
