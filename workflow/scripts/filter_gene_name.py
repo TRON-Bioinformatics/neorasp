@@ -18,6 +18,7 @@ Example:
 @Status: Development
 
 """
+
 import argparse
 import pandas as pd
 import numpy as np
@@ -43,10 +44,12 @@ class FilterGene:
     exclude_genes_mus_musculus = {
         "mt-": "Mitochondrial gene",
         "^H2-": "MHC gene",
-        "^Igh[vmdjmgea]?": "Immunoglobulin gene"
+        "^Igh[vmdjmgea]?": "Immunoglobulin gene",
     }
 
-    def __init__(self, junction_table, output_path, organism="human", verbose=False) -> None:
+    def __init__(
+        self, junction_table, output_path, organism="human", verbose=False
+    ) -> None:
         """Parameter initialization"""
         self.df = self._read_tab(junction_table)
         assert all(
@@ -56,7 +59,9 @@ class FilterGene:
         self.organism = organism
         self.filter_regex = FilterGene.exclude_genes_homo_sapiens
         if self.organism == "mouse":
-            logger.debug(f"-> Organism set to {self.organism}. Applying corresponding gene filters.")
+            logger.debug(
+                f"-> Organism set to {self.organism}. Applying corresponding gene filters."
+            )
             self.filter_regex = FilterGene.exclude_genes_mus_musculus
             self._log_genes()
 
@@ -106,7 +111,11 @@ class FilterGene:
 
 
 def main():
-    filter = FilterGene(snakemake.input["parsed_sj"], snakemake.params["working_dir"], organism=snakemake.params["organism"])
+    filter = FilterGene(
+        snakemake.input["parsed_sj"],
+        snakemake.params["working_dir"],
+        organism=snakemake.params["organism"],
+    )
     filter.run()
 
 

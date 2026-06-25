@@ -27,7 +27,6 @@ import subprocess
 from collections import defaultdict
 from loguru import logger
 
-
 __version__ = "0.0.5"
 __pipeline__ = pathlib.Path(__file__).parent / "workflow" / "Snakefile"
 

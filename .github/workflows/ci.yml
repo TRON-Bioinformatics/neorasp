@@ -9,37 +9,30 @@ jobs:
   syntaxcheck:
     name: Syntax Check
     runs-on: ubuntu-latest
-    container:
-      image: condaforge/miniforge3:24.9.2-0
     steps:
       - uses: actions/checkout@v4
+      - run: |
+          git submodule update
+      - name: Install Pixi
+        uses: prefix-dev/setup-pixi@v0.9.4
         with:
-          submodules: recursive
+          cache: true
+      - run: |
+          pixi run test-syntax
 
-      - name: Setup Conda Environment
-        run: |
-          mamba env create -n tronmake -f environment.ci.yaml
-          git config --global --add safe.directory "$(pwd)"
-          conda run -n tronmake pytest --tag dryrun --git-aware --symlink --stderr-bytes 100000 --kwd --basetemp /tmp/test
-
-  linting:
-    name: Linting
-    runs-on: ubuntu-latest
-    container:
-      image: condaforge/miniforge3:24.9.2-0
+  lint:
+    runs-on: "ubuntu-latest"
     steps:
       - uses: actions/checkout@v4
+      - run: |
+          git submodule update
+      - name: Install Pixi
+        uses: prefix-dev/setup-pixi@v0.9.4
         with:
-          submodules: recursive
+          cache: true
+      - run: |
+          pixi run lint
 
-      - name: Install libmagic1
-        run: apt update && apt install -y libmagic1
-
-      - name: Run Snakemake Lint
-        run: |
-          mamba env create -n tronmake -f environment.ci.yaml
-          git config --global --add safe.directory "$(pwd)"
-          conda run -n tronmake snakemake --lint
 
   integration:
     name: Integration Tests
@@ -65,13 +58,10 @@ jobs:
       - uses: eWaterCycle/setup-apptainer@v2
         with:
           apptainer-version: 1.4.1
-      - uses: conda-incubator/setup-miniconda@v3
+      - name: Install Pixi
+        uses: prefix-dev/setup-pixi@v0.9.4
         with:
-          miniforge-version: latest
-          auto-update-conda: true
-          channels: conda-forge,bioconda
-          environment-file: environment.ci.yaml
-          activate-environment: tronmake
+          cache: true
 
       - name: Trust Git directory
         run: git config --global --add safe.directory "$(pwd)"
@@ -79,7 +69,7 @@ jobs:
       - name: Run Integration Tests
         shell: bash -l {0}
         run: |
-          conda run -n tronmake pytest --tag ci --git-aware --symlink --stderr-bytes 100000
+          pixi run test-ci
 
       - name: Clean up
         run: |

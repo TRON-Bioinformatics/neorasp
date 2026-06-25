@@ -5,7 +5,7 @@ set -eou pipefail
 TMP_DIR="$(mktemp -d)"
 DEPENDENCY_SCRIPT="${TMP_DIR}/install_packages.R"
 
-cat > $DEPENDENCY_SCRIPT << __EOF__
+cat >$DEPENDENCY_SCRIPT <<__EOF__
 #!/usr/bin/env Rscript
 
 library(devtools)
@@ -18,4 +18,3 @@ __EOF__
 Rscript --vanilla "$DEPENDENCY_SCRIPT"
 
 rm -r "$TMP_DIR"
-

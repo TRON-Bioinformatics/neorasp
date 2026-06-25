@@ -1,7 +1,3 @@
-
-
-
-
 ```
 
 # Input file section

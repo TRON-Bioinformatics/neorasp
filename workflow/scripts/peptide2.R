@@ -13,30 +13,33 @@ suppressMessages({
   library(fs)
 })
 
-output_dir <- dirname(snakemake@output[['peptide_junc']])
+output_dir <- dirname(snakemake@output[["peptide_junc"]])
 
 tmp_genome <- tempfile(
-	pattern = stringr::str_glue("genome_copy_{snakemake@wildcards[['chunkID']]}_"),
-	tmpdir = output_dir,
-	fileext = ".2bit")
+  pattern = stringr::str_glue("genome_copy_{snakemake@wildcards[['chunkID']]}_"),
+  tmpdir = output_dir,
+  fileext = ".2bit"
+)
 
 tmp_genome_final <- tempfile(
-	pattern = stringr::str_glue("genome_copy_{snakemake@wildcards[['chunkID']]}_"),
-	tmpdir = output_dir,
-	fileext = ".2bit")
+  pattern = stringr::str_glue("genome_copy_{snakemake@wildcards[['chunkID']]}_"),
+  tmpdir = output_dir,
+  fileext = ".2bit"
+)
 
 tmp_cds <- tempfile(
-	pattern = stringr::str_glue("cds_copy_{snakemake@wildcards[['chunkID']]}_"),
-	tmpdir = output_dir,
-	fileext = ".RDS")
+  pattern = stringr::str_glue("cds_copy_{snakemake@wildcards[['chunkID']]}_"),
+  tmpdir = output_dir,
+  fileext = ".RDS"
+)
 
 
 # Copy to tmp
 # Perform atomar NFS operation to ensure objects dont use same cache
-fs::file_copy(snakemake@input[['genome']], tmp_genome, overwrite = TRUE)
+fs::file_copy(snakemake@input[["genome"]], tmp_genome, overwrite = TRUE)
 fs::file_move(tmp_genome, tmp_genome_final)
 
-fs::file_copy(snakemake@input[['cds']], tmp_cds, overwrite = TRUE)
+fs::file_copy(snakemake@input[["cds"]], tmp_cds, overwrite = TRUE)
 
 defer({
   if (file_exists(tmp_genome_final)) file_delete(tmp_genome_final)
@@ -45,14 +48,14 @@ defer({
 
 
 # Read snakemake input/parameters
-df <- readr::read_tsv(snakemake@input[['annotated_sj']], show_col_types = FALSE)
+df <- readr::read_tsv(snakemake@input[["annotated_sj"]], show_col_types = FALSE)
 cds <- base::readRDS(tmp_cds)
 bsg <- rtracklayer::TwoBitFile(tmp_genome_final)
 peptide_flank_size <- as.integer(snakemake@params[["peptide_flank_size"]])
 
 # Add splice junctions with peptides
-peptide_annot <- df %>% 
-  dplyr::select(junc_id, tx_id, cts_seq, cts_junc_pos, cts_size, cts_id) %>% 
+peptide_annot <- df %>%
+  dplyr::select(junc_id, tx_id, cts_seq, cts_junc_pos, cts_size, cts_id) %>%
   dplyr::distinct()
 
 alt_peptides <- peptide_annot %>%
@@ -61,19 +64,21 @@ alt_peptides <- peptide_annot %>%
 # Calculate protein id for peptide FASTA
 alt_peptides <- alt_peptides %>%
   dplyr::mutate(
-    protein_id = 
-      purrr::map2_chr(protein, protein_junc_pos,
-      ~ {
-        if (is.na(.x) || is.na(.y)) {
-          NA_character_
-        } else {
-          rlang::hash(list(.x, .y))
+    protein_id =
+      purrr::map2_chr(
+        protein, protein_junc_pos,
+        ~ {
+          if (is.na(.x) || is.na(.y)) {
+            NA_character_
+          } else {
+            rlang::hash(list(.x, .y))
+          }
         }
-      })
+      )
   )
 
 # Remove junctions without peptide altering effect
-df <- df %>% 
+df <- df %>%
   dplyr::left_join(alt_peptides) %>%
   dplyr::filter(cds_description == "mutated cds")
 
@@ -84,16 +89,17 @@ dat_for_neofox <- df %>%
   dplyr::mutate(
     mutatedXmer = peptide_context,
     wildTypeXmer = NA,
-    patientIdentifier = snakemake@wildcards[['sample']],
+    patientIdentifier = snakemake@wildcards[["sample"]],
     rnaExpression = transcript_expression_tpm,
     rnaVariantAlleleFrequency = intron_jaccard,
     gene = hgnc,
-  ) %>% dplyr::select(patientIdentifier, junc_id, tx_id, mutatedXmer, wildTypeXmer, rnaExpression, rnaVariantAlleleFrequency, gene) %>%
+  ) %>%
+  dplyr::select(patientIdentifier, junc_id, tx_id, mutatedXmer, wildTypeXmer, rnaExpression, rnaVariantAlleleFrequency, gene) %>%
   dplyr::distinct()
 
 # Write output files
-df %>% readr::write_tsv(snakemake@output[['peptide_junc']])
-dat_for_neofox %>% readr::write_tsv(snakemake@output[['neofox_annotation']])
+df %>% readr::write_tsv(snakemake@output[["peptide_junc"]])
+dat_for_neofox %>% readr::write_tsv(snakemake@output[["neofox_annotation"]])
 
 # Assemble the FASTA header for Ligandomics analysis
 df <- df %>%
