@@ -4,6 +4,7 @@ import math
 import pandas as pd
 from pathlib import Path
 
+
 # Define pathvars as generic path for NeoRasp
 # When importing this workflow they should be redefined to match the requirements
 pathvars:
@@ -12,8 +13,10 @@ pathvars:
     benchmarks="results/{sample}/benchmark",
     multiqc="results/report/multiqc",
 
-configfile: workflow.source_path('../config/config.yaml')
-configfile: workflow.source_path('../config/container_config.yaml')
+
+configfile: workflow.source_path("../config/config.yaml")
+configfile: workflow.source_path("../config/container_config.yaml")
+
 
 include: "rules/common.smk"
 include: "rules/import_tronmake_expression.smk"
@@ -22,75 +25,94 @@ include: "rules/requantify.smk"
 include: "rules/assembly.smk"
 include: "rules/multiqc.smk"
 
-samples = read_sample_sheet(config['sample_sheet'])
+
+samples = read_sample_sheet(config["sample_sheet"])
+
 
 rule all:
-    input:
-        get_final_output()
     default_target: True
+    input:
+        get_final_output(),
     localrule: True
+
 
 rule only_alignment:
     """
-    Target rule to only align reads against genome and identify splice junctions
-    """
+Target rule to only align reads against genome and identify splice junctions
+"""
     input:
-        collect("results/{sample}/star/{sample}_Aligned.sortedByCoord.out.cram",
-            sample = samples.sample_name.unique()
-    )
+        collect(
+            "results/{sample}/star/{sample}_Aligned.sortedByCoord.out.cram",
+            sample=samples.sample_name.unique(),
+        ),
+
 
 rule only_splice2neo:
     """
-    Only run junction identification and splice2neo annotation
-    """
+Only run junction identification and splice2neo annotation
+"""
     input:
-        collect("results/{sample}/fetchdata/splice2neo/sj_annotated_peptide.tsv",
-            sample = samples.sample_name.unique()
+        collect(
+            "results/{sample}/fetchdata/splice2neo/sj_annotated_peptide.tsv",
+            sample=samples.sample_name.unique(),
         ),
-        collect("results/{sample}/fetchdata/sj_final_peptides.fasta",
-            sample = samples.sample_name.unique()
+        collect(
+            "results/{sample}/fetchdata/sj_final_peptides.fasta",
+            sample=samples.sample_name.unique(),
         ),
-        collect("results/{sample}/fetchdata/sj_final_neofox_annotation.tsv",
-            sample = samples.sample_name.unique()
+        collect(
+            "results/{sample}/fetchdata/sj_final_neofox_annotation.tsv",
+            sample=samples.sample_name.unique(),
         ),
-        collect("results/{sample}/star/{sample}_Aligned.sortedByCoord.out.cram",
-            sample = samples.sample_name.unique()
-        )
+        collect(
+            "results/{sample}/star/{sample}_Aligned.sortedByCoord.out.cram",
+            sample=samples.sample_name.unique(),
+        ),
+
 
 rule doc_all:
     input:
         "documentation/tronmake-rna-splicing/docs/assets/docstring.md",
         "documentation/tronmake-rna-splicing/docs/assets/software.tsv",
 
+
 rule docstring_export:
     """
-    Export docstrings of snakemake rules into markdown format
-    """
+Export docstrings of snakemake rules into markdown format
+"""
     output:
-        doctrings_markdown = "documentation/tronmake-rna-splicing/docs/assets/docstring.md",
+        doctrings_markdown="documentation/tronmake-rna-splicing/docs/assets/docstring.md",
     log:
-        "documentation/tronmake-rna-splicing/docs/assets/export_log.txt"
-    params:
-        rule_collection = {str(rule.name): str(rule.docstring) for rule in workflow.rules}
-    conda: 'envs/python.yaml'
+        "documentation/tronmake-rna-splicing/docs/assets/export_log.txt",
+    conda:
+        "envs/python.yaml"
     container:
-        config['container'].get('additional_software')
+        config["container"].get("additional_software")
+    params:
+        rule_collection={str(rule.name): str(rule.docstring) for rule in workflow.rules},
     script:
-        'scripts/export_doc.py'
+        "scripts/export_doc.py"
+
 
 rule software_export:
     """
-    Export docstrings of snakemake rules into markdown format
-    """
+Export docstrings of snakemake rules into markdown format
+"""
     output:
-        software_table = "documentation/tronmake-rna-splicing/docs/assets/software.tsv",
+        software_table="documentation/tronmake-rna-splicing/docs/assets/software.tsv",
     log:
-        "documentation/tronmake-rna-splicing/docs/assets/export_software_log.txt"
-    params:
-        software_collection = {str(rule.name): 
-            {'conda': str(rule.conda_env), 'container': str(rule.container_img) } for rule in workflow.rules}
-    conda: 'envs/python.yaml'
+        "documentation/tronmake-rna-splicing/docs/assets/export_software_log.txt",
+    conda:
+        "envs/python.yaml"
     container:
-        config['container'].get('additional_software')
+        config["container"].get("additional_software")
+    params:
+        software_collection={
+            str(rule.name): {
+                "conda": str(rule.conda_env),
+                "container": str(rule.container_img),
+            }
+            for rule in workflow.rules
+        },
     script:
-        'scripts/export_software.py'
+        "scripts/export_software.py"

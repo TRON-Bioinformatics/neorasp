@@ -2,10 +2,11 @@ Description on how to generate a minimal reference and testdataset for neoantige
 
 First step of ShrinkGenome is not required as it combines different regions from the genome (this could be interesting for fusion reference).
 
-* Select a genomic region for the testdataset
-  * For the given example the KRAS gene and ~1,500,000 bp up- and downstream were selected and written into `merged_intervals.tsv`
+- Select a genomic region for the testdataset
 
-* Build minigenome
+  - For the given example the KRAS gene and ~1,500,000 bp up- and downstream were selected and written into `merged_intervals.tsv`
+
+- Build minigenome
 
 ```
 python ShrinkGenome/build_minigenome_from_intervals.py \
@@ -14,7 +15,7 @@ python ShrinkGenome/build_minigenome_from_intervals.py \
     --spacer_len 0
 ```
 
-* Translate coordinates
+- Translate coordinates
 
 ```
 python ShrinkGenome/translate_fullgenome_to_minigenome_annot.py \

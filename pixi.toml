@@ -1,0 +1,159 @@
+[workspace]
+authors = ["Johannes Hausmann <johannes.hausmann@tron-mainz.de>"]
+channels = ["conda-forge", "bioconda"]
+name = "neorasp"
+platforms = ["linux-64"]
+version = "0.4.0"
+
+[tasks]
+
+[dependencies]
+snakemake-minimal = "9.13.7.*"
+pip = "*"
+pandas = "*"
+libmagic = "*"
+
+[pypi-dependencies]
+biopython = "*"
+snakemake-executor-plugin-cluster-generic = "*"
+python-magic = "*"
+loguru = "*"
+
+[feature.slurm.pypi-dependencies]
+snakemake-executor-plugin-slurm = "*"
+
+[feature.docs.dependencies]
+mkdocs = { version = "<2", channel = "conda-forge" }
+mkdocs-material = { channel = "conda-forge" }
+mkdocs-table-reader-plugin = { channel = "conda-forge" }
+mkdocs-include-markdown-plugin = { channel = "conda-forge" }
+mkdocs-git-revision-date-plugin = { channel = "conda-forge" }
+mkdocs-glightbox = { channel = "conda-forge" }
+markdown = { channel = "conda-forge" }
+graphviz = { channel = "conda-forge" }
+
+[feature.docs.pypi-dependencies]
+snakevision = ">=1.1.0, <2"
+
+[feature.docs.tasks]
+rulegraph = { cmd = "bash -c 'snakemake --configfile tests/splicing.yaml --rulegraph --forceall > documentation/tronmake-rna-splicing/docs/assets/pipeline_rulegraph.dot && snakevision -s all doc_all docstring_export software_export -o documentation/tronmake-rna-splicing/docs/assets/pipeline_rulegraph.svg documentation/tronmake-rna-splicing/docs/assets/pipeline_rulegraph.dot'", description = "Generate Snakevision rulegraph assets for the documentation." }
+documentation = { cmd = "bash -c 'snakemake -p --cores 1 --until doc_all --configfile tests/splicing.yaml && mkdocs build -f documentation/tronmake-rna-splicing/mkdocs.yml -d site'", depends-on = ["rulegraph"], description = "Build the MkDocs site after generating the rulegraph assets." }
+
+[feature.test.pypi-dependencies]
+pytest = "*"
+pytest-workflow = "*"
+
+[feature.test.tasks]
+test-ci = { cmd = "pytest --tag ci --git-aware --symlink --stderr-bytes 100000", default-environment = "test-ci", description = "Run the CI test suite." }
+
+[feature.test.tasks.test-syntax]
+cmd = "pytest --tag dryrun --git-aware --symlink --stderr-bytes 100000 --kwd --basetemp /tmp/test"
+default-environment = "test-ci"
+description = "Run sytax check" 
+
+[feature.test.tasks.test-local]
+cmd = """
+bash -c '
+test -n "$APPTAINER_HPC" || { echo "ERROR: APPTAINER_HPC is not set. Please export it before running local integration tests." >&2; exit 1; }
+export WORKSPACE="$PWD"
+pytest --tag localintegrationtest --git-aware --symlink --stderr-bytes 100000
+'
+"""
+default-environment = "test-local"
+description = "Run local integration tests using APPTAINER_HPC." 
+
+[feature.style-md.dependencies]
+mdformat = ">=0.7.22,<0.8"
+mdformat-gfm = ">=1.0.0,<2"
+mdformat-shfmt = ">=0.2.0,<0.3"
+mdformat-tables = ">=1.0.0,<2"
+
+[feature.style-md.tasks]
+style-md = { cmd = "mdformat **/*.md", default-environment = "style-md", description = "Auto-format markdown files" }
+lint-md = { cmd = "mdformat --check **/*.md", default-environment = "style-md", description = "Lint markdown files" }
+
+[feature.style-python.dependencies]
+black = ">=26.3.1,<27"
+
+[feature.style-python.tasks]
+style-python = { cmd = "black **/*.py", default-environment = "style-python", description = "Auto-format python files" }
+lint-python = { cmd = "black --check **/*.py", default-environment = "style-python", description = "Lint python files" }
+
+[feature.style-r.dependencies]
+r-base = ">=4.5.3,<4.6"
+r-styler = ">=1.11.0,<2"
+
+
+[feature.style-r.tasks]
+style-r = { cmd = """\
+    R -q --vanilla -e "styler::cache_deactivate(); styler::style_dir('workflow')"\
+    """, default-environment = "style-r" }
+lint-r = { cmd = """\
+    R -q --vanilla -e "styler::cache_deactivate(); styler::style_dir('workflow', dry = 'fail')"\
+    """, default-environment = "style-r" }
+
+[feature.style-sh.dependencies]
+go-shfmt = ">=3.13.1,<4"
+
+[feature.style-sh.tasks]
+style-sh = { cmd = "shfmt --write --indent 4 **/*.sh", default-environment = "style-sh", description = "Auto-format shell files" }
+lint-sh = { cmd = "shfmt --diff --indent 4 **/*.sh", default-environment = "style-sh", description = "Lint shell files" }
+
+[feature.style-snakemake.dependencies]
+snakefmt = ">=1.1.0,<2"
+
+[feature.style-snakemake.tasks]
+style-snakemake = { cmd = "snakefmt workflow/", default-environment = "style-snakemake", description = "Auto-format Snakemake files" }
+lint-snakemake = { cmd = "snakefmt --check workflow/", default-environment = "style-snakemake", description = "Lint Snakemake files" }
+
+[environments]
+default = { features = ["slurm"] }
+build-docs = { features = ["docs"], no-default-feature = false}
+test = { features = ["test"] }
+test-ci = { features = ["test"] }
+test-local = { features = ["test", "slurm"] }
+test-syntax = { features = ["test"] }
+style-md = { features = ["style-md"], no-default-feature = true }
+style-python = { features = ["style-python"], no-default-feature = true }
+style-r = { features = ["style-r"], no-default-feature = true }
+style-sh = { features = ["style-sh"], no-default-feature = true }
+style-snakemake = { features = ["style-snakemake"], no-default-feature = true }
+
+[tasks.lint-workflow]
+cmd = """\
+    snakemake \
+        -s workflow/Snakefile \
+        --software-deployment-method apptainer \
+        --lint\
+    """
+description = "Snakemake `--lint` of `workflow/Snakefile`."
+
+# Order matters, these are laid out from most likely to fail during development
+# to least likely.
+[tasks.style]
+depends-on = [
+  "style-snakemake",
+  "style-python",
+  "style-r",
+  "style-md",
+  "style-sh"
+]
+description = "Auto-format all files (Snakemake, Python, R, Markdown, shell, YAML, TOML)."
+
+[tasks.lint]
+depends-on = [
+  "lint-workflow",
+  "lint-snakemake",
+  "lint-python",
+  "lint-r",
+  "lint-md",
+  "lint-sh"
+]
+description = "Run all linters (Snakemake, Python, R, Markdown, shell, YAML, TOML)."
+
+[tasks.build-docs]
+depends-on = [
+  "rulegraph",
+  "documentation"
+]
+description = "Build documentation including rule graph and docstrings"

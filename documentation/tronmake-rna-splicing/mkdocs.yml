@@ -8,8 +8,10 @@ nav:
   - Usage: usage.md
   - Cluster execution: cluster.md
   - Workflow rules: rules.md
+  - Developer guide: developer_guide.md
   - References: references.md
   - About: about.md
+  - FAQ: faq.md
 theme:
   logo: assets/tron.svg
   name: material
@@ -22,22 +24,23 @@ theme:
   palette:
     # Palette toggle for light mode 
     - scheme: default
-      primary: teal
-      accent: teal
+      primary: blue grey
+      accent: pink
       toggle:
         icon: material/lightbulb-on
         name: Switch to dark mode
     # Palette toggle for dark mode
     - scheme: slate
-      primary: teal
-      accent: teal
+      primary: blue grey
+      accent: pink
       toggle:
         icon: material/weather-night
-        name: Switch to light mode 
+        name: Switch to light mode
 
-copyright: © TRON gGmbH, 2025. This work is licensed under MIT.
 
-repo_url: https://gitlab.rlp.net/tron/tronmake-rna-splicing
+copyright: © TRON gGmbH, 2026. This work is licensed under MIT.
+
+repo_url: https://github.com/TRON-Bioinformatics/neorasp
 plugins:
   - search
   - table-reader

@@ -21,3 +21,6 @@ workflow/results
 results/
 conda_env
 .java/
+# pixi environments
+.pixi/*
+!.pixi/config.toml

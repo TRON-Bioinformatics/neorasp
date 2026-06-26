@@ -12,14 +12,14 @@ suppressMessages({
 })
 
 # Read snakemake input/parameters
-df <- readr::read_tsv(snakemake@input[['sj']], show_col_types = FALSE)
-cds <- base::readRDS(snakemake@input[['cds']])
-bsg <- rtracklayer::TwoBitFile(snakemake@input[['genome']])
+df <- readr::read_tsv(snakemake@input[["sj"]], show_col_types = FALSE)
+cds <- base::readRDS(snakemake@input[["cds"]])
+bsg <- rtracklayer::TwoBitFile(snakemake@input[["genome"]])
 peptide_flank_size <- as.integer(snakemake@params[["peptide_flank_size"]])
 
 # Add splice junctions with peptides
-peptide_annot <- df %>% 
-  dplyr::select(junc_id, tx_id, cts_seq, cts_junc_pos, cts_size, cts_id) %>% 
+peptide_annot <- df %>%
+  dplyr::select(junc_id, tx_id, cts_seq, cts_junc_pos, cts_size, cts_id) %>%
   dplyr::distinct()
 
 alt_peptides <- peptide_annot %>%
@@ -28,19 +28,21 @@ alt_peptides <- peptide_annot %>%
 # Calculate protein id for peptide FASTA
 alt_peptides <- alt_peptides %>%
   dplyr::mutate(
-    protein_id = 
-      purrr::map2_chr(protein, protein_junc_pos,
-      ~ {
-        if (is.na(.x) || is.na(.y)) {
-          NA_character_
-        } else {
-          rlang::hash(list(.x, .y))
+    protein_id =
+      purrr::map2_chr(
+        protein, protein_junc_pos,
+        ~ {
+          if (is.na(.x) || is.na(.y)) {
+            NA_character_
+          } else {
+            rlang::hash(list(.x, .y))
+          }
         }
-      })
+      )
   )
 
-# Remove unused annotation columns 
-df <- df %>% 
+# Remove unused annotation columns
+df <- df %>%
   dplyr::left_join(alt_peptides) %>%
   dplyr::select(
     -tx_lst,
@@ -54,8 +56,11 @@ df <- df %>%
     -coverage_median,
     -interval,
     -cds_mod_id,
-  ) %>% dplyr::rename(junction_reads = junc_interval_start,
-                      spanning_reads = span_interval_start)
+  ) %>%
+  dplyr::rename(
+    junction_reads = junc_interval_start,
+    spanning_reads = span_interval_start
+  )
 
 # Generate table for NeoFox annotation
 dat_for_neofox <- df %>%
@@ -64,16 +69,17 @@ dat_for_neofox <- df %>%
   dplyr::mutate(
     mutatedXmer = peptide_context,
     wildTypeXmer = NA,
-    patientIdentifier = snakemake@wildcards[['sample']],
+    patientIdentifier = snakemake@wildcards[["sample"]],
     rnaExpression = transcript_expression_tpm,
     rnaVariantAlleleFrequency = intron_jaccard,
     gene = hgnc,
-  ) %>% dplyr::select(patientIdentifier, junc_id, tx_id, mutatedXmer, wildTypeXmer, rnaExpression, rnaVariantAlleleFrequency, gene) %>%
+  ) %>%
+  dplyr::select(patientIdentifier, junc_id, tx_id, mutatedXmer, wildTypeXmer, rnaExpression, rnaVariantAlleleFrequency, gene) %>%
   dplyr::distinct()
 
 # Write output files
-df %>% readr::write_tsv(snakemake@output[['junctions']])
-dat_for_neofox %>% readr::write_tsv(snakemake@output[['neofox_annotation']])
+df %>% readr::write_tsv(snakemake@output[["junctions"]])
+dat_for_neofox %>% readr::write_tsv(snakemake@output[["neofox_annotation"]])
 
 # Assemble the FASTA header for Ligandomics analysis
 df <- df %>%

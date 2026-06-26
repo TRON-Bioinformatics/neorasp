@@ -7,7 +7,7 @@ from plotly.offline import plot
 
 search_path = sys.argv[1]
 # Find all benchmark files
-bench_files = glob.glob(os.path.join(search_path,"results/*/benchmark/*_bench.txt"))
+bench_files = glob.glob(os.path.join(search_path, "results/*/benchmark/*_bench.txt"))
 
 records = []
 for f in bench_files:
@@ -32,35 +32,49 @@ df["io_in"] = df["io_in"] / 1e9
 
 ### Boxplots ###
 fig_time = px.box(
-    df, x="rule", y="s", points="all",
+    df,
+    x="rule",
+    y="s",
+    points="all",
     title="Job duration",
-    labels={"s": "Execution time (s)", "rule": "Rule"}
+    labels={"s": "Execution time (s)", "rule": "Rule"},
 )
 
 fig_rss = px.box(
-    df, x="rule", y="max_rss", points="all",
+    df,
+    x="rule",
+    y="max_rss",
+    points="all",
     title="Maximal ram usage per rule",
-    labels={"max_rss": "Max RSS (Gb)", "rule": "Rule"}
+    labels={"max_rss": "Max RSS (Gb)", "rule": "Rule"},
 )
 
 fig_cpu = px.box(
-    df, x="rule", y="cpu_time", points="all",
+    df,
+    x="rule",
+    y="cpu_time",
+    points="all",
     title="CPU time",
-    labels={"cpu_time": "CPU time (s)", "rule": "Rule"}
+    labels={"cpu_time": "CPU time (s)", "rule": "Rule"},
 )
 
 fig_io_write = px.box(
-    df, x="rule", y="io_out", points="all",
+    df,
+    x="rule",
+    y="io_out",
+    points="all",
     title="I/O write",
-    labels={"io_out": "Written bytes (Gb)", "rule": "Rule"}
+    labels={"io_out": "Written bytes (Gb)", "rule": "Rule"},
 )
 
 fig_io_read = px.box(
-    df, x="rule", y="io_in", points="all",
+    df,
+    x="rule",
+    y="io_in",
+    points="all",
     title="I/O reading",
-    labels={"io_in": "Read bytes (Gb)", "rule": "Rule"}
+    labels={"io_in": "Read bytes (Gb)", "rule": "Rule"},
 )
-
 
 
 html_content = f"""
@@ -80,4 +94,3 @@ html_content = f"""
 outfile = "snakemake_benchmark_boxplot_report.html"
 with open(outfile, "w") as rep:
     rep.write(html_content)
-

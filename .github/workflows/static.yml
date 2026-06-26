@@ -28,15 +28,10 @@ jobs:
       - name: Setup GitHub Pages
         uses: actions/configure-pages@v5
 
-      - name: Set up Miniconda
-        uses: conda-incubator/setup-miniconda@v3
+      - name: Setup Pixi
+        uses: prefix-dev/setup-pixi@v0.9.4
         with:
-          miniforge-version: latest
-          auto-update-conda: true
-          channels: conda-forge,bioconda
-          environment-file: environment.ci.yaml
-          activate-environment: tronmake
-          use-mamba: true
+          cache: true
 
       - name: Install system dependencies
         run: |
@@ -46,29 +41,10 @@ jobs:
       - name: Trust Git directory
         run: git config --global --add safe.directory "$(pwd)"
 
-      - name: Clone Snakevision and install requirements
-        shell: bash -l {0}
-        run: |
-          git clone https://github.com/OpenOmics/snakevision.git
-          pip install -r snakevision/requirements.txt
-
-      - name: Build rulegraph and run Snakevision
-        shell: bash -l {0}
-        run: |
-          snakemake --configfile tests/splicing.yaml --cores 1 --rulegraph --forceall > documentation/tronmake-rna-splicing/docs/assets/pipeline_rulegraph.dot
-          ./snakevision/bin/snakevision -s all doc_all docstring_export software_export \
-            -o documentation/tronmake-rna-splicing/docs/assets/pipeline_rulegraph.svg \
-            documentation/tronmake-rna-splicing/docs/assets/pipeline_rulegraph.dot
-
-      - name: Run Snakemake documentation build
-        shell: bash -l {0}
-        run: |
-          snakemake -p --until doc_all --cores 1 --configfile tests/splicing.yaml
-
       - name: Build MkDocs site
         shell: bash -l {0}
         run: |
-          mkdocs build -f documentation/tronmake-rna-splicing/mkdocs.yml -d site
+          pixi run build-docs
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
