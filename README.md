@@ -1,3 +1,9 @@
+<p align="center">
+    <img src="https://github.com/user-attachments/assets/7f359faf-8a20-42c5-949d-4b2a70137d0f" alt="logo" width="150" height="150">
+</p>
+
+
+
 # NeoRasp
 
 <!-- badges: start -->
@@ -12,34 +18,23 @@
 
 **(Neo)antigens from (R)n(a)-(sp)licing**
 
+Full documentation: [https://tron-bioinformatics.github.io/neorasp/](https://tron-bioinformatics.github.io/neorasp/)
 ______________________________________________________________________
 
-<img align="right" width="150" height="150" src="https://github.com/user-attachments/assets/7f359faf-8a20-42c5-949d-4b2a70137d0f">  
+**NeoRasp** is an end-to-end workflow for identifying non-canonical, tumor-specific intra-gene splice junctions from RNA-seq data. It employs sensitive alignment-based detection of splice junctions followed by targeted re-quantification of candidate context sequences. The pipeline is orchestrated using [Snakemake](https://snakemake.readthedocs.io/en/stable/).
 
-Full documentation: [https://tron.pages.gitlab.rlp.net/tronmake-rna-splicing](https://probable-barnacle-2nrmw6z.pages.github.io/)
-
-NeoRasp is an end-to-end workflow to identify non-canonical tumor-specific intra-gene splice junctions from RNA-seq.
-The workflow implements a sensitive alignment based splice junction detection and targeted re-quantification
-of candidate transcript variants. In our bioinformatics pipeline, [SnakeMake](https://snakemake.readthedocs.io/en/stable/) is employed as the primary workflow manager to orchestrate various steps.
-
-______________________________________________________________________
 
 ## Workflow
-
-- Input:
-
-  - A table with paired-end FASTQ data for tumor samples.
-  - A reference genome library. See [TronMake Genome Lib Builder](https://gitlab.rlp.net/tron/tronmake-genome-lib-builder)
 
 - Process:
 
   1. Adapter and quality trimming ([`fastp`](https://github.com/OpenGene/fastp))
 
-  1. Detection and metric calculation: ([`STAR`](https://github.com/alexdobin/STAR) -> [`fraser`](https://github.com/gagneurlab/FRASER))
+  2. Detection and metric calculation: ([`STAR`](https://github.com/alexdobin/STAR) -> [`fraser`](https://github.com/gagneurlab/FRASER))
 
-  1. Expression quantification ([`Salmon`](https://salmon.readthedocs.io/en/latest/))
+  3. Expression quantification ([`Salmon`](https://salmon.readthedocs.io/en/latest/))
 
-  1. Filtering:
+  4. Filtering:
 
      - Filtering based on junction expression.
      - Removing canonical junctions from GENCODE and healthy long read studies.
@@ -47,15 +42,13 @@ ______________________________________________________________________
        - Problematic regions (low mappability).
        - IG-, TCR-, BCR- and HLA-regions.
 
-  1. Targeted re-quantification of splice junction candidates ([`easyquant`](https://github.com/TRON-Bioinformatics/easyquant))
+  5. Targeted re-quantification of splice junction candidates ([`easyquant`](https://github.com/TRON-Bioinformatics/easyquant))
 
-  1. Peptide annotation for [`NeoFox`](https://github.com/TRON-Bioinformatics/neofox)
+  6. Peptide annotation for [`NeoFox`](https://github.com/TRON-Bioinformatics/neofox)
 
-## Dependencies
+## Dependencies for installation
 
-- python (>=3.10)
-- snakemake (==9.13.7)
-- conda (>=24.9)
+- pixi
 - apptainer (>=1.3.4)
 
 ## Installation
@@ -63,36 +56,66 @@ ______________________________________________________________________
 ### Download
 
 ```
-git clone https://gitlab.rlp.net/tron/tronmake-rna-splicing
-
+git clone https://github.com/TRON-Bioinformatics/neorasp
 ```
 
-### Create conda environment
+### Install dependencies with pixi
 
 ```
-cd neorasp
-conda env create -f environment.yaml --prefix conda_env/
-conda activate conda_env
+pixi shell
 ```
+
+## Usage
+
+To run NeoRasp, adapt and execute the following command:
+
+```
+snakemake -s workflow/Snakefile \
+	--directory </path/to/output/directory> \
+    --latency-wait 60 \
+    --software-deployment-method apptainer \
+	[--configfile <path/to/config/file>] \
+	[--profile </path/to/cluster/profile/>]
+```
+
+## Input
+
+NeoRasp requires user-provided input:
+
+  1. A table with paired-end FASTQ data for tumor samples. See [*Input section*](https://tron-bioinformatics.github.io/neorasp/input) of documentation.
+  2. A reference genome library. See [OBLX genome library](https://github.com/TRON-Bioinformatics/oblx)
+
+## Output
+
+The output of the pipeline is written to the directory specified with
+`--directory`. Descriptions of the output files are documented in
+[*Output section*](https://tron-bioinformatics.github.io/neorasp/output) of the documentation.
+
+## Contribution
+
+We welcome contributions! Please see [CONTRIBUTING.md](CONTRIBUTING.md) and
+[*developer_guide section*](https://tron-bioinformatics.github.io/neorasp/developer_guide/) of the documentation.
+
 
 ## Authors & Acknowledgements
 
-The NeoRasp pipeline was originally developed by Johannes Hausmann at [TRON - Translational Oncology at the Medical Center of the Johannes Gutenberg University Mainz gGmbH (non-profit)](https://tron-mainz.de/).
+The NeoRasp pipeline was originally developed in the Computational Genomics group at [TRON - Translational Oncology at the Medical Center of the Johannes Gutenberg University Mainz gGmbH (non-profit)](https://tron-mainz.de/).
 
-Maintenance is now lead by Johannes Hausmann.
+Maintenance is currently led by Johannes Hausmann.
 
-Main developers:
+🛠️ Main developers:
 
-- [Johannes Hausmann](mailto:johannes.hausmann@tron-mainz.de)
+- [Johannes Hausmann, TRON gGmbH](https://github.com/johausmann)  
 
-Contributers:
+✨ Contributors and 🐞 bug hunter:
 
-- Luis Kress, TRON gGmbH
-- Franziska Lang, TRON gGmbH
-- Jonas Ibn-Salem, TRON gGmbH
+- [Luis Kress, TRON gGmbH](https://github.com/LKress)
+- [Franziska Lang, TRON gGmbH](https://github.com/franla23)
+- [Jonas Ibn-Salem, TRON gGmbH](https://github.com/ibn-salem)
 
 ## References
 
 - Dobin A, Davis CA, Schlesinger F, Drenkow J, Zaleski C, Jha S, Batut P, Chaisson M, Gingeras TR. STAR: ultrafast universal RNA-seq aligner. Bioinformatics. 2013 Jan 1;29(1):15-21. doi: 10.1093/bioinformatics/bts635.Epub 2012 Oct 25. PMID: 23104886; PMCID: PMC3530905.
 - Ines F. Scheller, Karoline Lutz, Christian Mertes, Vicente A. Yépez, Julien Gagneur medRxiv 2023.03.31.23287997; doi: https://doi.org/10.1101/2023.03.31.23287997
 - Franziska Lang, Patrick Sorn, Martin Suchan, Alina Henrich, Christian Albrecht, Nina Köhl, Aline Beicht, Pablo Riesgo-Ferreiro, Christoph Holtsträter, Barbara Schrörs, David Weber, Martin Löwer, Ugur Sahin, Jonas Ibn-Salem, Prediction of tumor-specific splicing from somatic mutations as a source of neoantigen candidates, Bioinformatics Advances, Volume 4, Issue 1, 2024, vbae080, https://doi.org/10.1093/bioadv/vbae080
+- Mölder, F., Jablonski, K. P., Letcher, B., Hall, M. B., Van Dyken, P. C., Tomkins-Tinch, C. H., Sochat, V., Forster, J., Vieira, F. G., Meesters, C., Lee, S., Twardziok, S. O., Kanitz, A., VanCampen, J., Malladi, V., Wilm, A., Holtgrewe, M., Rahmann, S., Nahnsen, S., & Köster, J. (2025). Sustainable data analysis with Snakemake. F1000Research, 10, 33. https://doi.org/10.12688/f1000research.29032.3
