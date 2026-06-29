@@ -19,4 +19,3 @@ remains accurate and up-to-date.
 We welcome every contribution of additional pipeline modules as this makes NeoRasp even more
 helpful. Please also see the [*developer_guide section*](https://tron-bioinformatics.github.io/neorasp/developer_guide/)
 for guidelines.
-

@@ -2,8 +2,6 @@
     <img src="https://github.com/user-attachments/assets/7f359faf-8a20-42c5-949d-4b2a70137d0f" alt="logo" width="150" height="150">
 </p>
 
-
-
 # NeoRasp
 
 <!-- badges: start -->
@@ -19,10 +17,10 @@
 **(Neo)antigens from (R)n(a)-(sp)licing**
 
 Full documentation: [https://tron-bioinformatics.github.io/neorasp/](https://tron-bioinformatics.github.io/neorasp/)
+
 ______________________________________________________________________
 
 **NeoRasp** is an end-to-end workflow for identifying non-canonical, tumor-specific intra-gene splice junctions from RNA-seq data. It employs sensitive alignment-based detection of splice junctions followed by targeted re-quantification of candidate context sequences. The pipeline is orchestrated using [Snakemake](https://snakemake.readthedocs.io/en/stable/).
-
 
 ## Workflow
 
@@ -30,11 +28,11 @@ ______________________________________________________________________
 
   1. Adapter and quality trimming ([`fastp`](https://github.com/OpenGene/fastp))
 
-  2. Detection and metric calculation: ([`STAR`](https://github.com/alexdobin/STAR) -> [`fraser`](https://github.com/gagneurlab/FRASER))
+  1. Detection and metric calculation: ([`STAR`](https://github.com/alexdobin/STAR) -> [`fraser`](https://github.com/gagneurlab/FRASER))
 
-  3. Expression quantification ([`Salmon`](https://salmon.readthedocs.io/en/latest/))
+  1. Expression quantification ([`Salmon`](https://salmon.readthedocs.io/en/latest/))
 
-  4. Filtering:
+  1. Filtering:
 
      - Filtering based on junction expression.
      - Removing canonical junctions from GENCODE and healthy long read studies.
@@ -42,9 +40,9 @@ ______________________________________________________________________
        - Problematic regions (low mappability).
        - IG-, TCR-, BCR- and HLA-regions.
 
-  5. Targeted re-quantification of splice junction candidates ([`easyquant`](https://github.com/TRON-Bioinformatics/easyquant))
+  1. Targeted re-quantification of splice junction candidates ([`easyquant`](https://github.com/TRON-Bioinformatics/easyquant))
 
-  6. Peptide annotation for [`NeoFox`](https://github.com/TRON-Bioinformatics/neofox)
+  1. Peptide annotation for [`NeoFox`](https://github.com/TRON-Bioinformatics/neofox)
 
 ## Dependencies for installation
 
@@ -82,8 +80,8 @@ snakemake -s workflow/Snakefile \
 
 NeoRasp requires user-provided input:
 
-  1. A table with paired-end FASTQ data for tumor samples. See [*Input section*](https://tron-bioinformatics.github.io/neorasp/input) of documentation.
-  2. A reference genome library. See [OBLX genome library](https://github.com/TRON-Bioinformatics/oblx)
+1. A table with paired-end FASTQ data for tumor samples. See [*Input section*](https://tron-bioinformatics.github.io/neorasp/input) of documentation.
+1. A reference genome library. See [OBLX genome library](https://github.com/TRON-Bioinformatics/oblx)
 
 ## Output
 
@@ -96,7 +94,6 @@ The output of the pipeline is written to the directory specified with
 We welcome contributions! Please see [CONTRIBUTING.md](CONTRIBUTING.md) and
 [*developer_guide section*](https://tron-bioinformatics.github.io/neorasp/developer_guide/) of the documentation.
 
-
 ## Authors & Acknowledgements
 
 The NeoRasp pipeline was originally developed in the Computational Genomics group at [TRON - Translational Oncology at the Medical Center of the Johannes Gutenberg University Mainz gGmbH (non-profit)](https://tron-mainz.de/).
@@ -105,7 +102,7 @@ Maintenance is currently led by Johannes Hausmann.
 
 🛠️ Main developers:
 
-- [Johannes Hausmann, TRON gGmbH](https://github.com/johausmann)  
+- [Johannes Hausmann, TRON gGmbH](https://github.com/johausmann)
 
 ✨ Contributors and 🐞 bug hunter:
 

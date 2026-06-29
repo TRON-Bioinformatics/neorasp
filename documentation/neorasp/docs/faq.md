@@ -48,7 +48,6 @@ For mouse the following filters are applied:
 |         ^H2-         |         MHC gene          |
 |   ^Igh[vmdjmgea]?    |    Immunoglobulin gene    |
 
-
 ## Why are temporary copies of the R-based BSgenome and TxDb objects created for the splice2neo scatter-gather approach?
 
 These objects are not process-safe. When multiple processes access the same objects on disk simultaneously, we observed incorrect results in transcript annotation and context sequence generation. Creating a temporary copy per process ensures each operation is atomic at the filesystem level, guaranteeing correct results across all processes.
