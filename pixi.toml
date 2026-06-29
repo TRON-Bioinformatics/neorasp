@@ -69,8 +69,8 @@ mdformat-shfmt = ">=0.2.0,<0.3"
 mdformat-tables = ">=1.0.0,<2"
 
 [feature.style-md.tasks]
-style-md = { cmd = "mdformat **/*.md", default-environment = "style-md", description = "Auto-format markdown files" }
-lint-md = { cmd = "mdformat --check **/*.md", default-environment = "style-md", description = "Lint markdown files" }
+style-md = { cmd = "mdformat --exclude **/*rules.md **/*.md", default-environment = "style-md", description = "Auto-format markdown files" }
+lint-md = { cmd = "mdformat --exclude **/*rules.md --check **/*.md", default-environment = "style-md", description = "Lint markdown files" }
 
 [feature.style-python.dependencies]
 black = ">=26.3.1,<27"
