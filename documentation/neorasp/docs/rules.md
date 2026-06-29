@@ -21,7 +21,7 @@ SnakeMake comes with integrated package management to retrieve and install all s
 required to run the pipeline. The following table gives an overview which conda envrionments or
 Docker containers are used by individual steps in the pipeline.
 
-{{ read_csv('assets/software.tsv', sep = '\\t', engine='python') }}
+{{ read_csv('assets/software.tsv', sep = '\t', engine='python') }}
 
 ## Workflow rules
 
