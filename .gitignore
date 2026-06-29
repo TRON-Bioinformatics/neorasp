@@ -24,3 +24,12 @@ conda_env
 # pixi environments
 .pixi/*
 !.pixi/config.toml
+
+# ingnore docs
+documentation/neorasp/site
+documentation/neorasp/docs/assets/docstring.md
+documentation/neorasp/docs/assets/export_log.txt
+documentation/neorasp/docs/assets/export_software_log.txt
+documentation/neorasp/docs/assets/pipeline_rulegraph.dot
+documentation/neorasp/docs/assets/pipeline_rulegraph.svg
+documentation/neorasp/docs/assets/software.tsv
