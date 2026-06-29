@@ -1,7 +1,9 @@
 # Usage
 
-> **Note: Use absolute paths for directories and files whenever possible.**\
-> **Recommendation: It is recommended to use a YAML configuration file rather than command-line arguments.**\
+> **Note: Use absolute paths for directories and files whenever possible.**
+
+> **Recommendation: It is recommended to use a YAML configuration file rather than command-line arguments.**
+
 > **Apptainer: Apptainer is the recommended and tested software deployment method; while Conda is supported, it has not been extensively tested.**
 
 ```
