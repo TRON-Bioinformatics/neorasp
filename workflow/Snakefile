@@ -49,7 +49,7 @@ Target rule to only align reads against genome and identify splice junctions
 
 rule only_splice2neo:
     """
-Only run junction identification and splice2neo annotation
+Target rule to nly run junction identification and splice2neo annotation
 """
     input:
         collect(

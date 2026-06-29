@@ -42,6 +42,25 @@ resources:
 
 
 rule gffcompare:
+    """gffcompare
+
+    Rule to run gffcompare to compare assembled transcripts against reference annotation.
+    
+    input:
+        transfrags (string): Assembled transcripts from StringTie
+        reference (string): Reference annotation (GTF)
+        reference_genome (string): Reference genome (FASTA)
+    output:
+        gff_stats (string): GFFCompare statistics file
+        gff_tmap (string): GFFCompare transcript mapping file
+        gff_refmap (string): GFFCompare reference mapping file
+        gff_annotated (string): GFFCompare annotated GTF file
+        gff_loci (string): GFFCompare loci file
+        gff_tracking (string): GFFCompare tracking file
+        junc_to_tx (string): Junction to transcript mapping file
+    params:
+        prefix (string): Prefix for GFFCompare output files
+"""
     input:
         transfrags=rules.stringtie.output.transfrags,
         reference=config["reference"]["annotation"],
@@ -75,6 +94,14 @@ rule gffcompare:
 
 
 rule extract_tpm_from_stringtie:
+    """
+    Extract TPM values from StringTie output.
+
+    input:
+        gff_tmap (string): GFFCompare transcript mapping file
+    output:
+        tpm (string): TPM values extracted from StringTie output
+"""
     input:
         gff_tmap=rules.gffcompare.output.gff_tmap,
     output:
@@ -93,6 +120,16 @@ rule extract_tpm_from_stringtie:
 
 
 rule junc_to_tpm:
+    """
+    Map junctions to TPM values based on StringTie output.
+
+    input:
+        junc_to_tx (string): Junction to transcript mapping file
+        tpm (string): TPM values extracted from StringTie output
+    output:
+        junc_to_tpm (string): Junction to TPM mapping file
+
+"""
     input:
         junc_to_tx=rules.gffcompare.output.junc_to_tx,
         tpm=rules.extract_tpm_from_stringtie.output.tpm,
