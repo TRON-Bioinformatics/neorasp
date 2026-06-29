@@ -4,7 +4,7 @@ NeoRasp is focused on the detection of intra-gene exon-exon junctions. While oth
 
 ## Can NeoRasp also be used for pre-clinical mouse models
 
-We implemented inital support mouse RNA-seq analysis in `v0.0.6`. However this has not been tested and will require more work to run as seamlessly as human anylsis.
+We implemented inital support for mouse RNA-seq analysis in release [*v0.0.6*](https://github.com/TRON-Bioinformatics/neorasp/releases/tag/v0.0.6). However this has not been properly tested and will require more work to run as seamlessly as human analysis.
 
 ## Why was my junction of interest not detected?
 
@@ -47,3 +47,10 @@ For mouse the following filters are applied:
 |         ^mt-         |    Mitochondrial gene     |
 |         ^H2-         |         MHC gene          |
 |   ^Igh[vmdjmgea]?    |    Immunoglobulin gene    |
+
+
+## Why are temporary copies of the R-based BSgenome and TxDb objects created for the splice2neo scatter-gather approach?
+
+These objects are not process-safe. When multiple processes access the same objects on disk simultaneously, we observed incorrect results in transcript annotation and context sequence generation. Creating a temporary copy per process ensures each operation is atomic at the filesystem level, guaranteeing correct results across all processes.
+
+The downside is an increased disk footprint. The splice2neo scatter size (configurable in the main config) is therefore a trade-off between speed and disk usage. When processing large cohorts, the scatter size should not be set too small, as this can generate hundreds or even thousands of temporary copies.

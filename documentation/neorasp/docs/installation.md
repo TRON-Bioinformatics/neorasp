@@ -5,7 +5,7 @@ This section describes how to install the workflow on Linux. The provided pixi e
 ## Download pipeline repository
 
 ```
-git clone https://gitlab.rlp.net/tron/tronmake-rna-splicing
+git clone https://github.com/TRON-Bioinformatics/neorasp
 ```
 
 ## Install depedencies
@@ -27,8 +27,6 @@ NeoRasp includes comprehensive integration tests to verify the pipeline function
 
 ## Running Local Integration Tests
 
-For local testing on HPC systems with Apptainer support, use the provided Makefile:
-
 ```bash
 # Set the path to your Apptainer library
 export APPTAINER_HPC=/path/to/apptainer/library
@@ -39,10 +37,10 @@ pixi run test-local
 
 ## Test Structure
 
-Tests are organized into different categories:
+Tests (pytest-workflow) are organized into different categories:
 
-- **CI tests** (`--tag ci`): Run in GitHub Actions CI/CD pipeline
-- **Local integration tests** (`--tag localintegrationtest`): Run on HPC systems with Apptainer
-- **Issue-specific tests** (`tests/test_issue/`): Tests for specific bug fixes and features
+- **CI tests** (`--tag ci`): Run in GitHub Actions CI/CD pipeline.
+- **Local integration tests** (`--tag localintegrationtest`): Run on HPC systems with Apptainer.
+- **Issue-specific tests** (`tests/test_issue/`): Tests for specific bug fixes and features.
 
 See `tests/test_issue/README.md` for details on the issue-based testing convention.

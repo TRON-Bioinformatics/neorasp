@@ -15,7 +15,7 @@ deployments to systems without internet access or without Pixi, see
 [Pixi pack](https://pixi.prefix.dev/latest/deployment/pixi_pack/).
 
 The available Pixi environments and tasks are defined in
-[`pixi.toml`](https://github.com/TRON-Private/neorasp/blob/dev/pixi.toml).
+[`pixi.toml`](https://github.com/TRON-Bioinformatics/neorasp/blob/dev/pixi.toml).
 The most relevant tasks are:
 
 | Task                     | Description                                                          |
@@ -26,7 +26,7 @@ The most relevant tasks are:
 | `pixi run lint`          | Run all linters (Snakemake, Python, R, Markdown, shell, YAML, TOML). |
 | `pixi run style`         | Auto-format all files (same scope as `lint`).                        |
 | `pixi run lint-workflow` | Snakemake `--lint` of `workflow/Snakefile`.                          |
-| `pixi run build-docs`    | Build the MkDocs site under `docs/oblx/`.                            |
+| `pixi run build-docs`    | Build the MkDocs site under `documentation/neorasp/`.                |
 
 ## Tests
 
@@ -45,16 +45,15 @@ Run `pixi run style` to auto-format code and docs. `pixi run lint` performs the
 same checks without modifying files and exits non-zero on failure; it is used in
 CI. Sub-tasks (`style-python`, `lint-snakemake`, ...) are available for
 individual file types — see
-[`pixi.toml`](https://github.com/TRON-Private/neorasp/blob/dev/pixi.toml).
+[`pixi.toml`](https://github.com/TRON-Bioinformatics/neorasp/blob/dev/pixi.toml).
 
 ## Release
 
 Before creating a new release:
 
-- Update `CHANGELOG.md`.
 - Bump the version in
-  [`pixi.toml`](https://github.com/TRON-Private/neorasp/blob/dev/pixi.toml).
+  [`pixi.toml`](https://github.com/TRON-Bioinformatics/neorasp/blob/dev/pixi.toml).
 
 ## Contribute
 
-[CONTRIBUTING.md](https://github.com/TRON-Private/neorasp/blob/dev/CONTRIBUTING.md).
+[CONTRIBUTING.md](https://github.com/TRON-Bioinformatics/neorasp/blob/dev/CONTRIBUTING.md).

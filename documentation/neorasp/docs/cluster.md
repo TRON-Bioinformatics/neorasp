@@ -18,6 +18,6 @@ When the pipeline is started within a SLURM job, no more than 1 core and 1 GB of
 job as all tasks are submitted as individual jobs. However, we recommend to start the initial SnakeMake process
 from an interactive shell session.
 
-## SnakeMake executor plugin
+## SnakeMake executor plugins
 
-SnakeMake provides multiple executor plugins to run the workflow on compute clusters. So far, we have only tested the slurm-executor-plugin.
+Snakemake provides multiple executor plugins to run the workflow on compute clusters. So far, we have only tested the [sakemake executor plugin: slurm](https://snakemake.github.io/snakemake-plugin-catalog/plugins/executor/slurm.html).

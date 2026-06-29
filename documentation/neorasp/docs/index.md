@@ -2,9 +2,10 @@
 
 <!-- badges: start -->
 
-[![Release](https://gitlab.rlp.net/tron/tronmake-rna-splicing/-/badges/release.svg)](https://gitlab.rlp.net/tron/tronmake-rna-splicing/-/releases)
+[![Release](https://github.com/TRON-Bioinformatics/neorasp/-/badges/release.svg)](https://github.com/TRON-Bioinformatics/neorasp/-/releases)
 [![Snakemake](https://img.shields.io/badge/snakemake-9.13.7-brightgreen.svg?style=flat)](https://snakemake.readthedocs.io)
-[![pipeline status](https://gitlab.rlp.net/tron/tronmake-rna-splicing/badges/develop/pipeline.svg)](https://gitlab.rlp.net/tron/tronmake-rna-splicing/commits/master)
+[![pipeline status](https://github.com/TRON-Bioinformatics/neorasp/actions/workflows/ci.yaml/badge.svg)](https://github.com/TRON-Bioinformatics/neorasp/actions/workflows/ci.yaml/badge.svg)
+[![License](https://img.shields.io/badge/license-MIT-green?style=flat-square)](https://opensource.org/licenses/MIT)
 
 <!-- badges: end -->
 
