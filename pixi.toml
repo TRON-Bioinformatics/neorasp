@@ -36,8 +36,8 @@ graphviz = { channel = "conda-forge" }
 snakevision = ">=1.1.0, <2"
 
 [feature.docs.tasks]
-rulegraph = { cmd = "bash -c 'snakemake --configfile tests/splicing.yaml --rulegraph --forceall > documentation/neorasp/docs/assets/pipeline_rulegraph.dot && snakevision -s all doc_all docstring_export software_export -o documentation/neorasp/docs/assets/pipeline_rulegraph.svg documentation/neorasp/docs/assets/pipeline_rulegraph.dot'", description = "Generate Snakevision rulegraph assets for the documentation." }
-documentation = { cmd = "bash -c 'snakemake -p --cores 1 --until doc_all --configfile tests/splicing.yaml && mkdocs build -f documentation/neorasp/mkdocs.yml -d site'", depends-on = ["rulegraph"], description = "Build the MkDocs site after generating the rulegraph assets." }
+rulegraph = { cmd = "bash -c 'snakemake --rulegraph --forceall > documentation/neorasp/docs/assets/pipeline_rulegraph.dot && snakevision -s all doc_all docstring_export software_export -o documentation/neorasp/docs/assets/pipeline_rulegraph.svg documentation/neorasp/docs/assets/pipeline_rulegraph.dot'", description = "Generate Snakevision rulegraph assets for the documentation." }
+documentation = { cmd = "bash -c 'snakemake -p --cores 1 --until doc_all && mkdocs build -f documentation/neorasp/mkdocs.yml -d site'", depends-on = ["rulegraph"], description = "Build the MkDocs site after generating the rulegraph assets." }
 
 [feature.test.pypi-dependencies]
 pytest = "*"
