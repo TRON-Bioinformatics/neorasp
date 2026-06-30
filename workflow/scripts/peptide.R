@@ -9,12 +9,48 @@ suppressMessages({
   library(Biostrings)
   library(stringr)
   library(purrr)
+  library(withr)
+  library(fs)
 })
 
+output_dir <- dirname(snakemake@output[["peptide_junc"]])
+
+tmp_genome <- tempfile(
+  pattern = stringr::str_glue("genome_copy_{snakemake@wildcards[['chunkID']]}_"),
+  tmpdir = output_dir,
+  fileext = ".2bit"
+)
+
+tmp_genome_final <- tempfile(
+  pattern = stringr::str_glue("genome_copy_{snakemake@wildcards[['chunkID']]}_"),
+  tmpdir = output_dir,
+  fileext = ".2bit"
+)
+
+tmp_cds <- tempfile(
+  pattern = stringr::str_glue("cds_copy_{snakemake@wildcards[['chunkID']]}_"),
+  tmpdir = output_dir,
+  fileext = ".RDS"
+)
+
+
+# Copy to tmp
+# Perform atomar NFS operation to ensure objects dont use same cache
+fs::file_copy(snakemake@input[["genome"]], tmp_genome, overwrite = TRUE)
+fs::file_move(tmp_genome, tmp_genome_final)
+
+fs::file_copy(snakemake@input[["cds"]], tmp_cds, overwrite = TRUE)
+
+defer({
+  if (file_exists(tmp_genome_final)) file_delete(tmp_genome_final)
+  if (file_exists(tmp_cds)) file_delete(tmp_cds)
+})
+
+
 # Read snakemake input/parameters
-df <- readr::read_tsv(snakemake@input[["sj"]], show_col_types = FALSE)
-cds <- base::readRDS(snakemake@input[["cds"]])
-bsg <- rtracklayer::TwoBitFile(snakemake@input[["genome"]])
+df <- readr::read_tsv(snakemake@input[["annotated_sj"]], show_col_types = FALSE)
+cds <- base::readRDS(tmp_cds)
+bsg <- rtracklayer::TwoBitFile(tmp_genome_final)
 peptide_flank_size <- as.integer(snakemake@params[["peptide_flank_size"]])
 
 # Add splice junctions with peptides
@@ -41,26 +77,10 @@ alt_peptides <- alt_peptides %>%
       )
   )
 
-# Remove unused annotation columns
+# Remove junctions without peptide altering effect
 df <- df %>%
   dplyr::left_join(alt_peptides) %>%
-  dplyr::select(
-    -tx_lst,
-    -exclude_gene,
-    -tx_mod_id,
-    -junc_interval_end,
-    -span_interval_end,
-    -within_interval,
-    -coverage_perc,
-    -coverage_mean,
-    -coverage_median,
-    -interval,
-    -cds_mod_id,
-  ) %>%
-  dplyr::rename(
-    junction_reads = junc_interval_start,
-    spanning_reads = span_interval_start
-  )
+  dplyr::filter(cds_description == "mutated cds")
 
 # Generate table for NeoFox annotation
 dat_for_neofox <- df %>%
@@ -78,7 +98,7 @@ dat_for_neofox <- df %>%
   dplyr::distinct()
 
 # Write output files
-df %>% readr::write_tsv(snakemake@output[["junctions"]])
+df %>% readr::write_tsv(snakemake@output[["peptide_junc"]])
 dat_for_neofox %>% readr::write_tsv(snakemake@output[["neofox_annotation"]])
 
 # Assemble the FASTA header for Ligandomics analysis
@@ -98,7 +118,6 @@ df <- df %>%
 
 # Remove junctions without peptide
 df_fasta <- df %>%
-  dplyr::filter(cds_description == "mutated cds") %>%
   dplyr::select(fasta_header, protein, protein_junc_pos) %>%
   dplyr::distinct() %>%
   dplyr::filter(!is.na(protein) & !is.na(protein_junc_pos))

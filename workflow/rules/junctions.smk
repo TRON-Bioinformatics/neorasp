@@ -446,7 +446,7 @@ output:
     params:
         peptide_flank_size=config["splice2neo"].get("peptide_flank_size", 13),
     script:
-        "../scripts/peptide2.R"
+        "../scripts/peptide.R"
 
 
 rule gather_splice2neo:
