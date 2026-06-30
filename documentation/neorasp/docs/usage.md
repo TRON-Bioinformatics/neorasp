@@ -4,7 +4,7 @@
 
 > **Recommendation: It is recommended to use a YAML configuration file rather than command-line arguments.**
 
-> **Apptainer: Apptainer is the recommended and tested software deployment method; while Conda is supported, it has not been extensively tested.**
+> **Apptainer: Apptainer is the only tested and supported software deployment method at the moment**
 
 ```
 snakemake \
@@ -29,7 +29,6 @@ snakemake \
 - `software-deployment-method`: Currently conda and apptainer are supported. Apptainer is tested and recommended.
 - `workflow-profile` (optional): To define the resources for each snakemake rule. The workflow ships a default profile suitable for most analysis.
 - `--default-resources`: The temporary directory has to be use by some rules. We advise to set the tmpdir to a fast storage, if available. Otherwise use "tmpdir='\<output_directory>'". If not specified, tmpdir is set to the systems default temporary directory.
-- `--conda-prefix` (optional): Where should the conda environments be stored. Further information in section [Shared conda prefix](#shared-conda-prefix)
 - `--apptainer-prefix` (optional): Where should the Apptainer images be stored.
 - `--apptainer-args` (required when `--sdm apptainer`): Which directories should be mounted into the container images. This is required when using apptainer.
 - `--profile` (optional): Path to a profile specification that defines e.g. which executor to use and how many jobs are submitted in parallel (see section [Cluster config](#cluster-execution)).
@@ -126,15 +125,9 @@ In the config file the following attributes are specified:
   - `canonical_juncs`: A reference set of canoncial splice junctions.
   - `rmsk`: A BED file of RepeatMasker annotation to identify and flag potenital JETs.
 
-### Example config file
+## Shared apptainer prefix
 
-```yaml
-{% include "../../../config/config.yaml" %}
-```
-
-## Shared conda/apptainer prefix
-
-If you want to collaboratively work with this pipeline, it is helpful to have a shared conda environment and apptainer directory. This allows the specification of `--conda-prefix` / `--apptainer-prefix` to the shared directory. If different users use the pipeline, the same environments are not installed multiple times, saving time and storage. **NOTE: It has to be ensured, that the umask of the pipeline users is u=rwx,g=rwx,o= to allow users of the same group to use the created conda environments properly.**
+If you want to collaboratively work with this pipeline, it is helpful to have a shared apptainer directory. This allows the specification of `--conda-prefix` / `--apptainer-prefix` to the shared directory. If different users use the pipeline, the same environments are not installed multiple times, saving time and storage. **NOTE: It has to be ensured, that the umask of the pipeline users is u=rwx,g=rwx,o= to allow users of the same group to use the created conda environments properly.**
 
 ## Apptainer arguments
 
