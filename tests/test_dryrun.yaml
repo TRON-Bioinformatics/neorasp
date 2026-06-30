@@ -5,4 +5,4 @@
     - integrationtest
     - localintegrationtest
   command: >
-    snakemake --software-deployment-method conda -j 1 -n --configfile tests/splicing.yaml
+    snakemake --software-deployment-method conda -j 1 -n

@@ -17,8 +17,10 @@ pathvars:
 
 configfile: workflow.source_path("../config/container_config.yaml")
 
+
 validate(config, schema=workflow.source_path("schemas/config.schema.yaml"))
-print(config)
+
+
 include: "rules/common.smk"
 include: "rules/import_tronmake_expression.smk"
 include: "rules/junctions.smk"
