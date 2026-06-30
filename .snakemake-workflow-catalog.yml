@@ -1,0 +1,6 @@
+usage:
+  software-stack-deployment:
+    conda: false
+    apptainer: true
+    apptainer+conda: false
+    report: false

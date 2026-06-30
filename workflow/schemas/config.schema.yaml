@@ -1,0 +1,210 @@
+$schema: "https://json-schema.org/draft/2020-12/schema"
+title: NeoRasp configuration
+description: >- 
+  Validation & defaults for NeoRasp config file
+type: object
+additionalProperties: true
+properties:
+  sample_sheet:
+    type: string
+    description: >-
+      Path to the sample sheet TSV file
+    default: tests/pep/samples.tsv
+
+  reference:
+    type: object
+    description: >-
+      Paths to reference genome library files
+    default: {}
+    additionalProperties: false
+    properties:
+      genome:
+        type: string
+        description: >-
+          Path to the reference genome FASTA file
+        default: tests/resources/tron_genome_lib/resources/ref_genome.fasta
+      annotation:
+        type: string
+        description: >-
+          Path to the gene annotation GTF file
+        default: tests/resources/tron_genome_lib/resources/ref_annot.gtf
+      annotation_bed:
+        type: string
+        description: >-
+          Path to the gene annotation BED file
+        default: tests/resources/tron_genome_lib/resources/ref_annot.bed
+      cdna:
+        type: string
+        description: >-
+          Path to the reference cDNA FASTA file
+        default: tests/resources/tron_genome_lib/resources/ref_transcripts.fasta
+      chromsizes:
+        type: string
+        description: >-
+          Path to the chromosome sizes file
+        default: tests/resources/tron_genome_lib/resources/ref_genome.chrom.sizes
+      encode_mapability:
+        type: string
+        description: >-
+          Path to the ENCODE blacklist BED file for mappability filtering
+        default: tests/resources/tron_genome_lib/resources/mappability/encode_exclusion.bed
+      ucsc_mapability:
+        type: string
+        description: >-
+          Path to the UCSC unusual regions BED file for mappability filtering
+        default: tests/resources/tron_genome_lib/resources/mappability/ucsc_problematic.bed
+      ref_transcripts:
+        type: string
+        description: >-
+          Path to the reference transcripts RDS file
+        default: tests/resources/tron_genome_lib/indices/R/ref_transcripts.Rds
+      ref_cds:
+        type: string
+        description: >-
+          Path to the reference CDS RDS file
+        default: tests/resources/tron_genome_lib/indices/R/ref_cds.Rds
+      tx2gene:
+        type: string
+        description: >-
+          Path to the transcript-to-gene mapping TSV file
+        default: tests/resources/tron_genome_lib/resources/ref_annot_transcript2gene.tsv
+      gene2symbol:
+        type: string
+        description: >-
+          Path to the gene-to-symbol (HGNC to Ensembl) mapping file
+        default: tests/resources/tron_genome_lib/resources/ref_annot_gene2symbol.tsv2
+      2bit:
+        type: string
+        description: >-
+          Path to the reference genome 2bit file
+        default: tests/resources/tron_genome_lib/indices/R/ref_genome.2bit
+      canonical_juncs:
+        type: string
+        description: >-
+          Path to the canonical junctions TSV file
+        default: tests/resources/tron_genome_lib/resources/ref_annot_splice_sites.tsv
+      rmsk:
+        type: string
+        description: >-
+          Path to the RepeatMasker RDS file
+        default: tests/resources/tron_genome_lib/resources/ref_rmsk.Rds
+
+  fraser:
+    type: object
+    description: >-
+      FRASER splice junction detection configuration
+    default: {}
+    additionalProperties: false
+    properties:
+      min_read:
+        type: integer
+        description: >-
+          Minimum read count threshold
+        minimum: 1
+        default: 2
+      mapq_filter:
+        type: integer
+        description: >-
+          Mapping quality filter value (0-255)
+        minimum: 0
+        maximum: 255
+        default: 255
+  
+  star:
+    type: object
+    description: STAR aligner configuration
+    default: {}
+    additionalProperties: false
+    properties:
+      ref:
+        type: string
+        description: >-
+          Path to the STAR index directory
+        default: tests/resources/tron_genome_lib/indices/star
+
+  requantify:
+    type: object
+    description: >-
+      easyquant re-quantification configuration
+    default: {}
+    additionalProperties: false
+    properties:
+      interval_mode:
+        type: boolean
+        description: Enable interval mode for re-quantification
+        default: true
+      allow_mismatches:
+        type: boolean
+        description: Allow mismatches during re-quantification alignment
+        default: false
+      bowtie_k_threshold:
+        type: integer
+        description: Bowtie k threshold for reporting multi-mapping reads
+        minimum: 1
+        default: 200
+      cts_size:
+        type: integer
+        description: Context sequence size in base pairs around the splice junction
+        minimum: 1
+        default: 1000
+
+  splice2neo:
+    type: object
+    description: >-
+      Splice2Neo peptide annotation configuration
+    default: {}
+    additionalProperties: false
+    properties:
+      peptide_flank_size:
+        type: integer
+        description: Amino acid flank size around the splice junction for peptide generation
+        minimum: 1
+        default: 13
+      scatter_size:
+        type: integer
+        description: Number of junctions per scatter job for parallelisation
+        minimum: 1
+        default: 1000
+
+  reliable_calls:
+    type: object
+    description: Thresholds for filtering reliable splice junction calls
+    default: {}
+    additionalProperties: false
+    properties:
+      min_junction_usage:
+        type: number
+        description: Minimum junction usage ratio (proportion of reads spanning the junction)
+        minimum: 0
+        maximum: 1
+        default: 0.01
+      min_junction_cpm:
+        type: number
+        description: Minimum junction expression in counts per million (CPM)
+        minimum: 0
+        default: 0.1
+
+  stringtie:
+    type: object
+    description: StringTie transcript assembly configuration
+    default: {}
+    additionalProperties: false
+    properties:
+      min_junc_count:
+        type: integer
+        description: Minimum number of spliced reads supporting a junction
+        minimum: 1
+        default: 1
+      min_junc_anchor:
+        type: integer
+        description: Minimum anchor length on either side of a junction
+        minimum: 1
+        default: 8
+
+  max_ass_distance:
+    type: integer
+    description: >
+      Maximum distance (bp) for classifying a junction as an alternative splice
+      site (ASS) rather than a deep intronic splice variant
+    minimum: 0
+    default: 50

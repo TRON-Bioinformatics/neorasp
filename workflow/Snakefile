@@ -3,6 +3,7 @@ import sys
 import math
 import pandas as pd
 from pathlib import Path
+from snakemake.utils import validate
 
 
 # Define pathvars as generic path for NeoRasp
@@ -14,10 +15,10 @@ pathvars:
     multiqc="results/report/multiqc",
 
 
-configfile: workflow.source_path("../config/config.yaml")
 configfile: workflow.source_path("../config/container_config.yaml")
 
-
+validate(config, schema=workflow.source_path("schemas/config.schema.yaml"))
+print(config)
 include: "rules/common.smk"
 include: "rules/import_tronmake_expression.smk"
 include: "rules/junctions.smk"

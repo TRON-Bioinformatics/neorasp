@@ -11,8 +11,7 @@
   command: >
     snakemake -p 
       --sdm apptainer
-      -j 4 
-      --configfile tests/splicing.yaml
+      -j 4
       --apptainer-args "--bind /tmp --bind ${GITHUB_WORKSPACE} --bind ${XDG_CACHE_HOME}/snakemake/"
       --apptainer-prefix ~/.apptainer/cache
   files:
@@ -42,7 +41,6 @@
     snakemake -p 
       --sdm apptainer
       -j 4 
-      --configfile tests/splicing.yaml
       --apptainer-prefix ${APPTAINER_HPC}
       --apptainer-args "--bind /tmp --bind ${WORKSPACE}"
   files:
@@ -94,7 +92,6 @@
   command: >
     snakemake -p 
       --sdm apptainer -j 4
-      --configfile tests/splicing.yaml
       --until only_alignment
       --apptainer-args "--bind /tmp --bind ${GITHUB_WORKSPACE} --bind ${XDG_CACHE_HOME}/snakemake/"
       --apptainer-prefix ~/.apptainer/cache
@@ -109,7 +106,6 @@
     snakemake -p
       --sdm apptainer
       -j 4
-      --configfile tests/splicing.yaml
       --until only_alignment
       --apptainer-prefix ${APPTAINER_HPC}
       --apptainer-args "--bind /tmp --bind ${WORKSPACE}"
@@ -123,7 +119,7 @@
   command: >
     snakemake -p 
       --sdm apptainer 
-      -j 4 --configfile tests/splicing.yaml 
+      -j 4
       --until only_splice2neo 
       --apptainer-args "--bind /tmp --bind ${GITHUB_WORKSPACE} --bind ${XDG_CACHE_HOME}/snakemake/"
       --apptainer-prefix ~/.apptainer/cache
@@ -140,7 +136,6 @@
     snakemake -p 
       --sdm apptainer
       -j 4
-      --configfile tests/splicing.yaml
       --until only_splice2neo
       --apptainer-prefix ${APPTAINER_HPC}
       --apptainer-args "--bind /tmp --bind ${WORKSPACE}"
