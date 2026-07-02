@@ -1,7 +1,8 @@
 # Test that splice2neo scatter gather approach works when just one file is yielded by split
 - name: test_issue_140_fixed
   tags:
-    - localintegrationtest
+    - integrationtest
+    - ci
   command: >
     snakemake -p 
       --sdm apptainer
@@ -18,7 +19,8 @@
 # Test that splice2neo scatter gather approach works when many small chunks are yielded by split
 - name: test_issue_140_fixed_2
   tags:
-    - localintegrationtest
+    - integrationtest
+    - ci
   command: >
     snakemake -p 
       --sdm apptainer
@@ -35,7 +37,8 @@
 # Test star alignment uses sample prefix for output and multiqc report contains STAR metrics with sample name
 - name: test_issue_142_fixed
   tags:
-    - localintegrationtest
+    - integrationtest
+    - ci
   command: >
     snakemake -p 
       --sdm apptainer
