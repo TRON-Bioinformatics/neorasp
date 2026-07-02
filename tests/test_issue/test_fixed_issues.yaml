@@ -6,7 +6,7 @@
     snakemake -p 
       --sdm apptainer
       -j 4
-      --config splice2neo='{scatter_size':' 1000}'
+      --configfile tests/test_issue/configs/140_config.yaml
       --until only_splice2neo
       --apptainer-prefix ${APPTAINER_HPC}
       --apptainer-args "--bind /tmp --bind ${WORKSPACE}"
@@ -23,7 +23,7 @@
     snakemake -p 
       --sdm apptainer
       -j 4
-      --config splice2neo='{scatter_size':' 10}'
+      --configfile tests/test_issue/configs/140_2_config.yaml
       --until only_splice2neo
       --apptainer-prefix ${APPTAINER_HPC}
       --apptainer-args "--bind /tmp --bind ${WORKSPACE}"
