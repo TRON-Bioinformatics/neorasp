@@ -56,7 +56,7 @@ cmd = """
 bash -c '
 test -n "$APPTAINER_HPC" || { echo "ERROR: APPTAINER_HPC is not set. Please export it before running local integration tests." >&2; exit 1; }
 export WORKSPACE="$PWD"
-pytest --tag localintegrationtest --git-aware --symlink --stderr-bytes 100000
+pytest --tag integrationtest --git-aware --symlink --stderr-bytes 100000
 '
 """
 default-environment = "test-local"
