@@ -43,6 +43,8 @@ jobs:
     runs-on: ubuntu-latest
     env:
       XDG_CACHE_HOME: ${{ github.workspace }}/.cache
+      WORKSPACE: ${{ github.workspace }}
+      APPTAINER_HPC: ${{ github.workspace }}/.cache/apptainer
     steps:
       - run: df -h
       - name: "ubuntu-cleanup"
@@ -73,6 +75,11 @@ jobs:
 
       - name: Trust Git directory
         run: git config --global --add safe.directory "$(pwd)"
+
+      - name: Prepare container cache directories
+        run: |
+          mkdir -p "${XDG_CACHE_HOME}"
+          mkdir -p "${APPTAINER_HPC}"
 
       - name: Run Integration Tests
         shell: bash -l {0}
